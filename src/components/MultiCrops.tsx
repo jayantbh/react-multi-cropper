@@ -117,16 +117,27 @@ const MultiCrops: FC<CropperProps> = (props) => {
 
   useResizeObserver({
     ref: imageRef,
-    onResize: ({ width, height }: RefSize) => {
+    onResize: ({ width: _w, height: _h }: RefSize) => {
+      const width = Math.round(_w),
+        height = Math.round(_h);
+
+      // If image elements don't exist
+      // or image may not have been initialized (prevSize not set)
+      // or image changed but props yet to update (ResizeObserver fired early)
+      // or image dimensions have not changed
+      // do nothing
       if (
         !imageRef.current ||
         !prevSize.current ||
+        imageRef.current.src !== props.src ||
         (prevSize.current.width === width && prevSize.current.height === height)
       )
         return;
 
       const hRatio = height / prevSize.current.height;
       const wRatio = width / prevSize.current.width;
+
+      prevSize.current = { height, width };
 
       const boxes = props.boxes.map((box) => ({
         ...box,
@@ -137,8 +148,6 @@ const MultiCrops: FC<CropperProps> = (props) => {
       }));
 
       props.onChange?.(undefined, undefined, boxes);
-
-      prevSize.current = { height, width };
 
       drawCanvas();
     },
@@ -151,7 +160,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
     drawCanvas();
 
     const { height, width } = img.getBoundingClientRect();
-    prevSize.current = { height, width };
+    prevSize.current = { height: Math.round(height), width: Math.round(width) };
     props.onLoad?.(e, getSelections());
   };
 
@@ -200,8 +209,6 @@ const MultiCrops: FC<CropperProps> = (props) => {
     props.onCrop?.(e, getSelections());
   };
 
-  const { src, width, height } = props;
-
   return (
     <>
       <div
@@ -213,9 +220,9 @@ const MultiCrops: FC<CropperProps> = (props) => {
       >
         <img
           ref={imageRef}
-          src={src}
-          width={width}
-          height={height}
+          src={props.src}
+          width={props.width}
+          height={props.height}
           onLoad={onLoad}
           alt='image to be cropped'
           draggable={false}
