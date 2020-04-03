@@ -897,6 +897,13 @@
   resolved "https://unpm.uberinternal.com/@iarna%2ftoml/-/toml-2.2.3.tgz#f060bf6eaafae4d56a7dac618980838b0696e2ab"
   integrity sha1-8GC/bqr65NVqfaxhiYCDiwaW4qs=
 
+"@interactjs/actions@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2factions/-/actions-1.9.4.tgz#8249dd1771e0d9b3260cbb7e20579e4051ee85cd"
+  integrity sha1-gkndF3Hg2bMmDLt+IFeeQFHuhc0=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
+
 "@interactjs/actions@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2factions/-/actions-1.9.7.tgz#b015931f406e090e48d3244343cf7b2cc53c90f1"
@@ -909,12 +916,26 @@
   resolved "https://unpm.uberinternal.com/@interactjs%2farrange/-/arrange-1.9.7.tgz#42323ce4b1af905d6e4ab76fc066cd1573bd41ee"
   integrity sha1-QjI85LGvkF1uSrdvwGbNFXO9Qe4=
 
+"@interactjs/auto-scroll@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2fauto-scroll/-/auto-scroll-1.9.4.tgz#6ec104f47b6397755a61d9c4e78eb7daf5a08826"
+  integrity sha1-bsEE9Htjl3VaYdnE54632vWgiCY=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
+
 "@interactjs/auto-scroll@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fauto-scroll/-/auto-scroll-1.9.7.tgz#e6c2e67b6ed43dd0dd6a84e96b5d1389a20a647a"
   integrity sha1-5sLme27UPdDdaoTpa10TiaIKZHo=
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
+
+"@interactjs/auto-start@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2fauto-start/-/auto-start-1.9.4.tgz#a585e88fcc98761f928e3009f65e9f7a8a528664"
+  integrity sha1-pYXoj8yYdh+SjjAJ9l6feopShmQ=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
 
 "@interactjs/auto-start@1.9.7":
   version "1.9.7"
@@ -923,20 +944,24 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/clone@1.9.7":
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fclone/-/clone-1.9.7.tgz#fdde8307835cecadd9e29f597ecff890d03167fc"
-  integrity sha1-/d6DB4Nc7K3Z4p9Zfs/4kNAxZ/w=
-
-"@interactjs/components@1.9.7":
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fcomponents/-/components-1.9.7.tgz#40ec9889fd1e94d07c67001b36dd39d113b3e762"
-  integrity sha1-QOyYif0elNB8ZwAbNt050ROz52I=
+"@interactjs/core@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2fcore/-/core-1.9.4.tgz#480fcb1b167765fea3609087b1da81be4a6ebed3"
+  integrity sha1-SA/LGxZ3Zf6jYJCHsdqBvkpuvtM=
 
 "@interactjs/core@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fcore/-/core-1.9.7.tgz#1fdf924c369df23ffe1300af9c945f2651538043"
   integrity sha1-H9+STDad8j/+EwCvnJRfJlFTgEM=
+
+"@interactjs/dev-tools@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2fdev-tools/-/dev-tools-1.9.4.tgz#046b47171c67e0e9f28b5bd0b36befb3304f6910"
+  integrity sha1-BGtHFxxn4Onyi1vQs2vvszBPaRA=
+  dependencies:
+    "@interactjs/utils" "1.9.4"
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
 
 "@interactjs/dev-tools@1.9.7":
   version "1.9.7"
@@ -947,10 +972,12 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/feedback@1.9.7":
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/@interactjs%2ffeedback/-/feedback-1.9.7.tgz#0e3ea3c8e863fdf89d8afee0a1ae5838e9f13d09"
-  integrity sha1-Dj6jyOhj/fidiv7goa5YOOnxPQk=
+"@interactjs/inertia@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2finertia/-/inertia-1.9.4.tgz#75d2a8989db0d784900c9b4143ff694a10195a8c"
+  integrity sha1-ddKomJ2w14SQDJtBQ/9pShAZWow=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
 
 "@interactjs/inertia@1.9.7":
   version "1.9.7"
@@ -961,6 +988,11 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
+"@interactjs/interact@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2finteract/-/interact-1.9.4.tgz#02385a62402ff14e83f18aaa442a81a1a0544cfe"
+  integrity sha1-AjhaYkAv8U6D8YqqRCqBoaBUTP4=
+
 "@interactjs/interact@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2finteract/-/interact-1.9.7.tgz#be988cfb15b13f2cfc0aa68ce826761d49f46e8a"
@@ -970,30 +1002,30 @@
     "@interactjs/types" "1.9.7"
     "@interactjs/utils" "1.9.7"
 
-"@interactjs/interactjs@1.9.7":
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/@interactjs%2finteractjs/-/interactjs-1.9.7.tgz#995b6d9b4abd03a84b02c887315768ab2421b35c"
-  integrity sha1-mVttm0q9A6hLAsiHMVdoqyQhs1w=
+"@interactjs/interactjs@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2finteractjs/-/interactjs-1.9.4.tgz#2598b782142123acb381b43e6311ae351a98a537"
+  integrity sha1-JZi3ghQhI6yzgbQ+YxGuNRqYpTc=
   dependencies:
-    "@interactjs/actions" "1.9.7"
-    "@interactjs/arrange" "1.9.7"
-    "@interactjs/auto-scroll" "1.9.7"
-    "@interactjs/auto-start" "1.9.7"
-    "@interactjs/clone" "1.9.7"
-    "@interactjs/components" "1.9.7"
-    "@interactjs/core" "1.9.7"
-    "@interactjs/dev-tools" "1.9.7"
-    "@interactjs/feedback" "1.9.7"
-    "@interactjs/inertia" "1.9.7"
-    "@interactjs/interact" "1.9.7"
-    "@interactjs/modifiers" "1.9.7"
-    "@interactjs/multi-target" "1.9.7"
-    "@interactjs/offset" "1.9.7"
-    "@interactjs/pointer-events" "1.9.7"
-    "@interactjs/reflow" "1.9.7"
-    "@interactjs/types" "1.9.7"
-    "@interactjs/utils" "1.9.7"
-    "@interactjs/vue" "1.9.7"
+    "@interactjs/actions" "1.9.4"
+    "@interactjs/auto-scroll" "1.9.4"
+    "@interactjs/auto-start" "1.9.4"
+    "@interactjs/dev-tools" "1.9.4"
+    "@interactjs/inertia" "1.9.4"
+    "@interactjs/interact" "1.9.4"
+    "@interactjs/modifiers" "1.9.4"
+    "@interactjs/offset" "1.9.4"
+    "@interactjs/pointer-events" "1.9.4"
+    "@interactjs/reflow" "1.9.4"
+    "@interactjs/types" "1.9.4"
+    "@interactjs/utils" "1.9.4"
+
+"@interactjs/modifiers@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2fmodifiers/-/modifiers-1.9.4.tgz#c8f30d1c197d9dfdcb2513af1633ed13790ec01b"
+  integrity sha1-yPMNHBl9nf3LJROvFjPtE3kOwBs=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
 
 "@interactjs/modifiers@1.9.7":
   version "1.9.7"
@@ -1004,10 +1036,12 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/multi-target@1.9.7":
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fmulti-target/-/multi-target-1.9.7.tgz#bb4de8612f6a649e18d40b93ed5461cde72f79ee"
-  integrity sha1-u03oYS9qZJ4Y1AuT7VRhzecvee4=
+"@interactjs/offset@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2foffset/-/offset-1.9.4.tgz#c7aeee4e6837ed91df20148cfaa592d03da77e07"
+  integrity sha1-x67uTmg37ZHfIBSM+qWS0D2nfgc=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
 
 "@interactjs/offset@1.9.7":
   version "1.9.7"
@@ -1016,12 +1050,26 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
+"@interactjs/pointer-events@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2fpointer-events/-/pointer-events-1.9.4.tgz#e89e607443af20d984a1db72cb2cbf9779bb6761"
+  integrity sha1-6J5gdEOvINmEodtyyyy/l3m7Z2E=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
+
 "@interactjs/pointer-events@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fpointer-events/-/pointer-events-1.9.7.tgz#5a0e0daff1c322c6cbff8cbb8052c531d66d1aad"
   integrity sha1-Wg4Nr/HDIsbL/4y7gFLFMdZtGq0=
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
+
+"@interactjs/reflow@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2freflow/-/reflow-1.9.4.tgz#c0d9f443e14f4457b8f84b950cdbb8011048c619"
+  integrity sha1-wNn0Q+FPRFe4+EuVDNu4ARBIxhk=
+  optionalDependencies:
+    "@interactjs/interact" "1.9.4"
 
 "@interactjs/reflow@1.9.7":
   version "1.9.7"
@@ -1039,6 +1087,23 @@
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fsymbol-tree/-/symbol-tree-1.9.7.tgz#2aec371ded47be71cfa359305da959b382de66ff"
   integrity sha1-Kuw3He1HvnHPo1kwXalZs4LeZv8=
+
+"@interactjs/types@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2ftypes/-/types-1.9.4.tgz#b6bcb480258169b88dfcea24490629f7a7d4a744"
+  integrity sha1-try0gCWBabiN/OokSQYp96fUp0Q=
+  dependencies:
+    "@interactjs/actions" "1.9.4"
+    "@interactjs/auto-scroll" "1.9.4"
+    "@interactjs/auto-start" "1.9.4"
+    "@interactjs/core" "1.9.4"
+    "@interactjs/dev-tools" "1.9.4"
+    "@interactjs/inertia" "1.9.4"
+    "@interactjs/interact" "1.9.4"
+    "@interactjs/modifiers" "1.9.4"
+    "@interactjs/pointer-events" "1.9.4"
+    "@interactjs/reflow" "1.9.4"
+    "@interactjs/utils" "1.9.4"
 
 "@interactjs/types@1.9.7", "@interactjs/types@^1.9.7":
   version "1.9.7"
@@ -1059,15 +1124,15 @@
     "@interactjs/symbol-tree" "1.9.7"
     "@interactjs/utils" "1.9.7"
 
+"@interactjs/utils@1.9.4":
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/@interactjs%2futils/-/utils-1.9.4.tgz#e8051de35bb0fd136cc6ff833db054b428492ec0"
+  integrity sha1-6AUd41uw/RNsxv+DPbBUtChJLsA=
+
 "@interactjs/utils@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2futils/-/utils-1.9.7.tgz#390f574c5b8adbf9cc527affb686d9233d241eec"
   integrity sha1-OQ9XTFuK2/nMUnr/tobZIz0kHuw=
-
-"@interactjs/vue@1.9.7":
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fvue/-/vue-1.9.7.tgz#9942407a144b4cd9d1f264ccaaf43d75f5a00a60"
-  integrity sha1-mUJAehRLTNnR8mTMqvQ9dfWgCmA=
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.0.0"
@@ -4603,13 +4668,13 @@ inherits@~2.0.0:
   resolved "https://unpm.uberinternal.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha1-D6LGT5MpF8NDOg3tVTY6rjdBa3w=
 
-interactjs@^1.9.7:
-  version "1.9.7"
-  resolved "https://unpm.uberinternal.com/interactjs/-/interactjs-1.9.7.tgz#ebcbc3cab9c63f4cd66aa650a5918bcc2aaeeead"
-  integrity sha1-68vDyrnGP0zWaqZQpZGLzCqu7q0=
+interactjs@1.9.4:
+  version "1.9.4"
+  resolved "https://unpm.uberinternal.com/interactjs/-/interactjs-1.9.4.tgz#fba80cd9060dba289530457daaf3c9e27e9e51e9"
+  integrity sha1-+6gM2QYNuiiVMEV9qvPJ4n6eUek=
   dependencies:
-    "@interactjs/interactjs" "1.9.7"
-    "@interactjs/types" "1.9.7"
+    "@interactjs/interactjs" "1.9.4"
+    "@interactjs/types" "1.9.4"
 
 invariant@^2.2.2:
   version "2.2.3"

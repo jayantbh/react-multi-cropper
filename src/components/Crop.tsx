@@ -62,6 +62,7 @@ class Crop extends Component<Props> {
 
   componentDidMount(): void {
     if (!this.crop) return;
+    // @ts-ignore
     interact(this.crop)
       .draggable({})
       .resizable({

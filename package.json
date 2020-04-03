@@ -75,7 +75,7 @@
     "react-dom": "^16.2.0"
   },
   "dependencies": {
-    "interactjs": "^1.9.7",
+    "interactjs": "1.9.4",
     "shortid": "^2.2.15",
     "use-resize-observer": "^6.0.0"
   }
