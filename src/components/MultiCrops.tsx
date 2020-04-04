@@ -210,6 +210,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
       };
       const nextBoxes = [...boxes];
       nextBoxes[drawingIndexRef.current] = box;
+      lastUpdatedBox.current = box;
       onChange?.(box, drawingIndexRef.current, nextBoxes);
     }
   };
@@ -225,6 +226,11 @@ const MultiCrops: FC<CropperProps> = (props) => {
         }
       : undefined;
     props.onCrop?.(e, getSelections(), currentImgParam);
+  };
+
+  const onChange: CropperProps['onChange'] = (box, index, boxes) => {
+    lastUpdatedBox.current = box;
+    props.onChange?.(box, index, boxes);
   };
 
   return (
@@ -246,7 +252,13 @@ const MultiCrops: FC<CropperProps> = (props) => {
           draggable={false}
         />
         {props.boxes.map((box, index) => (
-          <Crop key={box.id || index} {...props} index={index} box={box} />
+          <Crop
+            key={box.id || index}
+            {...props}
+            index={index}
+            box={box}
+            onChange={onChange}
+          />
         ))}
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
