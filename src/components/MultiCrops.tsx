@@ -12,7 +12,6 @@ import type { DragEvent, ResizeEvent } from '@interactjs/types/types';
 import Crop from './Crop';
 import css from './MultiCrops.module.scss';
 import { imageDataToDataUrl } from '../utils';
-import useValueRef from '../hooks/useValueRef';
 
 export type DataUrl = string;
 export type Coordinates = { x?: number; y?: number };
@@ -91,14 +90,12 @@ const MultiCrops: FC<CropperProps> = (props) => {
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [pointA, setPointA] = useValueRef<Coordinates>(blankCoords);
-  const [id, setId] = useValueRef<string>(sid.generate());
-  const [drawingIndex, setDrawingIndex] = useValueRef(-1);
-  const [prevSize, setPrevSize] = useValueRef<RefSize | undefined>(undefined);
-  const [lastUpdatedBox, setLastUpdatedBox] = useValueRef<
-    CropperBox | undefined
-  >(undefined);
-  const [isDrawing, setIsDrawing] = useValueRef<boolean>(false);
+  const pointA = useRef<Coordinates>(blankCoords);
+  const id = useRef<string>(sid.generate());
+  const drawingIndex = useRef(-1);
+  const prevSize = useRef<RefSize | undefined>(undefined);
+  const lastUpdatedBox = useRef<CropperBox | undefined>(undefined);
+  const isDrawing = useRef<boolean>(false);
 
   const drawCanvas = () => {
     if (!canvasRef.current || !imageRef.current) return;
@@ -155,16 +152,16 @@ const MultiCrops: FC<CropperProps> = (props) => {
       // do nothing
       if (
         !imageRef.current ||
-        !prevSize ||
+        !prevSize.current ||
         (imageRef.current && imageRef.current.src !== props.src) ||
-        (prevSize.width === width && prevSize.height === height)
+        (prevSize.current.width === width && prevSize.current.height === height)
       )
         return;
 
-      const hRatio = height / prevSize.height;
-      const wRatio = width / prevSize.width;
+      const hRatio = height / prevSize.current.height;
+      const wRatio = width / prevSize.current.width;
 
-      setPrevSize({ height, width });
+      prevSize.current = { height, width };
 
       const boxes = props.boxes.map((box) => ({
         ...box,
@@ -187,8 +184,8 @@ const MultiCrops: FC<CropperProps> = (props) => {
     drawCanvas();
 
     const { height, width } = img.getBoundingClientRect();
-    setPrevSize({ height: Math.round(height), width: Math.round(width) });
-    setLastUpdatedBox(undefined);
+    prevSize.current = { height: Math.round(height), width: Math.round(width) };
+    lastUpdatedBox.current = undefined;
     props.onLoad?.(e, getSelections());
   };
 
@@ -204,7 +201,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
 
   const handleCrop = (e: CropperEvent['event'], type: CropperEvent['type']) => {
     const selections = getSelections();
-    const boxId = lastUpdatedBox?.id;
+    const boxId = lastUpdatedBox.current?.id;
     const currentImgParam: CurrentImgParam = boxId
       ? {
           boxId,
@@ -214,7 +211,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
 
     props.onCrop?.({ type, event: e }, getSelections(), currentImgParam);
 
-    setIsDrawing(false);
+    isDrawing.current = false;
   };
 
   const handleMouseDown = (e: MouseEvent) => {
@@ -224,41 +221,46 @@ const MultiCrops: FC<CropperProps> = (props) => {
 
     const { x, y } = getCursorPosition(e);
 
-    setDrawingIndex(props.boxes.length);
-    setPointA({ x, y });
-    setId(sid.generate());
-    setIsDrawing(true);
+    drawingIndex.current = props.boxes.length;
+    pointA.current = { x, y };
+    id.current = sid.generate();
+    isDrawing.current = true;
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     const { onChange, boxes } = props;
     const pointB = getCursorPosition(e);
 
-    if (pointA.x && pointA.y && pointB.x && pointB.y) {
+    if (pointA.current.x && pointA.current.y && pointB.x && pointB.y) {
       const box = {
-        x: Math.min(pointA.x, pointB.x),
-        y: Math.min(pointA.y, pointB.y),
-        width: Math.abs(pointA.x - pointB.x),
-        height: Math.abs(pointA.y - pointB.y),
-        id,
+        x: Math.min(pointA.current.x, pointB.x),
+        y: Math.min(pointA.current.y, pointB.y),
+        width: Math.abs(pointA.current.x - pointB.x),
+        height: Math.abs(pointA.current.y - pointB.y),
+        id: id.current,
       };
       const nextBoxes = [...boxes];
-      nextBoxes[drawingIndex] = box;
-      setLastUpdatedBox(box);
-      onChange?.({ type: 'draw', event: e }, box, drawingIndex, nextBoxes);
+      nextBoxes[drawingIndex.current] = box;
+      lastUpdatedBox.current = box;
+      onChange?.(
+        { type: 'draw', event: e },
+        box,
+        drawingIndex.current,
+        nextBoxes
+      );
     }
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
     if (!isDrawing) return;
-    setPointA({});
+    pointA.current = {};
 
     handleCrop(e, 'draw-end');
-    setIsDrawing(false);
+    isDrawing.current = false;
   };
 
   const onChange: CropperProps['onChange'] = (e, box, index, boxes) => {
-    setLastUpdatedBox(box);
+    lastUpdatedBox.current = box;
     props.onChange?.(e, box, index, boxes);
   };
 
