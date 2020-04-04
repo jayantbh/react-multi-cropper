@@ -129,7 +129,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
       if (
         !imageRef.current ||
         !prevSize.current ||
-        imageRef.current.src !== props.src ||
+        (imageRef.current && imageRef.current.src !== props.src) ||
         (prevSize.current.width === width && prevSize.current.height === height)
       )
         return;
