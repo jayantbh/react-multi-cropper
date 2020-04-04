@@ -1,15 +1,22 @@
-import React, { Component, CSSProperties } from 'react';
+import React, { Component, CSSProperties, MouseEvent } from 'react';
 import interact from 'interactjs';
 import type { ResizeEvent, Rect, DragEvent } from '@interactjs/types/types';
 import { DeleteIcon, NumberIcon } from './Icons';
-import { AnyFunction, CropperBox } from './MultiCrops';
+import {
+  CropperBox,
+  CropperEvent,
+  CropperEventType,
+  UpdateFunction,
+} from './MultiCrops';
 import { update, remove, oneLevelEquals } from '../utils';
 
 type Props = {
   index: number;
   box: CropperBox;
   boxes: CropperBox[];
-  onChange?: AnyFunction;
+  onChange?: UpdateFunction;
+  onDelete?: UpdateFunction;
+  onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
 };
 
 class Crop extends Component<Props> {
@@ -36,7 +43,7 @@ class Crop extends Component<Props> {
     };
 
     const nextBoxes = update(index, nextBox, boxes);
-    onChange?.(nextBox, index, nextBoxes);
+    onChange?.({ type: 'resize', event: e }, nextBox, index, nextBoxes);
   };
 
   handleDragMove = (e: DragEvent) => {
@@ -51,13 +58,18 @@ class Crop extends Component<Props> {
     const { dx, dy } = e;
     const nextBox = { ...box, x: x + dx, y: y + dy };
     const nextBoxes = update(index, nextBox, boxes);
-    onChange?.(nextBox, index, nextBoxes);
+    onChange?.({ type: 'drag', event: e }, nextBox, index, nextBoxes);
   };
 
-  handleDelete = () => {
-    const { index, box, onChange, boxes } = this.props;
+  handleDelete = (e: MouseEvent) => {
+    const { index, box, onDelete, boxes } = this.props;
     const nextBoxes = remove(index, 1, boxes);
-    onChange?.(box, index, nextBoxes);
+    onDelete?.({ type: 'delete', event: e }, box, index, nextBoxes);
+  };
+
+  handleCrop = (e: DragEvent | ResizeEvent) => {
+    const type: CropperEventType = e.type === 'dragend' ? 'drag' : 'resize';
+    this.props.onCrop(e, type);
   };
 
   componentDidMount(): void {
@@ -74,7 +86,8 @@ class Crop extends Component<Props> {
         },
       })
       .on('dragmove', this.handleDragMove)
-      .on('resizemove', this.handleResizeMove);
+      .on('resizemove', this.handleResizeMove)
+      .on(['resizeend', 'dragend'], this.handleCrop);
   }
 
   componentWillUnmount(): void {
