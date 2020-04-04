@@ -252,7 +252,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
-    if (!isDrawing) return;
+    if (!isDrawing.current) return;
     pointA.current = {};
 
     handleCrop(e, 'draw-end');
