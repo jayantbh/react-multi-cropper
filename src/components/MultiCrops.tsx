@@ -30,9 +30,17 @@ export type CropperBoxDataMap = {
   [key in CropperBoxId]: DataUrl;
 };
 
+export type CurrentImg = {
+  boxId: CropperBoxId;
+  dataUrl: DataUrl;
+};
+
+export type CurrentImgParam = undefined | CurrentImg;
+
 export type CropTriggerFunctionWithImageData = (
   e: ResizeEvent | MouseEvent<HTMLImageElement>,
-  dataMap: CropperBoxDataMap
+  dataMap: CropperBoxDataMap,
+  currentImg: CurrentImgParam
 ) => any;
 
 export type UpdateFunction = (
@@ -72,6 +80,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const prevSize = useRef<RefSize | undefined>(undefined);
+  const lastUpdatedBox = useRef<CropperBox | undefined>(undefined);
 
   const drawCanvas = () => {
     if (!canvasRef.current || !imageRef.current) return;
@@ -161,6 +170,7 @@ const MultiCrops: FC<CropperProps> = (props) => {
 
     const { height, width } = img.getBoundingClientRect();
     prevSize.current = { height: Math.round(height), width: Math.round(width) };
+    lastUpdatedBox.current = undefined;
     props.onLoad?.(e, getSelections());
   };
 
@@ -206,7 +216,15 @@ const MultiCrops: FC<CropperProps> = (props) => {
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
     pointARef.current = {};
-    props.onCrop?.(e, getSelections());
+    const selections = getSelections();
+    const boxId = lastUpdatedBox.current?.id;
+    const currentImgParam: CurrentImgParam = boxId
+      ? {
+          boxId,
+          dataUrl: selections[boxId],
+        }
+      : undefined;
+    props.onCrop?.(e, getSelections(), currentImgParam);
   };
 
   return (
