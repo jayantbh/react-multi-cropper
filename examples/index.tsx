@@ -41,8 +41,8 @@ const App = () => {
         width={'100%'}
         boxes={boxes}
         onChange={updateBoxes}
-        onCrop={(e, map) => {
-          console.log('Crop', e, map);
+        onCrop={(e, map, currentImg) => {
+          console.log('Crop', e, map, currentImg?.boxId);
           setImageMap(map);
         }}
         onLoad={(e, map) => {
