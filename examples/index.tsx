@@ -26,7 +26,7 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const updateBoxes = useCallback((box, index, _boxes) => setBoxes(_boxes), []);
+  const updateBoxes = useCallback((e, bx, i, _boxes) => setBoxes(_boxes), []);
 
   return (
     <div>
@@ -44,6 +44,9 @@ const App = () => {
         onCrop={(e, map, currentImg) => {
           console.log('Crop', e, map, currentImg?.boxId);
           setImageMap(map);
+        }}
+        onDelete={(box, index, boxes) => {
+          console.log('Delete', box, index, boxes);
         }}
         onLoad={(e, map) => {
           console.log(
