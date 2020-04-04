@@ -45,8 +45,9 @@ const App = () => {
           console.log('Crop', e, map, currentImg?.boxId);
           setImageMap(map);
         }}
-        onDelete={(box, index, boxes) => {
+        onDelete={(e, box, index, boxes) => {
           console.log('Delete', box, index, boxes);
+          updateBoxes(e, box, index, boxes);
         }}
         onLoad={(e, map) => {
           console.log(
