@@ -1,11 +1,15 @@
 export {
   default,
-  Coordinates,
-  CropperProps,
   DataUrl,
   CropperBox,
+  CurrentImg,
   AnyFunction,
-  CropTriggerFunctionWithImageData,
+  Coordinates,
   CropperBoxId,
+  CropperProps,
+  UpdateFunction,
+  CurrentImgParam,
   CropperBoxDataMap,
+  ImgOnLoadWithImageData,
+  CropTriggerFunctionWithImageData,
 } from './components/MultiCrops';
