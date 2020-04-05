@@ -308,11 +308,11 @@ const MultiCrops: FC<CropperProps> = ({
       handleCrop(e, 'pan');
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
-      pointA.current = {};
 
       handleCrop(e, 'draw-end');
       isDrawing.current = false;
     }
+    pointA.current = {};
   };
 
   const onChange: CropperProps['onChange'] = (e, box, index, boxes) => {
