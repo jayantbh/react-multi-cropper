@@ -2,13 +2,13 @@ import React, { Component, CSSProperties, MouseEvent } from 'react';
 import interact from 'interactjs';
 import type { ResizeEvent, Rect, DragEvent } from '@interactjs/types/types';
 import { DeleteIcon, NumberIcon } from './Icons';
+import { update, remove, oneLevelEquals } from '../utils';
 import {
   CropperBox,
   CropperEvent,
   CropperEventType,
   UpdateFunction,
-} from './MultiCrops';
-import { update, remove, oneLevelEquals } from '../utils';
+} from '../types';
 
 type Props = {
   index: number;

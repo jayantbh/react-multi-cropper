@@ -1,6 +1,8 @@
+export { default } from './components/MultiCrops';
+
 export {
-  default,
   DataUrl,
+  RefSize,
   CropperBox,
   CurrentImg,
   Coordinates,
@@ -11,6 +13,7 @@ export {
   CurrentImgParam,
   CropperEventType,
   CropperBoxDataMap,
+  CropperCursorMode,
   ImgOnLoadWithImageData,
   CropTriggerFunctionWithImageData,
-} from './components/MultiCrops';
+} from './types';
