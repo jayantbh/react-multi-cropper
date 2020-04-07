@@ -8,7 +8,7 @@ export function remove<T>(index: number, count: number, items: T[]): T[] {
   return _items;
 }
 
-export const oneLevelEquals = (o1: object, o2: object) => {
+export const oneLevelEquals = (o1: object = {}, o2: object = {}) => {
   const keys = Object.keys(o1);
   return (
     keys.length === Object.keys(o2).length &&

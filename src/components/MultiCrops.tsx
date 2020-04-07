@@ -42,9 +42,9 @@ const MultiCrops: FC<CropperProps> = ({
   const isDrawing = useRef<boolean>(false);
 
   const panFrame = useRef(-1);
-  const resizeChangeFrame = useRef(-1);
   const rotateZoomFrame = useRef(-1);
   const [isPanning, setIsPanning] = useState(false);
+  const [centerCoords, setCenterCoords] = useState({ x: 0, y: 0 });
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
 
@@ -59,6 +59,26 @@ const MultiCrops: FC<CropperProps> = ({
     img.style.transform = currStyle;
     return rect;
   };
+
+  useEffect(() => {
+    if (!imageRef.current || !containerRef.current) return;
+
+    const img = imageRef.current;
+    const cont = containerRef.current;
+
+    const imgRect = img.getBoundingClientRect();
+    const conRect = cont.getBoundingClientRect();
+    const x = (imgRect.right + imgRect.left) / 2 - conRect.left;
+    const y = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
+
+    console.log('center', x, y);
+    setCenterCoords({ x, y });
+  }, [
+    imageRef.current,
+    containerRef.current,
+    staticPanCoords,
+    activePanCoords,
+  ]);
 
   const drawCanvas = () => {
     if (!canvasRef.current || !imageRef.current || !containerRef.current)
@@ -137,65 +157,39 @@ const MultiCrops: FC<CropperProps> = ({
   }, [props.width, props.height, rotation]);
 
   useResizeObserver({
-    ref: containerRef,
+    ref: imageRef,
     onResize: ({ width: _w, height: _h }: RefSize) => {
-      const width = Math.round(_w),
-        height = Math.round(_h);
+      const width = Math.round(_w);
+      const height = Math.round(_h);
+
+      // If image elements don't exist
+      // or image may not have been initialized (prevSize not set)
+      // or image changed but props yet to update (ResizeObserver fired early)
+      // or image dimensions have not changed
+      // do nothing
       if (
-        !containerRef.current ||
-        (prevSize.current?.width === width &&
-          prevSize.current?.height === height)
+        !imageRef.current ||
+        !prevSize.current ||
+        imageRef.current.getAttribute('src') !== props.src ||
+        (prevSize.current.width === width && prevSize.current.height === height)
       )
         return;
 
+      const hRatio = height / prevSize.current.height;
+      const wRatio = width / prevSize.current.width;
+
       prevSize.current = { height, width };
 
-      let {
-        top,
-        bottom,
-        left,
-        right,
-      } = containerRef.current.getBoundingClientRect();
-      bottom = bottom - top;
-      right = right - left;
-      top = 0;
-      left = 0;
+      const boxes = props.boxes.map((box) => ({
+        ...box,
+        x: box.x * wRatio,
+        y: box.y * hRatio,
+        height: box.height * hRatio,
+        width: box.width * wRatio,
+      }));
 
-      let hasChanges = false;
-      cancelAnimationFrame(resizeChangeFrame.current);
-      resizeChangeFrame.current = requestAnimationFrame(() => {
-        const boxes = props.boxes.map((box) => {
-          const x = box.x <= left ? 0 : box.x >= right ? right - 1 : box.x;
-          const y = box.y <= top ? 0 : box.y >= bottom ? bottom - 1 : box.y;
-          const width = box.x + box.width >= right ? right - box.x : box.width;
-          const height =
-            box.y + box.height >= bottom ? bottom - box.y : box.height;
-
-          if (
-            x !== box.x ||
-            y !== box.y ||
-            width !== box.width ||
-            height !== box.height
-          )
-            hasChanges = true;
-
-          return {
-            ...box,
-            x,
-            y,
-            height,
-            width,
-          };
-        });
-
-        if (hasChanges)
-          props.onChange?.(
-            { type: 'auto-resize' },
-            undefined,
-            undefined,
-            boxes
-          );
-      });
+      drawCanvas();
+      props.onChange?.({ type: 'auto-resize' }, undefined, undefined, boxes);
     },
   });
 
@@ -203,9 +197,13 @@ const MultiCrops: FC<CropperProps> = ({
     const img = e.currentTarget;
     if (!img) return;
 
-    drawCanvas();
-
+    prevSize.current = {
+      height: Math.round(img.height),
+      width: Math.round(img.width),
+    };
     lastUpdatedBox.current = undefined;
+
+    drawCanvas();
     props.onLoad?.(e, getSelections());
   };
 
@@ -347,27 +345,55 @@ const MultiCrops: FC<CropperProps> = ({
           className={css.img}
           style={{
             transform: `
-            translate(
-            ${staticPanCoords.x + activePanCoords.x}px,
-            ${staticPanCoords.y + activePanCoords.y}px)
-            rotate(${rotation}deg)
+              translate(
+              ${staticPanCoords.x + activePanCoords.x}px,
+              ${staticPanCoords.y + activePanCoords.y}px)
+              rotate(${rotation}deg)
             `,
           }}
         />
         {props.boxes.map((box, index) => (
-          <div
+          <Crop
+            {...props}
             key={box.id || index}
-            style={{ pointerEvents: cursorMode === 'pan' ? 'none' : 'auto' }}
-          >
-            <Crop
-              {...props}
-              index={index}
-              box={box}
-              onChange={onChange}
-              onCrop={handleCrop}
-            />
-          </div>
+            index={index}
+            box={box}
+            onChange={onChange}
+            onCrop={handleCrop}
+            centerCoords={centerCoords}
+            style={{
+              pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
+              top: staticPanCoords.y + activePanCoords.y + 'px',
+              left: staticPanCoords.x + activePanCoords.x + 'px',
+              transformOrigin: `${centerCoords.x}px ${centerCoords.y}px`,
+              // transform: `
+              //   translate(
+              //   ${staticPanCoords.x + activePanCoords.x}px,
+              //   ${staticPanCoords.y + activePanCoords.y}px)
+              //   rotate(${rotation}deg)
+              // `,
+              transform: `
+                rotate(${rotation}deg)
+              `,
+            }}
+          />
         ))}
+        <div
+          style={{
+            height: '10px',
+            width: '10px',
+            background: 'red',
+            position: 'absolute',
+            top: `${centerCoords.y}px`,
+            left: `${centerCoords.x}px`,
+            //   transform: `
+            //   translate(
+            //   ${staticPanCoords.x + activePanCoords.x}px,
+            //   ${staticPanCoords.y + activePanCoords.y}px)
+            //   rotate(${rotation}deg)
+            // `,
+          }}
+        />
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
     </>

@@ -10,7 +10,7 @@ const App = () => {
   const [images, setImages] = useState([img1, img2]);
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
-  const [cursorMode, setCursorMode] = useState<CropperCursorMode>('draw');
+  const [cursorMode, setCursorMode] = useState<CropperCursorMode>('pan');
   const [boxes, setBoxes] = useState<CropperBox[]>([
     {
       x: 178,
