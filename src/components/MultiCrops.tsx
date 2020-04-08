@@ -217,6 +217,11 @@ const MultiCrops: FC<CropperProps> = ({
     };
   };
 
+  const getAbsoluteCursorPosition = (e: MouseEvent) => ({
+    x: e.clientX,
+    y: e.clientY,
+  });
+
   const handleCrop = (e: CropperEvent['event'], type: CropperEvent['type']) => {
     drawCanvas();
     const selections = getSelections();
@@ -238,11 +243,8 @@ const MultiCrops: FC<CropperProps> = ({
       e.target === imageRef.current || e.target === containerRef.current;
     if (!isTargetInCropper) return;
 
-    const { x, y } = getCursorPosition(e);
-
-    pointA.current = { x, y };
-
     if (cursorMode === 'pan') {
+      pointA.current = getAbsoluteCursorPosition(e);
       setIsPanning(true);
       setStaticPanCoords({
         x: staticPanCoords.x + activePanCoords.x,
@@ -250,6 +252,7 @@ const MultiCrops: FC<CropperProps> = ({
       });
       setActivePanCoords({ x: 0, y: 0 });
     } else if (cursorMode === 'draw') {
+      pointA.current = getCursorPosition(e);
       drawingIndex.current = props.boxes.length;
       id.current = sid.generate();
       isDrawing.current = true;
@@ -258,11 +261,11 @@ const MultiCrops: FC<CropperProps> = ({
 
   const handleMouseMove = (e: MouseEvent) => {
     const { onChange, boxes } = props;
-    const pointB = getCursorPosition(e);
-
-    if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y)) return;
 
     if (cursorMode === 'pan' && isPanning) {
+      const pointB = getAbsoluteCursorPosition(e);
+      if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
+        return;
       const xDiff = -1 * (pointA.current.x - pointB.x);
       const yDiff = -1 * (pointA.current.y - pointB.y);
 
@@ -274,12 +277,16 @@ const MultiCrops: FC<CropperProps> = ({
         })
       );
     } else if (cursorMode === 'draw') {
+      const pointB = getCursorPosition(e);
+      if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
+        return;
       const box = {
         x: Math.min(pointA.current.x, pointB.x),
         y: Math.min(pointA.current.y, pointB.y),
         width: Math.abs(pointA.current.x - pointB.x),
         height: Math.abs(pointA.current.y - pointB.y),
         id: id.current,
+        rotation: 0,
       };
       const nextBoxes = [...boxes];
       nextBoxes[drawingIndex.current] = box;

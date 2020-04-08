@@ -13,6 +13,7 @@ export type CropperBox = {
   width: number;
   height: number;
   id: CropperBoxId;
+  rotation: number;
 };
 
 export type CropperBoxDataMap = {

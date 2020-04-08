@@ -18,6 +18,7 @@ const App = () => {
       width: 120,
       height: 178,
       id: 'SJxb6YpuG',
+      rotation: 0,
     },
     {
       x: 136,
@@ -25,6 +26,7 @@ const App = () => {
       width: 170,
       height: 168,
       id: 'SJMZ6YTdf',
+      rotation: 0,
     },
   ]);
 
