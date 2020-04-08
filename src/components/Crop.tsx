@@ -123,18 +123,18 @@ export const cropStyle = (
   centerCoords: { x: number; y: number } = { x: 0, y: 0 }
 ): CSSProperties => {
   const { x, y, width, height } = box;
-  console.log(box, style, centerCoords);
+  // console.log(box, style, centerCoords);
 
   return {
     ...style,
-    transformOrigin: `${centerCoords.x - box.x}px ${centerCoords.y - box.y}px`,
+    transformOrigin: `${-box.x}px ${-box.y}px`,
     boxShadow: '0 0 0 2px #000',
     background: '#FFFFFF33',
     position: 'absolute',
     width,
     height,
-    top: `calc(${y}px + ${style.top})`,
-    left: `calc(${x}px + ${style.left})`,
+    top: y,
+    left: x,
     opacity: 0.8,
   };
 };

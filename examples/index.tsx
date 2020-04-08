@@ -13,15 +13,15 @@ const App = () => {
   const [cursorMode, setCursorMode] = useState<CropperCursorMode>('pan');
   const [boxes, setBoxes] = useState<CropperBox[]>([
     {
-      x: 178,
-      y: 91,
+      x: -178,
+      y: -191,
       width: 120,
       height: 178,
       id: 'SJxb6YpuG',
     },
     {
-      x: 436,
-      y: 97,
+      x: 136,
+      y: -97,
       width: 170,
       height: 168,
       id: 'SJMZ6YTdf',

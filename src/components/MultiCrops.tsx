@@ -212,8 +212,8 @@ const MultiCrops: FC<CropperProps> = ({
 
     const { left, top } = containerRef.current.getBoundingClientRect();
     return {
-      x: e.clientX - left,
-      y: e.clientY - top,
+      x: e.clientX - left - centerCoords.x,
+      y: e.clientY - top - centerCoords.y,
     };
   };
 
@@ -352,32 +352,6 @@ const MultiCrops: FC<CropperProps> = ({
             `,
           }}
         />
-        {props.boxes.map((box, index) => (
-          <Crop
-            {...props}
-            key={box.id || index}
-            index={index}
-            box={box}
-            onChange={onChange}
-            onCrop={handleCrop}
-            centerCoords={centerCoords}
-            style={{
-              pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
-              top: staticPanCoords.y + activePanCoords.y + 'px',
-              left: staticPanCoords.x + activePanCoords.x + 'px',
-              transformOrigin: `${centerCoords.x}px ${centerCoords.y}px`,
-              // transform: `
-              //   translate(
-              //   ${staticPanCoords.x + activePanCoords.x}px,
-              //   ${staticPanCoords.y + activePanCoords.y}px)
-              //   rotate(${rotation}deg)
-              // `,
-              transform: `
-                rotate(${rotation}deg)
-              `,
-            }}
-          />
-        ))}
         <div
           style={{
             height: '10px',
@@ -393,7 +367,34 @@ const MultiCrops: FC<CropperProps> = ({
             //   rotate(${rotation}deg)
             // `,
           }}
-        />
+        >
+          {props.boxes.map((box, index) => (
+            <Crop
+              {...props}
+              key={box.id || index}
+              index={index}
+              box={box}
+              onChange={onChange}
+              onCrop={handleCrop}
+              centerCoords={centerCoords}
+              style={{
+                pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
+                top: staticPanCoords.y + activePanCoords.y + 'px',
+                left: staticPanCoords.x + activePanCoords.x + 'px',
+                transformOrigin: `${centerCoords.x}px ${centerCoords.y}px`,
+                // transform: `
+                //   translate(
+                //   ${staticPanCoords.x + activePanCoords.x}px,
+                //   ${staticPanCoords.y + activePanCoords.y}px)
+                //   rotate(${rotation}deg)
+                // `,
+                transform: `
+                rotate(${rotation}deg)
+              `,
+              }}
+            />
+          ))}
+        </div>
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
     </>
