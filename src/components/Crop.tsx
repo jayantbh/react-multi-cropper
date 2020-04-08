@@ -18,7 +18,6 @@ type Props = {
   onDelete?: UpdateFunction;
   onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
-  centerCoords: { x: number; y: number };
 };
 
 class Crop extends Component<Props> {
@@ -28,7 +27,6 @@ class Crop extends Component<Props> {
     return (
       !oneLevelEquals(nextProps.box, this.props.box) ||
       !oneLevelEquals(nextProps.style, this.props.style) ||
-      !oneLevelEquals(nextProps.centerCoords, this.props.centerCoords) ||
       nextProps.index !== this.props.index
     );
   }
@@ -99,17 +97,9 @@ class Crop extends Component<Props> {
   }
 
   render() {
-    const {
-      box,
-      index,
-      style = {},
-      centerCoords = { x: 0, y: 0 },
-    } = this.props;
+    const { box, index, style = {} } = this.props;
     return (
-      <div
-        style={{ ...cropStyle(box, style, centerCoords) }}
-        ref={(c) => (this.crop = c)}
-      >
+      <div style={{ ...cropStyle(box, style) }} ref={(c) => (this.crop = c)}>
         <NumberIcon number={index + 1} />
         <DeleteIcon onClick={this.handleDelete} />
       </div>
@@ -119,8 +109,7 @@ class Crop extends Component<Props> {
 
 export const cropStyle = (
   box: CropperBox,
-  style: CSSProperties,
-  centerCoords: { x: number; y: number } = { x: 0, y: 0 }
+  style: CSSProperties
 ): CSSProperties => {
   const { x, y, width, height } = box;
   // console.log(box, style, centerCoords);

@@ -42,7 +42,8 @@ const MultiCrops: FC<CropperProps> = ({
   const isDrawing = useRef<boolean>(false);
 
   const panFrame = useRef(-1);
-  const rotateZoomFrame = useRef(-1);
+  const rotationFrame = useRef(-1);
+  const propSizeFrame = useRef(-1);
   const [isPanning, setIsPanning] = useState(false);
   const [centerCoords, setCenterCoords] = useState({ x: 0, y: 0 });
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
@@ -149,12 +150,30 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   useEffect(() => {
-    cancelAnimationFrame(rotateZoomFrame.current);
-    rotateZoomFrame.current = requestAnimationFrame(() => {
+    cancelAnimationFrame(propSizeFrame.current);
+    propSizeFrame.current = requestAnimationFrame(() => {
       drawCanvas();
-      props.onCrop?.({ type: 'rotate-zoom' }, getSelections(), undefined);
+      props.onCrop?.({ type: 'manual-resize' }, getSelections(), undefined);
     });
-  }, [props.width, props.height, rotation]);
+  }, [props.width, props.height]);
+
+  const prevRotation = useRef(rotation);
+  useEffect(() => {
+    cancelAnimationFrame(rotationFrame.current);
+    rotationFrame.current = requestAnimationFrame(() => {
+      const rotationDiff = rotation - prevRotation.current;
+      const boxes = props.boxes.map((box) => ({
+        ...box,
+        rotation: box.rotation + rotationDiff,
+      }));
+
+      prevRotation.current = rotation;
+
+      props.onChange?.({ type: 'rotate' }, undefined, undefined, boxes);
+      drawCanvas();
+      props.onCrop?.({ type: 'rotate' }, getSelections(), undefined);
+    });
+  }, [rotation]);
 
   useResizeObserver({
     ref: imageRef,
@@ -383,7 +402,6 @@ const MultiCrops: FC<CropperProps> = ({
               box={box}
               onChange={onChange}
               onCrop={handleCrop}
-              centerCoords={centerCoords}
               style={{
                 pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
                 top: staticPanCoords.y + activePanCoords.y + 'px',
@@ -396,7 +414,7 @@ const MultiCrops: FC<CropperProps> = ({
                 //   rotate(${rotation}deg)
                 // `,
                 transform: `
-                rotate(${rotation}deg)
+                rotate(${box.rotation}deg)
               `,
               }}
             />

@@ -34,7 +34,8 @@ export type CropperEventType =
   | 'auto-resize'
   | 'drag'
   | 'delete'
-  | 'rotate-zoom'
+  | 'manual-resize'
+  | 'rotate'
   | 'pan';
 
 export type CropperCursorMode = 'draw' | 'pan';
