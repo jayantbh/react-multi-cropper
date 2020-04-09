@@ -72,7 +72,6 @@ const MultiCrops: FC<CropperProps> = ({
     const x = (imgRect.right + imgRect.left) / 2 - conRect.left;
     const y = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
 
-    console.log('center', x, y);
     setCenterCoords({ x, y });
   }, [
     imageRef.current,
@@ -129,10 +128,62 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const getSelections = (): CropperBoxDataMap => {
-    if (!canvasRef.current) return {};
+    const test = document.getElementById('test') as HTMLCanvasElement;
+    if (!canvasRef.current || !containerRef.current || !test) return {};
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return {};
+    const ctxTest = test.getContext('2d');
+    const cont = containerRef.current;
+    if (!ctx || !ctxTest) return {};
+
+    const dpr = window.devicePixelRatio;
+
+    const { x: cx, y: cy } = cont.getBoundingClientRect();
+    props.boxes.map((box) => {
+      const boxEl = document.getElementById(box.id);
+      if (!boxEl) return;
+      const els = boxEl.querySelectorAll('.rmc__crop__corner-element');
+      if (!els) return;
+
+      const { height, width, x, y } = boxEl.getBoundingClientRect();
+      test.setAttribute('height', height * dpr + 'px');
+      test.setAttribute('width', width * dpr + 'px');
+
+      const imageData = ctx.getImageData(
+        (x - cx) * dpr,
+        (y - cy) * dpr,
+        width * dpr,
+        height * dpr
+      );
+
+      const src = imageDataToDataUrl(imageData) as string;
+      const img = document.createElement('img');
+      img.src = src;
+      console.log(img);
+
+      ctxTest.translate(test.width / 2, test.height / 2);
+      ctxTest.rotate((-box.rotation * Math.PI) / 180);
+      ctxTest.drawImage(img, 0, 0);
+      ctxTest.translate(-test.width / 2, -test.height / 2);
+
+      const coords = Array.from(els)
+        .map((el) => el.getBoundingClientRect())
+        .map((rect) => ({
+          x: rect.x - cx,
+          y: rect.y - cy,
+        }));
+      ctx.beginPath();
+      ctx.moveTo(coords[0][0] * dpr, coords[0][1] * dpr);
+      [...coords, coords[0]].map((c) => ctx.lineTo(c.x * dpr, c.y * dpr));
+      // ctx.closePath();
+      // ctx.clip();
+      // ctx.fillStyle = 'red';
+      // ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // ctx.restore();
+      ctx.lineWidth = 5;
+      ctx.stroke();
+    });
 
     return props.boxes.reduce<CropperBoxDataMap>((map, box) => {
       const { x, y, width, height } = box;
@@ -386,12 +437,6 @@ const MultiCrops: FC<CropperProps> = ({
             position: 'absolute',
             top: `${centerCoords.y}px`,
             left: `${centerCoords.x}px`,
-            //   transform: `
-            //   translate(
-            //   ${staticPanCoords.x + activePanCoords.x}px,
-            //   ${staticPanCoords.y + activePanCoords.y}px)
-            //   rotate(${rotation}deg)
-            // `,
           }}
         >
           {props.boxes.map((box, index) => (
@@ -407,21 +452,14 @@ const MultiCrops: FC<CropperProps> = ({
                 top: staticPanCoords.y + activePanCoords.y + 'px',
                 left: staticPanCoords.x + activePanCoords.x + 'px',
                 transformOrigin: `${centerCoords.x}px ${centerCoords.y}px`,
-                // transform: `
-                //   translate(
-                //   ${staticPanCoords.x + activePanCoords.x}px,
-                //   ${staticPanCoords.y + activePanCoords.y}px)
-                //   rotate(${rotation}deg)
-                // `,
-                transform: `
-                rotate(${box.rotation}deg)
-              `,
+                transform: `rotate(${box.rotation}deg)`,
               }}
             />
           ))}
         </div>
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
+      <canvas id='test' />
     </>
   );
 };

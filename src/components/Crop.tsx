@@ -99,13 +99,39 @@ class Crop extends Component<Props> {
   render() {
     const { box, index, style = {} } = this.props;
     return (
-      <div style={{ ...cropStyle(box, style) }} ref={(c) => (this.crop = c)}>
+      <div
+        id={box.id}
+        style={{ ...cropStyle(box, style) }}
+        ref={(c) => (this.crop = c)}
+      >
         <NumberIcon number={index + 1} />
         <DeleteIcon onClick={this.handleDelete} />
+        {FourDivs}
       </div>
     );
   }
 }
+
+const FourDivs = (
+  <>
+    <div
+      className='rmc__crop__corner-element rmc__crop__corner-element__top-left'
+      style={{ position: 'absolute', top: 0, left: 0 }}
+    />
+    <div
+      className='rmc__crop__corner-element rmc__crop__corner-element__top-right'
+      style={{ position: 'absolute', top: 0, right: 0 }}
+    />
+    <div
+      className='rmc__crop__corner-element rmc__crop__corner-element__bottom-right'
+      style={{ position: 'absolute', bottom: 0, right: 0 }}
+    />
+    <div
+      className='rmc__crop__corner-element rmc__crop__corner-element__bottom-left'
+      style={{ position: 'absolute', bottom: 0, left: 0 }}
+    />
+  </>
+);
 
 export const cropStyle = (
   box: CropperBox,
