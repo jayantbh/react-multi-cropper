@@ -159,7 +159,6 @@ const MultiCrops: FC<CropperProps> = ({
       const src = imageDataToDataUrl(imageData) as string;
       const img = document.createElement('img');
       img.src = src;
-      console.log(img);
 
       ctxTest.translate(test.width / 2, test.height / 2);
       ctxTest.rotate((-box.rotation * Math.PI) / 180);
