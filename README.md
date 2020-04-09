@@ -12,9 +12,18 @@ It's a fork of [this repo](https://github.com/beizhedenglong/react-multi-crops),
 
 
 ## Installation
-```
+```bash
 yarn add react-multi-cropper
 ```
+
+## Development
+```bash
+yarn install
+yarn start # in one terminal
+yarn serve # in another
+```
+Then open [http://localhost:3000](http://localhost:3000) in your browser.  
+If `3000` is occupied, the terminal output will show you what URL the serve command is serving on.
 
 ## Usage
 
