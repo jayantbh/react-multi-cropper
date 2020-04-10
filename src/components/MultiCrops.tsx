@@ -22,8 +22,11 @@ import {
   RefSize,
 } from '../types';
 
-const blankCoords: Coordinates = { x: undefined, y: undefined };
+const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
+const imageDebounceTime = 500;
+
+const dpr = window.devicePixelRatio;
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -34,7 +37,7 @@ const MultiCrops: FC<CropperProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const pointA = useRef<Coordinates>(blankCoords);
+  const pointA = useRef<Partial<Coordinates>>(blankCoords);
   const id = useRef<string>(sid.generate());
   const drawingIndex = useRef(-1);
   const prevSize = useRef<RefSize | undefined>(undefined);
@@ -43,7 +46,9 @@ const MultiCrops: FC<CropperProps> = ({
 
   const panFrame = useRef(-1);
   const rotationFrame = useRef(-1);
-  const propSizeFrame = useRef(-1);
+  const rotationTimeout = useRef(-1);
+  const propSizeTimeout = useRef(-1);
+  const autoSizeTimeout = useRef(-1);
   const [isPanning, setIsPanning] = useState(false);
   const [centerCoords, setCenterCoords] = useState({ x: 0, y: 0 });
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
@@ -84,8 +89,6 @@ const MultiCrops: FC<CropperProps> = ({
     if (!canvasRef.current || !imageRef.current || !containerRef.current)
       return;
 
-    const dpr = window.devicePixelRatio;
-
     const img = imageRef.current;
     const cont = containerRef.current;
     const canvas = canvasRef.current;
@@ -111,7 +114,10 @@ const MultiCrops: FC<CropperProps> = ({
 
     canvas.setAttribute('height', chdpr + '');
     canvas.setAttribute('width', cwdpr + '');
-    canvas.setAttribute('style', `height: ${cHeight}px; width: ${cWidth}px;`);
+    canvas.setAttribute(
+      'style',
+      `height: ${cHeight / 2}px; width: ${cWidth / 2}px;`
+    );
 
     const imgRect = img.getBoundingClientRect();
     const conRect = cont.getBoundingClientRect();
@@ -127,84 +133,64 @@ const MultiCrops: FC<CropperProps> = ({
     ctx.resetTransform();
   };
 
-  const getSelections = (): CropperBoxDataMap => {
-    const test = document.getElementById('test') as HTMLCanvasElement;
-    if (!canvasRef.current || !containerRef.current || !test) return {};
-    const canvas = canvasRef.current;
+  const getSelections = (
+    boxes: CropperProps['boxes'] = props.boxes
+  ): CropperBoxDataMap => {
+    if (!canvasRef.current || !containerRef.current) return {};
+    const canvas = canvasRef.current; // canvas source
     const ctx = canvas.getContext('2d');
-    const ctxTest = test.getContext('2d');
     const cont = containerRef.current;
-    if (!ctx || !ctxTest) return {};
+    if (!ctx) return {};
 
-    const dpr = window.devicePixelRatio;
+    const contRect = cont.getBoundingClientRect();
 
-    const { x: cx, y: cy } = cont.getBoundingClientRect();
-    props.boxes.map((box) => {
-      const boxEl = document.getElementById(box.id);
-      if (!boxEl) return;
-      const els = boxEl.querySelectorAll('.rmc__crop__corner-element');
-      if (!els) return;
+    return boxes.reduce<CropperBoxDataMap>((map, box) => {
+      if (box.width === 0 || box.height === 0) return map;
 
-      const { height, width, x, y } = boxEl.getBoundingClientRect();
-      test.setAttribute('height', height * dpr + 'px');
-      test.setAttribute('width', width * dpr + 'px');
+      const { height, width } = canvas;
 
-      const imageData = ctx.getImageData(
-        (x - cx) * dpr,
-        (y - cy) * dpr,
-        width * dpr,
-        height * dpr
+      const tempCanvas = document.createElement('canvas');
+      const ctx = tempCanvas.getContext('2d');
+
+      tempCanvas.height = height * 3;
+      tempCanvas.width = width * 3;
+
+      const boxTopLeftEl = document
+        .getElementById(box.id)
+        ?.querySelector('.rmc__crop__corner-element__top-left');
+      if (!boxTopLeftEl || !ctx) return map;
+
+      const btlRect = boxTopLeftEl.getBoundingClientRect();
+      const targetX = btlRect.x - contRect.x;
+      const targetY = btlRect.y - contRect.y;
+      const boxTopLeftX = targetX * dpr + width;
+      const boxTopLeftY = targetY * dpr + height;
+
+      ctx.translate(boxTopLeftX, boxTopLeftY);
+      ctx.rotate((-box.rotation * Math.PI) / 180);
+      ctx.translate(-boxTopLeftX, -boxTopLeftY);
+      ctx.drawImage(canvas, width, height);
+
+      const rotatedImageData = ctx.getImageData(
+        boxTopLeftX,
+        boxTopLeftY,
+        box.width * dpr,
+        box.height * dpr
       );
 
-      const src = imageDataToDataUrl(imageData) as string;
-      const img = document.createElement('img');
-      img.src = src;
+      const finalImageUrl = imageDataToDataUrl(rotatedImageData);
+      if (!finalImageUrl) return map;
 
-      ctxTest.translate(test.width / 2, test.height / 2);
-      ctxTest.rotate((-box.rotation * Math.PI) / 180);
-      ctxTest.drawImage(img, 0, 0);
-      ctxTest.translate(-test.width / 2, -test.height / 2);
-
-      const coords = Array.from(els)
-        .map((el) => el.getBoundingClientRect())
-        .map((rect) => ({
-          x: rect.x - cx,
-          y: rect.y - cy,
-        }));
-      ctx.beginPath();
-      ctx.moveTo(coords[0][0] * dpr, coords[0][1] * dpr);
-      [...coords, coords[0]].map((c) => ctx.lineTo(c.x * dpr, c.y * dpr));
-      // ctx.closePath();
-      // ctx.clip();
-      // ctx.fillStyle = 'red';
-      // ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // ctx.fillRect(0, 0, canvas.width, canvas.height);
-      // ctx.restore();
-      ctx.lineWidth = 5;
-      ctx.stroke();
-    });
-
-    return props.boxes.reduce<CropperBoxDataMap>((map, box) => {
-      const { x, y, width, height } = box;
-      if (width === 0 || height === 0) return map;
-      const dpr = window.devicePixelRatio;
-
-      const imageData = imageDataToDataUrl(
-        ctx.getImageData(x * dpr, y * dpr, width * dpr, height * dpr)
-      );
-
-      if (!imageData) return map;
-
-      return { ...map, [box.id]: imageData };
+      return { ...map, [box.id]: finalImageUrl };
     }, {});
   };
 
   useEffect(() => {
-    cancelAnimationFrame(propSizeFrame.current);
-    propSizeFrame.current = requestAnimationFrame(() => {
+    clearTimeout(propSizeTimeout.current);
+    propSizeTimeout.current = window.setTimeout(() => {
       drawCanvas();
       props.onCrop?.({ type: 'manual-resize' }, getSelections(), undefined);
-    });
+    }, imageDebounceTime);
   }, [props.width, props.height]);
 
   const prevRotation = useRef(rotation);
@@ -220,8 +206,12 @@ const MultiCrops: FC<CropperProps> = ({
       prevRotation.current = rotation;
 
       props.onChange?.({ type: 'rotate' }, undefined, undefined, boxes);
-      drawCanvas();
-      props.onCrop?.({ type: 'rotate' }, getSelections(), undefined);
+
+      clearTimeout(rotationTimeout.current);
+      rotationTimeout.current = window.setTimeout(() => {
+        drawCanvas();
+        props.onCrop?.({ type: 'rotate' }, getSelections(boxes), undefined);
+      }, imageDebounceTime);
     });
   }, [rotation]);
 
@@ -231,12 +221,8 @@ const MultiCrops: FC<CropperProps> = ({
       const width = Math.round(_w);
       const height = Math.round(_h);
 
-      // If image elements don't exist
-      // or image may not have been initialized (prevSize not set)
-      // or image changed but props yet to update (ResizeObserver fired early)
-      // or image dimensions have not changed
-      // do nothing
       if (
+        !containerRef.current ||
         !imageRef.current ||
         !prevSize.current ||
         imageRef.current.getAttribute('src') !== props.src ||
@@ -257,8 +243,22 @@ const MultiCrops: FC<CropperProps> = ({
         width: box.width * wRatio,
       }));
 
+      const imgRect = imageRef.current.getBoundingClientRect();
+      const contRect = containerRef.current.getBoundingClientRect();
+      setCenterCoords({
+        x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+        y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+      });
       drawCanvas();
       props.onChange?.({ type: 'auto-resize' }, undefined, undefined, boxes);
+      clearTimeout(autoSizeTimeout.current);
+      autoSizeTimeout.current = window.setTimeout(() => {
+        props.onCrop?.(
+          { type: 'manual-resize' },
+          getSelections(boxes),
+          undefined
+        );
+      }, imageDebounceTime);
     },
   });
 
@@ -458,7 +458,6 @@ const MultiCrops: FC<CropperProps> = ({
         </div>
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
-      <canvas id='test' />
     </>
   );
 };
