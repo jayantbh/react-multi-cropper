@@ -3,7 +3,7 @@ import { DragEvent, ResizeEvent } from '@interactjs/types/types';
 
 export type DataUrl = string;
 
-export type Coordinates = { x?: number; y?: number };
+export type Coordinates = { x: number; y: number };
 
 export type CropperBoxId = string;
 
