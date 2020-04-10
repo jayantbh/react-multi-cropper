@@ -7,6 +7,7 @@
   background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAdSURBVHgBARIA7f8B9PT0/9DQ0AAAxMTE//T09P93uA1zvgnyuwAAAABJRU5ErkJggg==');
   background-size: 20px;
   image-rendering: pixelated;
+  user-select: none;
 }
 
 .pan {
@@ -18,7 +19,7 @@
 }
 
 .canvas {
-  //display: none;
+  display: none;
 }
 
 .img {

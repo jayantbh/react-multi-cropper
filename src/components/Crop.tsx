@@ -133,12 +133,8 @@ const FourDivs = (
   </>
 );
 
-export const cropStyle = (
-  box: CropperBox,
-  style: CSSProperties
-): CSSProperties => {
+const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
   const { x, y, width, height } = box;
-  // console.log(box, style, centerCoords);
 
   return {
     ...style,

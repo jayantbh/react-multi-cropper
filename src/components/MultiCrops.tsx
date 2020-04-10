@@ -1,32 +1,31 @@
-import React, {
-  FC,
-  MouseEvent,
-  ReactEventHandler,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { FC, MouseEvent, useRef, useState } from 'react';
 import sid from 'shortid';
 import useResizeObserver from 'use-resize-observer';
 
 import Crop from './Crop';
 import css from './MultiCrops.module.scss';
-import { imageDataToDataUrl } from '../utils';
 import {
   Coordinates,
   CropperBox,
-  CropperBoxDataMap,
   CropperEvent,
   CropperProps,
   CurrentImgParam,
   RefSize,
 } from '../types';
+import {
+  getAbsoluteCursorPosition,
+  getCursorPosition,
+  getImageMapFromBoxes,
+  onImageLoad,
+  onImageResize,
+  performCanvasPaint,
+  useCentering,
+  usePropResize,
+  usePropRotation,
+} from './MultiCrops.helpers';
 
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
-const imageDebounceTime = 500;
-
-const dpr = window.devicePixelRatio;
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -45,251 +44,75 @@ const MultiCrops: FC<CropperProps> = ({
   const isDrawing = useRef<boolean>(false);
 
   const panFrame = useRef(-1);
-  const rotationFrame = useRef(-1);
-  const rotationTimeout = useRef(-1);
-  const propSizeTimeout = useRef(-1);
   const autoSizeTimeout = useRef(-1);
+
   const [isPanning, setIsPanning] = useState(false);
-  const [centerCoords, setCenterCoords] = useState({ x: 0, y: 0 });
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
 
-  const getImgBoundingRect = (img: HTMLImageElement): DOMRect => {
-    const currStyle = img.style.transform;
-    img.style.transform = `
-      translate(
-        ${staticPanCoords.x + activePanCoords.x}px,
-        ${staticPanCoords.y + activePanCoords.y}px)
-      rotate(0deg)`;
-    const rect = img.getBoundingClientRect();
-    img.style.transform = currStyle;
-    return rect;
-  };
-
-  useEffect(() => {
-    if (!imageRef.current || !containerRef.current) return;
-
-    const img = imageRef.current;
-    const cont = containerRef.current;
-
-    const imgRect = img.getBoundingClientRect();
-    const conRect = cont.getBoundingClientRect();
-    const x = (imgRect.right + imgRect.left) / 2 - conRect.left;
-    const y = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
-
-    setCenterCoords({ x, y });
-  }, [
+  const [centerCoords, setCenterCoords] = useCentering(
     imageRef.current,
     containerRef.current,
     staticPanCoords,
-    activePanCoords,
-  ]);
+    activePanCoords
+  );
 
-  const drawCanvas = () => {
-    if (!canvasRef.current || !imageRef.current || !containerRef.current)
-      return;
-
-    const img = imageRef.current;
-    const cont = containerRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const iHeight = img.height;
-    const iWidth = img.width;
-    const { x: ix, y: iy } = getImgBoundingRect(imageRef.current);
-
-    const {
-      height: cHeight,
-      width: cWidth,
-      x: cx,
-      y: cy,
-    } = cont.getBoundingClientRect();
-    const chdpr = cHeight * dpr; // ch = container height
-    const cwdpr = cWidth * dpr; // cw = container width
-    const ihdpr = iHeight * dpr; // ih = image height
-    const iwdpr = iWidth * dpr; //  iw = image width
-    const xOff = (ix - cx) * dpr;
-    const yOff = (iy - cy) * dpr;
-
-    canvas.setAttribute('height', chdpr + '');
-    canvas.setAttribute('width', cwdpr + '');
-    canvas.setAttribute(
-      'style',
-      `height: ${cHeight / 2}px; width: ${cWidth / 2}px;`
+  const drawCanvas = () =>
+    performCanvasPaint(
+      imageRef.current,
+      containerRef.current,
+      canvasRef.current,
+      staticPanCoords,
+      activePanCoords,
+      rotation
     );
 
-    const imgRect = img.getBoundingClientRect();
-    const conRect = cont.getBoundingClientRect();
-    const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
-    const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
+  const getSelections = (boxes: CropperProps['boxes'] = props.boxes) =>
+    getImageMapFromBoxes(boxes, containerRef.current, canvasRef.current);
 
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(tx, ty);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(-tx, -ty);
-    ctx.drawImage(img, xOff, yOff, iwdpr, ihdpr);
-    ctx.resetTransform();
-  };
+  usePropResize(
+    props.width,
+    props.height,
+    props.onCrop,
+    drawCanvas,
+    getSelections
+  );
 
-  const getSelections = (
-    boxes: CropperProps['boxes'] = props.boxes
-  ): CropperBoxDataMap => {
-    if (!canvasRef.current || !containerRef.current) return {};
-    const canvas = canvasRef.current; // canvas source
-    const ctx = canvas.getContext('2d');
-    const cont = containerRef.current;
-    if (!ctx) return {};
-
-    const contRect = cont.getBoundingClientRect();
-
-    return boxes.reduce<CropperBoxDataMap>((map, box) => {
-      if (box.width === 0 || box.height === 0) return map;
-
-      const { height, width } = canvas;
-
-      const tempCanvas = document.createElement('canvas');
-      const ctx = tempCanvas.getContext('2d');
-
-      tempCanvas.height = height * 3;
-      tempCanvas.width = width * 3;
-
-      const boxTopLeftEl = document
-        .getElementById(box.id)
-        ?.querySelector('.rmc__crop__corner-element__top-left');
-      if (!boxTopLeftEl || !ctx) return map;
-
-      const btlRect = boxTopLeftEl.getBoundingClientRect();
-      const targetX = btlRect.x - contRect.x;
-      const targetY = btlRect.y - contRect.y;
-      const boxTopLeftX = targetX * dpr + width;
-      const boxTopLeftY = targetY * dpr + height;
-
-      ctx.translate(boxTopLeftX, boxTopLeftY);
-      ctx.rotate((-box.rotation * Math.PI) / 180);
-      ctx.translate(-boxTopLeftX, -boxTopLeftY);
-      ctx.drawImage(canvas, width, height);
-
-      const rotatedImageData = ctx.getImageData(
-        boxTopLeftX,
-        boxTopLeftY,
-        box.width * dpr,
-        box.height * dpr
-      );
-
-      const finalImageUrl = imageDataToDataUrl(rotatedImageData);
-      if (!finalImageUrl) return map;
-
-      return { ...map, [box.id]: finalImageUrl };
-    }, {});
-  };
-
-  useEffect(() => {
-    clearTimeout(propSizeTimeout.current);
-    propSizeTimeout.current = window.setTimeout(() => {
-      drawCanvas();
-      props.onCrop?.({ type: 'manual-resize' }, getSelections(), undefined);
-    }, imageDebounceTime);
-  }, [props.width, props.height]);
-
-  const prevRotation = useRef(rotation);
-  useEffect(() => {
-    cancelAnimationFrame(rotationFrame.current);
-    rotationFrame.current = requestAnimationFrame(() => {
-      const rotationDiff = rotation - prevRotation.current;
-      const boxes = props.boxes.map((box) => ({
-        ...box,
-        rotation: box.rotation + rotationDiff,
-      }));
-
-      prevRotation.current = rotation;
-
-      props.onChange?.({ type: 'rotate' }, undefined, undefined, boxes);
-
-      clearTimeout(rotationTimeout.current);
-      rotationTimeout.current = window.setTimeout(() => {
-        drawCanvas();
-        props.onCrop?.({ type: 'rotate' }, getSelections(boxes), undefined);
-      }, imageDebounceTime);
-    });
-  }, [rotation]);
+  usePropRotation(
+    rotation,
+    props.boxes,
+    props.onChange,
+    props.onCrop,
+    drawCanvas,
+    getSelections
+  );
 
   useResizeObserver({
     ref: imageRef,
-    onResize: ({ width: _w, height: _h }: RefSize) => {
-      const width = Math.round(_w);
-      const height = Math.round(_h);
-
-      if (
-        !containerRef.current ||
-        !imageRef.current ||
-        !prevSize.current ||
-        imageRef.current.getAttribute('src') !== props.src ||
-        (prevSize.current.width === width && prevSize.current.height === height)
-      )
-        return;
-
-      const hRatio = height / prevSize.current.height;
-      const wRatio = width / prevSize.current.width;
-
-      prevSize.current = { height, width };
-
-      const boxes = props.boxes.map((box) => ({
-        ...box,
-        x: box.x * wRatio,
-        y: box.y * hRatio,
-        height: box.height * hRatio,
-        width: box.width * wRatio,
-      }));
-
-      const imgRect = imageRef.current.getBoundingClientRect();
-      const contRect = containerRef.current.getBoundingClientRect();
-      setCenterCoords({
-        x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
-        y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
-      });
-      drawCanvas();
-      props.onChange?.({ type: 'auto-resize' }, undefined, undefined, boxes);
-      clearTimeout(autoSizeTimeout.current);
-      autoSizeTimeout.current = window.setTimeout(() => {
-        props.onCrop?.(
-          { type: 'manual-resize' },
-          getSelections(boxes),
-          undefined
-        );
-      }, imageDebounceTime);
-    },
+    onResize: onImageResize(
+      imageRef.current,
+      containerRef.current,
+      canvasRef.current,
+      prevSize,
+      autoSizeTimeout,
+      setCenterCoords,
+      staticPanCoords,
+      activePanCoords,
+      rotation,
+      props.src,
+      props.boxes,
+      props.onChange,
+      props.onCrop
+    ),
   });
 
-  const onLoad: ReactEventHandler<HTMLImageElement> = (e) => {
-    const img = e.currentTarget;
-    if (!img) return;
-
-    prevSize.current = {
-      height: Math.round(img.height),
-      width: Math.round(img.width),
-    };
-    lastUpdatedBox.current = undefined;
-
-    drawCanvas();
-    props.onLoad?.(e, getSelections());
-  };
-
-  const getCursorPosition = (e: MouseEvent) => {
-    if (!containerRef.current) return {};
-
-    const { left, top } = containerRef.current.getBoundingClientRect();
-    return {
-      x: e.clientX - left - centerCoords.x,
-      y: e.clientY - top - centerCoords.y,
-    };
-  };
-
-  const getAbsoluteCursorPosition = (e: MouseEvent) => ({
-    x: e.clientX,
-    y: e.clientY,
-  });
+  const onLoad = onImageLoad(
+    prevSize,
+    lastUpdatedBox,
+    props.onLoad,
+    drawCanvas,
+    getSelections
+  );
 
   const handleCrop = (e: CropperEvent['event'], type: CropperEvent['type']) => {
     drawCanvas();
@@ -321,7 +144,7 @@ const MultiCrops: FC<CropperProps> = ({
       });
       setActivePanCoords({ x: 0, y: 0 });
     } else if (cursorMode === 'draw') {
-      pointA.current = getCursorPosition(e);
+      pointA.current = getCursorPosition(e, containerRef.current, centerCoords);
       drawingIndex.current = props.boxes.length;
       id.current = sid.generate();
       isDrawing.current = true;
@@ -346,7 +169,7 @@ const MultiCrops: FC<CropperProps> = ({
         })
       );
     } else if (cursorMode === 'draw') {
-      const pointB = getCursorPosition(e);
+      const pointB = getCursorPosition(e, containerRef.current, centerCoords);
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
       const box = {
@@ -399,8 +222,8 @@ const MultiCrops: FC<CropperProps> = ({
       <div
         className={[
           css.container,
-          cursorMode === 'pan' && css.pan,
-          isPanning && css.panning,
+          cursorMode === 'pan' ? css.pan : '',
+          isPanning ? css.panning : '',
           props.containerClassName || '',
         ].join(' ')}
         style={props.containerStyles || blankStyles}
@@ -430,9 +253,8 @@ const MultiCrops: FC<CropperProps> = ({
         />
         <div
           style={{
-            height: '10px',
-            width: '10px',
-            background: 'red',
+            height: 0,
+            width: 0,
             position: 'absolute',
             top: `${centerCoords.y}px`,
             left: `${centerCoords.x}px`,
@@ -448,9 +270,6 @@ const MultiCrops: FC<CropperProps> = ({
               onCrop={handleCrop}
               style={{
                 pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
-                top: staticPanCoords.y + activePanCoords.y + 'px',
-                left: staticPanCoords.x + activePanCoords.x + 'px',
-                transformOrigin: `${centerCoords.x}px ${centerCoords.y}px`,
                 transform: `rotate(${box.rotation}deg)`,
               }}
             />
