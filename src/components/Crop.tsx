@@ -78,7 +78,7 @@ class Crop extends Component<Props> {
     if (!this.crop) return;
     // @ts-ignore
     interact(this.crop)
-    .draggable({})
+      .draggable({})
       .resizable({
         edges: {
           left: true,
@@ -134,10 +134,10 @@ const FourDivs = (
 );
 
 const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
-  const { x, y, width, height, originX ,originY  } = box;
+  const { x, y, width, height, originX, originY } = box;
   return {
     ...style,
-    transformOrigin: `${-originX }px ${-originY}px`,
+    transformOrigin: `${-originX}px ${-originY}px`,
     boxShadow: '0 0 0 2px #000',
     background: '#FFFFFF33',
     position: 'absolute',

@@ -10,8 +10,8 @@ export type CropperBoxId = string;
 export type CropperBox = {
   x: number;
   y: number;
-  originX:number;
-  originY:number;
+  originX: number;
+  originY: number;
   width: number;
   height: number;
   id: CropperBoxId;
