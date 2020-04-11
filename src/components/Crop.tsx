@@ -134,11 +134,10 @@ const FourDivs = (
 );
 
 const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
-  const { x, y, width, height } = box;
-
+  const { x, y, width, height, originX, originY } = box;
   return {
     ...style,
-    transformOrigin: `${-box.x}px ${-box.y}px`,
+    transformOrigin: `${-originX}px ${-originY}px`,
     boxShadow: '0 0 0 2px #000',
     background: '#FFFFFF33',
     position: 'absolute',

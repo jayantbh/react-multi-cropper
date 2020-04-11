@@ -175,6 +175,8 @@ const MultiCrops: FC<CropperProps> = ({
       const box = {
         x: Math.min(pointA.current.x, pointB.x),
         y: Math.min(pointA.current.y, pointB.y),
+        originX: Math.min(pointA.current.x, pointB.x),
+        originY: Math.min(pointA.current.y, pointB.y),
         width: Math.abs(pointA.current.x - pointB.x),
         height: Math.abs(pointA.current.y - pointB.y),
         id: id.current,
