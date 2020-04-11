@@ -137,7 +137,7 @@ const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
   const { x, y, width, height, originX ,originY  } = box;
   return {
     ...style,
-    transformOrigin: `${-originX || x}px ${-originY || y}px`,
+    transformOrigin: `${-originX }px ${-originY}px`,
     boxShadow: '0 0 0 2px #000',
     background: '#FFFFFF33',
     position: 'absolute',
