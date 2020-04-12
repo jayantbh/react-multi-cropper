@@ -304,27 +304,23 @@ export const usePropRotation = (
   ) => ReturnType<typeof getImageMapFromBoxes>
 ) => {
   const prevRotation = useRef(rotation);
-  const rotationFrame = useRef(-1);
   const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
-    cancelAnimationFrame(rotationFrame.current);
-    rotationFrame.current = requestAnimationFrame(() => {
-      const rotationDiff = rotation - prevRotation.current;
-      const newBoxes = boxes.map((box) => ({
-        ...box,
-        rotation: box.rotation + rotationDiff,
-      }));
+    const rotationDiff = rotation - prevRotation.current;
+    const newBoxes = boxes.map((box) => ({
+      ...box,
+      rotation: box.rotation + rotationDiff,
+    }));
 
-      prevRotation.current = rotation;
+    prevRotation.current = rotation;
 
-      onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
+    onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
 
-      clearTimeout(rotationTimeout.current);
-      rotationTimeout.current = setTimeout(() => {
-        drawCanvas();
-        onCrop?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
-      }, imageDebounceTime);
-    });
+    clearTimeout(rotationTimeout.current);
+    rotationTimeout.current = setTimeout(() => {
+      drawCanvas();
+      onCrop?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
+    }, imageDebounceTime);
   }, [rotation]);
 };
