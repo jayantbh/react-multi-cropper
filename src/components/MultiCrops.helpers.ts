@@ -301,12 +301,15 @@ export const usePropRotation = (
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
   getSelections: (
     boxes: CropperProps['boxes']
-  ) => ReturnType<typeof getImageMapFromBoxes>
+  ) => ReturnType<typeof getImageMapFromBoxes>,
+  srcChanged: boolean
 ) => {
   const prevRotation = useRef(rotation);
   const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
+    if (srcChanged) return;
+
     const rotationDiff = rotation - prevRotation.current;
     const newBoxes = boxes.map((box) => ({
       ...box,

@@ -1,4 +1,4 @@
-import React, { FC, MouseEvent, useRef, useState } from 'react';
+import React, { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import sid from 'shortid';
 import useResizeObserver from 'use-resize-observer';
 
@@ -32,6 +32,9 @@ const MultiCrops: FC<CropperProps> = ({
   rotation = 0,
   ...props
 }) => {
+  const { src: prevSrc } = usePrevious({ src: props.src });
+  const srcChanged = prevSrc !== props.src;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,7 +87,8 @@ const MultiCrops: FC<CropperProps> = ({
     props.onChange,
     props.onCrop,
     drawCanvas,
-    getSelections
+    getSelections,
+    srcChanged
   );
 
   useResizeObserver({
@@ -280,5 +284,13 @@ const MultiCrops: FC<CropperProps> = ({
     </>
   );
 };
+
+function usePrevious<T>(value: T): T {
+  const ref = useRef<T>(value);
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
 
 export default MultiCrops;
