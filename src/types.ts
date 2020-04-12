@@ -76,6 +76,7 @@ export type CropperProps = {
   containerClassName?: string;
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
+  modifiable?: boolean;
 };
 
 export type RefSize = {

@@ -7,6 +7,7 @@ import {
   CropperBox,
   CropperEvent,
   CropperEventType,
+  CropperProps,
   UpdateFunction,
 } from '../types';
 
@@ -18,6 +19,7 @@ type Props = {
   onDelete?: UpdateFunction;
   onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
+  modifiable?: CropperProps['modifiable'];
 };
 
 class Crop extends Component<Props> {
@@ -97,15 +99,21 @@ class Crop extends Component<Props> {
   }
 
   render() {
-    const { box, index, style = {} } = this.props;
+    const { box, index, style = {}, modifiable = true } = this.props;
     return (
       <div
         id={box.id}
-        style={{ ...cropStyle(box, style) }}
+        style={{
+          ...cropStyle(box, style),
+          pointerEvents: modifiable ? 'auto' : 'none',
+        }}
         ref={(c) => (this.crop = c)}
       >
         <NumberIcon number={index + 1} />
-        <DeleteIcon onClick={this.handleDelete} />
+        <DeleteIcon
+          onClick={this.handleDelete}
+          style={{ pointerEvents: 'initial' }}
+        />
         {FourDivs}
       </div>
     );
