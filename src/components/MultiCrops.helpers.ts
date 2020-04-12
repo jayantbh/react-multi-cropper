@@ -16,8 +16,15 @@ import {
   useState,
 } from 'react';
 
-const dpr = window.devicePixelRatio;
+const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
 const imageDebounceTime = 500;
+
+const setTimeout =
+  typeof window !== 'undefined' ? window.setTimeout : global.setTimeout;
+const clearTimeout = (t: number | NodeJS.Timeout) =>
+  typeof window !== 'undefined'
+    ? window.clearTimeout(t as number)
+    : global.clearTimeout(t as NodeJS.Timeout);
 
 export const getImgBoundingRect = (
   img: HTMLImageElement,
@@ -147,7 +154,7 @@ export const onImageResize = (
   cont: HTMLDivElement | null,
   canvas: HTMLCanvasElement | null,
   prevSize: MutableRefObject<RefSize | undefined>,
-  autoSizeTimeout: MutableRefObject<number>,
+  autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
@@ -198,7 +205,7 @@ export const onImageResize = (
   );
   onChange?.({ type: 'auto-resize' }, undefined, undefined, newBoxes);
   clearTimeout(autoSizeTimeout.current);
-  autoSizeTimeout.current = window.setTimeout(() => {
+  autoSizeTimeout.current = setTimeout(() => {
     onCrop?.(
       { type: 'manual-resize' },
       getImageMapFromBoxes(newBoxes, cont, canvas),
@@ -255,11 +262,11 @@ export const usePropResize = (
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
   getSelections: () => ReturnType<typeof getImageMapFromBoxes>
 ) => {
-  const propSizeTimeout = useRef(-1);
+  const propSizeTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
     clearTimeout(propSizeTimeout.current);
-    propSizeTimeout.current = window.setTimeout(() => {
+    propSizeTimeout.current = setTimeout(() => {
       drawCanvas();
       onCrop?.({ type: 'manual-resize' }, getSelections(), undefined);
     }, imageDebounceTime);
@@ -298,7 +305,7 @@ export const usePropRotation = (
 ) => {
   const prevRotation = useRef(rotation);
   const rotationFrame = useRef(-1);
-  const rotationTimeout = useRef(-1);
+  const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
     cancelAnimationFrame(rotationFrame.current);
@@ -314,7 +321,7 @@ export const usePropRotation = (
       onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
 
       clearTimeout(rotationTimeout.current);
-      rotationTimeout.current = window.setTimeout(() => {
+      rotationTimeout.current = setTimeout(() => {
         drawCanvas();
         onCrop?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
       }, imageDebounceTime);

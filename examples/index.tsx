@@ -66,6 +66,7 @@ const App = () => {
       <MultiCrops
         src={images[0]}
         width={`${100 * zoom}%`}
+        modifiable={false}
         containerStyles={{
           height: '500px',
           width: '100%',
