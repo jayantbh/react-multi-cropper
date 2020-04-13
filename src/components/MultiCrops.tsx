@@ -78,7 +78,8 @@ const MultiCrops: FC<CropperProps> = ({
     props.height,
     props.onCrop,
     drawCanvas,
-    getSelections
+    getSelections,
+    props.modifiable
   );
 
   usePropRotation(
@@ -88,7 +89,8 @@ const MultiCrops: FC<CropperProps> = ({
     props.onCrop,
     drawCanvas,
     getSelections,
-    srcChanged
+    srcChanged,
+    props.modifiable
   );
 
   useResizeObserver({
@@ -96,17 +98,16 @@ const MultiCrops: FC<CropperProps> = ({
     onResize: onImageResize(
       imageRef.current,
       containerRef.current,
-      canvasRef.current,
       prevSize,
       autoSizeTimeout,
       setCenterCoords,
-      staticPanCoords,
-      activePanCoords,
-      rotation,
       props.src,
       props.boxes,
       props.onChange,
-      props.onCrop
+      props.onCrop,
+      drawCanvas,
+      getSelections,
+      props.modifiable
     ),
   });
 
@@ -115,7 +116,9 @@ const MultiCrops: FC<CropperProps> = ({
     lastUpdatedBox,
     props.onLoad,
     drawCanvas,
-    getSelections
+    getSelections,
+    containerRef.current,
+    setCenterCoords
   );
 
   const handleCrop = (e: CropperEvent['event'], type: CropperEvent['type']) => {
@@ -205,8 +208,7 @@ const MultiCrops: FC<CropperProps> = ({
         y: staticPanCoords.y + activePanCoords.y,
       });
       setActivePanCoords({ x: 0, y: 0 });
-      drawCanvas();
-      handleCrop(e, 'pan');
+      props.modifiable && handleCrop(e, 'pan');
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
 

@@ -17,7 +17,7 @@ import {
 } from 'react';
 
 const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
-const imageDebounceTime = 500;
+const imageDebounceTime = 150;
 
 const setTimeout =
   typeof window !== 'undefined' ? window.setTimeout : global.setTimeout;
@@ -152,17 +152,18 @@ export const getImageMapFromBoxes = (
 export const onImageResize = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
-  canvas: HTMLCanvasElement | null,
   prevSize: MutableRefObject<RefSize | undefined>,
   autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
-  staticPanCoords: Coordinates,
-  activePanCoords: Coordinates,
-  rotation: number,
   src: CropperProps['src'],
   boxes: CropperProps['boxes'],
   onChange: CropperProps['onChange'],
-  onCrop: CropperProps['onCrop']
+  onCrop: CropperProps['onCrop'],
+  drawCanvas: () => ReturnType<typeof performCanvasPaint>,
+  getSelections: (
+    boxes: CropperProps['boxes']
+  ) => ReturnType<typeof getImageMapFromBoxes>,
+  modifiable: CropperProps['modifiable'] = true
 ) => ({ width: _w, height: _h }: RefSize) => {
   const width = Math.round(_w);
   const height = Math.round(_h);
@@ -195,22 +196,13 @@ export const onImageResize = (
     x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
     y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
   });
-  performCanvasPaint(
-    img,
-    cont,
-    canvas,
-    staticPanCoords,
-    activePanCoords,
-    rotation
-  );
   onChange?.({ type: 'auto-resize' }, undefined, undefined, newBoxes);
+
+  if (!modifiable) return;
+  drawCanvas();
   clearTimeout(autoSizeTimeout.current);
   autoSizeTimeout.current = setTimeout(() => {
-    onCrop?.(
-      { type: 'manual-resize' },
-      getImageMapFromBoxes(newBoxes, cont, canvas),
-      undefined
-    );
+    onCrop?.({ type: 'auto-resize' }, getSelections(newBoxes), undefined);
   }, imageDebounceTime);
 };
 
@@ -260,8 +252,10 @@ export const usePropResize = (
   height: CropperProps['height'],
   onCrop: CropperProps['onCrop'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: () => ReturnType<typeof getImageMapFromBoxes>
+  getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
+  modifiable: CropperProps['modifiable'] = true
 ) => {
+  if (!modifiable) return;
   const propSizeTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
@@ -278,10 +272,12 @@ export const onImageLoad = (
   lastUpdatedBox: MutableRefObject<RefSize | undefined>,
   onLoad: CropperProps['onLoad'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: () => ReturnType<typeof getImageMapFromBoxes>
+  getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
+  cont: HTMLDivElement | null,
+  setCenterCoords: Dispatch<SetStateAction<Coordinates>>
 ): ReactEventHandler<HTMLImageElement> => (e) => {
   const img = e.currentTarget;
-  if (!img) return;
+  if (!img || !cont) return;
 
   prevSize.current = {
     height: Math.round(img.height),
@@ -289,8 +285,17 @@ export const onImageLoad = (
   };
   lastUpdatedBox.current = undefined;
 
-  drawCanvas();
-  onLoad?.(e, getSelections());
+  const imgRect = img.getBoundingClientRect();
+  const contRect = cont.getBoundingClientRect();
+  setCenterCoords({
+    x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+    y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+  });
+
+  requestAnimationFrame(() => {
+    drawCanvas();
+    onLoad?.(e, getSelections());
+  });
 };
 
 export const usePropRotation = (
@@ -302,7 +307,8 @@ export const usePropRotation = (
   getSelections: (
     boxes: CropperProps['boxes']
   ) => ReturnType<typeof getImageMapFromBoxes>,
-  srcChanged: boolean
+  srcChanged: boolean,
+  modifiable: CropperProps['modifiable'] = true
 ) => {
   const prevRotation = useRef(rotation);
   const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
@@ -319,6 +325,8 @@ export const usePropRotation = (
     prevRotation.current = rotation;
 
     onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
+
+    if (!modifiable) return;
 
     clearTimeout(rotationTimeout.current);
     rotationTimeout.current = setTimeout(() => {
