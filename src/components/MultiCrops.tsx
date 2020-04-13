@@ -1,3 +1,5 @@
+import '../polyfills';
+
 import React, { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import sid from 'shortid';
 import useResizeObserver from 'use-resize-observer';
