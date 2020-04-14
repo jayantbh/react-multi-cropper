@@ -30,7 +30,7 @@ const plugins = [
   globals(),
   builtins(),
   json(),
-  terser(),
+  // terser(),
 ];
 
 const pluginsTsExt = [
@@ -66,5 +66,15 @@ export default [
       },
     ],
     plugins: pluginsTsExt,
-  }
+  },
+  {
+    input: 'src/worker.ts',
+    output: [
+      {
+        file: 'dist/worker.js',
+        format: 'cjs',
+      },
+    ],
+    plugins: pluginsTsExt,
+  },
 ];

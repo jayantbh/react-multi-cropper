@@ -42,7 +42,7 @@ const App = () => {
   }, [src]);
 
   const updateBoxes: CropperProps['onChange'] = (e, bx, i, _boxes) => {
-    console.log(src, fileBoxesMap[src]?.length, _boxes.length);
+    console.log(e.type, src, fileBoxesMap[src]?.length, _boxes.length);
     setFileBoxesMap({
       ...fileBoxesMap,
       [src]: _boxes,
@@ -106,7 +106,7 @@ const App = () => {
       <MultiCrops
         src={src}
         width={`${100 * (fileZoomMap[src] || 1)}%`}
-        modifiable={false}
+        modifiable={true}
         containerStyles={{
           height: '500px',
           width: '100%',

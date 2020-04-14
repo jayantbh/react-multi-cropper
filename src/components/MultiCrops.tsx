@@ -8,6 +8,7 @@ import Crop from './Crop';
 import css from './MultiCrops.module.scss';
 import {
   Coordinates,
+  CanvasWorker,
   CropperBox,
   CropperEvent,
   CropperProps,
@@ -18,12 +19,15 @@ import {
   getAbsoluteCursorPosition,
   getCursorPosition,
   getImageMapFromBoxes,
+  getOffscreenImageMapFromBoxes,
   onImageLoad,
   onImageResize,
   performCanvasPaint,
+  performOffscreenCanvasPaint,
   useCentering,
   usePropResize,
   usePropRotation,
+  useWorker,
 } from './MultiCrops.helpers';
 
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
@@ -40,6 +44,7 @@ const MultiCrops: FC<CropperProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const workerRef = useRef<CanvasWorker>(null);
 
   const pointA = useRef<Partial<Coordinates>>(blankCoords);
   const id = useRef<string>(sid.generate());
@@ -55,6 +60,16 @@ const MultiCrops: FC<CropperProps> = ({
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
 
+  const hasOCSupport = !!canvasRef.current?.transferControlToOffscreen;
+
+  useWorker(
+    workerRef,
+    canvasRef.current,
+    hasOCSupport,
+    props.onCrop,
+    lastUpdatedBox
+  );
+
   const [centerCoords, setCenterCoords] = useCentering(
     imageRef.current,
     containerRef.current,
@@ -63,17 +78,32 @@ const MultiCrops: FC<CropperProps> = ({
   );
 
   const drawCanvas = () =>
-    performCanvasPaint(
-      imageRef.current,
-      containerRef.current,
-      canvasRef.current,
-      staticPanCoords,
-      activePanCoords,
-      rotation
-    );
+    !hasOCSupport
+      ? performCanvasPaint(
+          imageRef.current,
+          containerRef.current,
+          canvasRef.current,
+          staticPanCoords,
+          activePanCoords,
+          rotation
+        )
+      : performOffscreenCanvasPaint(
+          imageRef.current,
+          containerRef.current,
+          workerRef.current,
+          staticPanCoords,
+          activePanCoords,
+          rotation
+        );
 
   const getSelections = (boxes: CropperProps['boxes'] = props.boxes) =>
-    getImageMapFromBoxes(boxes, containerRef.current, canvasRef.current);
+    !hasOCSupport
+      ? getImageMapFromBoxes(boxes, containerRef.current, canvasRef.current)
+      : getOffscreenImageMapFromBoxes(
+          boxes,
+          containerRef.current,
+          workerRef.current
+        );
 
   usePropResize(
     props.width,
@@ -126,15 +156,18 @@ const MultiCrops: FC<CropperProps> = ({
   const handleCrop = (e: CropperEvent['event'], type: CropperEvent['type']) => {
     drawCanvas();
     const selections = getSelections();
-    const boxId = lastUpdatedBox.current?.id;
-    const currentImgParam: CurrentImgParam = boxId
-      ? {
-          boxId,
-          dataUrl: selections[boxId],
-        }
-      : undefined;
 
-    props.onCrop?.({ type, event: e }, selections, currentImgParam);
+    if (!hasOCSupport && selections) {
+      const boxId = lastUpdatedBox.current?.id;
+      const currentImgParam: CurrentImgParam = boxId
+        ? {
+            boxId,
+            dataUrl: selections[boxId],
+          }
+        : undefined;
+
+      props.onCrop?.({ type, event: e }, selections, currentImgParam);
+    }
 
     isDrawing.current = false;
   };

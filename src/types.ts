@@ -1,5 +1,6 @@
 import { CSSProperties, MouseEvent, SyntheticEvent } from 'react';
 import { DragEvent, ResizeEvent } from '@interactjs/types/types';
+import createWorker from 'offscreen-canvas/create-worker';
 
 export type DataUrl = string;
 
@@ -48,7 +49,7 @@ export type CropperEvent = {
 export type CropTriggerFunctionWithImageData = (
   e: CropperEvent,
   dataMap: CropperBoxDataMap,
-  currentImg: CurrentImgParam
+  currentImg?: CurrentImgParam
 ) => any;
 
 export type UpdateFunction = (
@@ -83,3 +84,5 @@ export type RefSize = {
   width: number;
   height: number;
 };
+
+export type CanvasWorker = ReturnType<typeof createWorker> | null;

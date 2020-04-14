@@ -1,7 +1,10 @@
 import {
+  CanvasWorker,
   Coordinates,
+  CropperBox,
   CropperBoxDataMap,
   CropperProps,
+  CurrentImgParam,
   RefSize,
 } from '../types';
 import { imageDataToDataUrl } from '../utils';
@@ -15,6 +18,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import createWorker from 'offscreen-canvas/create-worker';
 
 const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
 const imageDebounceTime = 150;
@@ -97,6 +101,73 @@ export const performCanvasPaint = (
   ctx.resetTransform();
 };
 
+const imgToImageData = (
+  img: HTMLImageElement,
+  height: number,
+  width: number
+) => {
+  const canvas = document.createElement('canvas');
+  canvas.height = height;
+  canvas.width = width;
+  canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
+  return canvas.getContext('2d')?.getImageData(0, 0, width, height);
+};
+
+export const performOffscreenCanvasPaint = (
+  img: HTMLImageElement | null,
+  cont: HTMLDivElement | null,
+  worker: CanvasWorker,
+  staticPanCoords: Coordinates,
+  activePanCoords: Coordinates,
+  rotation: number
+) => {
+  if (!worker || !img || !cont) return;
+
+  const iHeight = img.height;
+  const iWidth = img.width;
+  const { x: ix, y: iy } = getImgBoundingRect(
+    img,
+    staticPanCoords,
+    activePanCoords
+  );
+
+  const {
+    height: cHeight,
+    width: cWidth,
+    x: cx,
+    y: cy,
+  } = cont.getBoundingClientRect();
+  const chdpr = cHeight * dpr; // ch = container height
+  const cwdpr = cWidth * dpr; // cw = container width
+  const ihdpr = iHeight * dpr; // ih = image height
+  const iwdpr = iWidth * dpr; //  iw = image width
+  const xOff = (ix - cx) * dpr;
+  const yOff = (iy - cy) * dpr;
+
+  const imgRect = img.getBoundingClientRect();
+  const conRect = cont.getBoundingClientRect();
+  const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
+  const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
+
+  const imageData = imgToImageData(img, ihdpr, iwdpr);
+
+  worker.post({
+    update: {
+      chdpr,
+      cwdpr,
+      tx,
+      ty,
+      xOff,
+      yOff,
+      iwdpr,
+      ihdpr,
+      src: img.src,
+      rotation,
+      imageData,
+    },
+  });
+};
+
 export const getImageMapFromBoxes = (
   boxes: CropperProps['boxes'],
   cont: HTMLDivElement | null,
@@ -147,6 +218,39 @@ export const getImageMapFromBoxes = (
 
     return { ...map, [box.id]: finalImageUrl };
   }, {});
+};
+
+export const getOffscreenImageMapFromBoxes = (
+  boxes: CropperProps['boxes'],
+  cont: HTMLDivElement | null,
+  worker: CanvasWorker
+): CropperBoxDataMap => {
+  if (!cont || !worker) return {};
+  const contRect = cont.getBoundingClientRect();
+
+  const boxesForOfc = boxes.map((box) => {
+    if (box.width === 0 || box.height === 0) return {};
+
+    const boxTopLeftEl = document
+      .getElementById(box.id)
+      ?.querySelector('.rmc__crop__corner-element__top-left');
+    if (!boxTopLeftEl) return;
+
+    const btlRect = boxTopLeftEl.getBoundingClientRect();
+
+    return {
+      ...box,
+      dpr,
+      btlRect,
+      contRect,
+    };
+  });
+
+  worker.post({
+    retrieve: boxesForOfc,
+  });
+
+  return {};
 };
 
 export const onImageResize = (
@@ -334,4 +438,33 @@ export const usePropRotation = (
       onCrop?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
     }, imageDebounceTime);
   }, [rotation]);
+};
+
+export const useWorker = (
+  workerRef: MutableRefObject<CanvasWorker>,
+  canvas: HTMLCanvasElement | null,
+  hasOCSupport: boolean,
+  onCrop: CropperProps['onCrop'],
+  lastUpdatedBox: MutableRefObject<CropperBox | undefined>
+) => {
+  useEffect(() => {
+    if (!canvas || !hasOCSupport || workerRef.current) return;
+    workerRef.current = createWorker(canvas, './worker.js', (e) => {
+      if (e.data.imageMap) {
+        const boxId = lastUpdatedBox.current?.id;
+        const currentImgParam: CurrentImgParam = boxId
+          ? {
+              boxId,
+              dataUrl: e.data.imageMap[boxId],
+            }
+          : undefined;
+
+        onCrop?.(
+          { type: 'draw-end' },
+          e.data.imageMap as CropperBoxDataMap,
+          currentImgParam
+        );
+      }
+    });
+  }, [hasOCSupport, lastUpdatedBox.current]);
 };
