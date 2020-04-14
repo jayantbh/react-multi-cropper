@@ -125,6 +125,7 @@ const MultiCrops: FC<CropperProps> = ({
     props.modifiable
   );
 
+  const prevRotation = useRef(rotation);
   useResizeObserver({
     ref: imageRef,
     onResize: onImageResize(
@@ -139,7 +140,9 @@ const MultiCrops: FC<CropperProps> = ({
       props.onCrop,
       drawCanvas,
       getSelections,
-      props.modifiable
+      props.modifiable,
+      prevRotation,
+      rotation
     ),
   });
 

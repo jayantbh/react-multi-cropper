@@ -270,10 +270,14 @@ export const onImageResize = (
   getSelections: (
     boxes: CropperProps['boxes']
   ) => ReturnType<typeof getImageMapFromBoxes>,
-  modifiable: CropperProps['modifiable'] = true
+  modifiable: CropperProps['modifiable'] = true,
+  prevRotation: MutableRefObject<number>,
+  rotation: number
 ) => ({ width: _w, height: _h }: RefSize) => {
   const width = Math.round(_w);
   const height = Math.round(_h);
+  const rotationDiff = rotation - prevRotation.current;
+  prevRotation.current = rotation;
 
   if (
     !cont ||
@@ -295,6 +299,7 @@ export const onImageResize = (
     y: box.y * hRatio,
     height: box.height * hRatio,
     width: box.width * wRatio,
+    rotation: box.rotation + rotationDiff,
   }));
 
   const imgRect = img.getBoundingClientRect();
