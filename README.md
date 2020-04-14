@@ -64,7 +64,7 @@ const Cropper = ({ imageUrl }: { imageUrl: string ) => {
     <div>
       <MultiCrops
         src={imageUrl}
-        width={'100%'}
+        zoom={1}
         boxes={boxes}
         onChange={updateBoxes}
         onCrop={(e, map) => setImageMap(map)}
@@ -82,8 +82,7 @@ const Cropper = ({ imageUrl }: { imageUrl: string ) => {
 ```typescript
 type CropperProps = {
   src: string;
-  width?: number | string;
-  height?: number | string;
+  zoom?: number;
   rotation?: number; // degrees
   boxes: CropperBox[];
   onChange?: UpdateFunction;
