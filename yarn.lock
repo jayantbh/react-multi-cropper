@@ -1591,6 +1591,11 @@
   resolved "https://unpm.uberinternal.com/@types%2fnode/-/node-13.9.8.tgz#09976420fc80a7a00bf40680c63815ed8c7616f4"
   integrity sha1-CZdkIPyAp6AL9AaAxjgV7Yx2FvQ=
 
+"@types/offscreen-canvas@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@types/offscreen-canvas/-/offscreen-canvas-0.1.0.tgz#322c44688756af0eb9391348fbe2ad8ff8b77100"
+  integrity sha512-Yxj7eOgwZVSmO/YFzL4tDKruwBU1AVX+6n2//KA41ssQaQVy79BrrCDrgqU2aaz03kWiBe/TpD4+o7BPyO12bQ==
+
 "@types/parse-json@^4.0.0":
   version "4.0.0"
   resolved "https://unpm.uberinternal.com/@types%2fparse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
@@ -6457,6 +6462,11 @@ octal@^1.0.0:
   resolved "https://unpm.uberinternal.com/octal/-/octal-1.0.0.tgz#63e7162a68efbeb9e213588d58e989d1e5c4530b"
   integrity sha1-Y+cWKmjvvrniE1iNWOmJ0eXEUws=
 
+offscreen-canvas@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/offscreen-canvas/-/offscreen-canvas-0.1.1.tgz#b2953bf503c6f60a7a4d7b0e1ec6c3070ea72036"
+  integrity sha512-gZYQ++TK0X9BD6bnMrgk7TGQ0TCVLP5YsCOnLaCP18WpKh3dYfkt0ma4gFhElohBizSwMzjDptam2zPxMUQ2wg==
+
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "http://registry.npm.taobao.org/on-finished/download/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
@@ -7712,8 +7722,8 @@ require-main-filename@^2.0.0:
 
 resize-observer-polyfill@^1.5.1:
   version "1.5.1"
-  resolved "https://unpm.uberinternal.com/resize-observer-polyfill/-/resize-observer-polyfill-1.5.1.tgz#0e9020dd3d21024458d4ebd27e23e40269810464"
-  integrity sha1-DpAg3T0hAkRY1OvSfiPkAmmBBGQ=
+  resolved "https://registry.yarnpkg.com/resize-observer-polyfill/-/resize-observer-polyfill-1.5.1.tgz#0e9020dd3d21024458d4ebd27e23e40269810464"
+  integrity sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==
 
 resolve-cwd@^3.0.0:
   version "3.0.0"
