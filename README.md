@@ -32,6 +32,15 @@ If `3000` is occupied, the terminal output will show you what URL the serve comm
 
 See the examples/index.tsx file.
 
+**Ensure** that the `worker-src` [CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) is set correctly.
+```
+worker-src blob:
+```
+One way to set it is:
+```html
+<meta http-equiv="Content-Security-Policy" content="worker-src blob:" />
+```
+
 ## Functionality
 
 Draw rectangular regions on an image to obtain the selected area as a base64 encoded data URL.  
@@ -73,12 +82,18 @@ const Cropper = ({ imageUrl }: { imageUrl: string ) => {
 ```typescript
 type CropperProps = {
   src: string;
-  boxes: CropperBox[];
   width?: number | string;
   height?: number | string;
+  rotation?: number; // degrees
+  boxes: CropperBox[];
   onChange?: UpdateFunction;
+  onDelete?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
+  containerClassName?: string;
+  containerStyles?: CSSProperties;
+  cursorMode?: CropperCursorMode;
+  modifiable?: boolean;
 };
 ```
 
@@ -93,3 +108,4 @@ type CropperProps = {
 - The function supplied to `onCrop` will be called when a drawing/dragging/resizing operation was completed. This will be needed if you want to receive the image payload after a cropping action was done.
   - The first argument is an `Interactable` event that tells you all you need to know about the event that was triggered to cause this function to fire.
   - The second argument is a dictionary of box.id's and their respective base64 encoded image contents.
+- The `modifiable: true` functionality is slightly buggy with rotated boxes.
