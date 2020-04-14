@@ -2,7 +2,7 @@ import '../polyfills';
 
 import React, { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import sid from 'shortid';
-import useResizeObserver from 'use-resize-observer';
+// import useResizeObserver from 'use-resize-observer';
 
 import Crop from './Crop';
 import css from './MultiCrops.module.scss';
@@ -36,6 +36,7 @@ const blankStyles = {};
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
   rotation = 0,
+  zoom = 1,
   ...props
 }) => {
   const { src: prevSrc } = usePrevious({ src: props.src });
@@ -62,6 +63,14 @@ const MultiCrops: FC<CropperProps> = ({
 
   const hasOCSupport = !!canvasRef.current?.transferControlToOffscreen;
 
+  const zoomOffset =
+    (containerRef.current?.offsetHeight || 1) /
+    (imageRef.current?.naturalHeight || 1);
+  const imgBaseHeight = (imageRef.current?.naturalHeight || 0) * zoomOffset;
+  const imgBaseWidth = (imageRef.current?.naturalWidth || 0) * zoomOffset;
+  const { height = 0, width = 0 } =
+    imageRef.current?.getBoundingClientRect() || {};
+
   useWorker(
     workerRef,
     canvasRef.current,
@@ -85,7 +94,10 @@ const MultiCrops: FC<CropperProps> = ({
           canvasRef.current,
           staticPanCoords,
           activePanCoords,
-          rotation
+          rotation,
+          height,
+          width,
+          zoom
         )
       : performOffscreenCanvasPaint(
           imageRef.current,
@@ -93,7 +105,10 @@ const MultiCrops: FC<CropperProps> = ({
           workerRef.current,
           staticPanCoords,
           activePanCoords,
-          rotation
+          rotation,
+          height,
+          width,
+          zoom
         );
 
   const getSelections = (boxes: CropperProps['boxes'] = props.boxes) =>
@@ -106,8 +121,8 @@ const MultiCrops: FC<CropperProps> = ({
         );
 
   usePropResize(
-    props.width,
-    props.height,
+    width,
+    height,
     props.onCrop,
     drawCanvas,
     getSelections,
@@ -126,25 +141,46 @@ const MultiCrops: FC<CropperProps> = ({
   );
 
   const prevRotation = useRef(rotation);
-  useResizeObserver({
-    ref: imageRef,
-    onResize: onImageResize(
-      imageRef.current,
-      containerRef.current,
-      prevSize,
-      autoSizeTimeout,
-      setCenterCoords,
-      props.src,
-      props.boxes,
-      props.onChange,
-      props.onCrop,
-      drawCanvas,
-      getSelections,
-      props.modifiable,
-      prevRotation,
-      rotation
-    ),
-  });
+
+  const onResize = onImageResize(
+    imageRef.current,
+    containerRef.current,
+    prevSize,
+    autoSizeTimeout,
+    setCenterCoords,
+    props.src,
+    props.boxes,
+    props.onChange,
+    props.onCrop,
+    drawCanvas,
+    getSelections,
+    props.modifiable,
+    prevRotation,
+    rotation
+  );
+  useEffect(() => {
+    onResize({ width, height });
+  }, [zoom, onResize]);
+
+  // useResizeObserver({
+  //   ref: imageRef,
+  //   onResize: onImageResize(
+  //     imageRef.current,
+  //     containerRef.current,
+  //     prevSize,
+  //     autoSizeTimeout,
+  //     setCenterCoords,
+  //     props.src,
+  //     props.boxes,
+  //     props.onChange,
+  //     props.onCrop,
+  //     drawCanvas,
+  //     getSelections,
+  //     props.modifiable,
+  //     prevRotation,
+  //     rotation
+  //   ),
+  // });
 
   const onLoad = onImageLoad(
     prevSize,
@@ -280,8 +316,8 @@ const MultiCrops: FC<CropperProps> = ({
         <img
           ref={imageRef}
           src={props.src}
-          width={props.width}
-          height={props.height}
+          width={imgBaseWidth}
+          height={imgBaseHeight}
           onLoad={onLoad}
           alt='image to be cropped'
           draggable={false}
@@ -292,6 +328,7 @@ const MultiCrops: FC<CropperProps> = ({
               ${staticPanCoords.x + activePanCoords.x}px,
               ${staticPanCoords.y + activePanCoords.y}px)
               rotate(${rotation}deg)
+              scale(${zoom})
             `,
           }}
         />

@@ -36,14 +36,17 @@ const clearTimeout = (t: number | NodeJS.Timeout) =>
 export const getImgBoundingRect = (
   img: HTMLImageElement,
   staticPanCoords: Coordinates,
-  activePanCoords: Coordinates
+  activePanCoords: Coordinates,
+  zoom: number
 ): DOMRect => {
   const currStyle = img.style.transform;
   img.style.transform = `
       translate(
         ${staticPanCoords.x + activePanCoords.x}px,
         ${staticPanCoords.y + activePanCoords.y}px)
-      rotate(0deg)`;
+      rotate(0deg)
+      scale(${zoom})
+      `;
   const rect = img.getBoundingClientRect();
   img.style.transform = currStyle;
   return rect;
@@ -55,19 +58,21 @@ export const performCanvasPaint = (
   canvas: HTMLCanvasElement | null,
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
-  rotation: number
+  rotation: number,
+  iHeight: number,
+  iWidth: number,
+  zoom: number
 ) => {
   if (!canvas || !img || !cont) return;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const iHeight = img.height;
-  const iWidth = img.width;
   const { x: ix, y: iy } = getImgBoundingRect(
     img,
     staticPanCoords,
-    activePanCoords
+    activePanCoords,
+    zoom
   );
 
   const {
@@ -122,16 +127,18 @@ export const performOffscreenCanvasPaint = (
   worker: CanvasWorker,
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
-  rotation: number
+  rotation: number,
+  iHeight: number,
+  iWidth: number,
+  zoom: number
 ) => {
   if (!worker || !img || !cont) return;
 
-  const iHeight = img.height;
-  const iWidth = img.width;
   const { x: ix, y: iy } = getImgBoundingRect(
     img,
     staticPanCoords,
-    activePanCoords
+    activePanCoords,
+    zoom
   );
 
   const {
@@ -284,7 +291,9 @@ export const onImageResize = (
     !img ||
     !prevSize.current ||
     img.getAttribute('src') !== src ||
-    (prevSize.current.width === width && prevSize.current.height === height)
+    (prevSize.current.width === width && prevSize.current.height === height) ||
+    width === 0 ||
+    height === 0
   )
     return;
 
@@ -360,14 +369,14 @@ export const useCentering = (
 };
 
 export const usePropResize = (
-  width: CropperProps['width'],
-  height: CropperProps['height'],
+  width: number,
+  height: number,
   onCrop: CropperProps['onCrop'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
   getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
   modifiable: CropperProps['modifiable'] = true
 ) => {
-  if (!modifiable) return;
+  if (!modifiable || !height || !width) return;
   const propSizeTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
@@ -391,9 +400,11 @@ export const onImageLoad = (
   const img = e.currentTarget;
   if (!img || !cont) return;
 
+  const { height = 0, width = 0 } = img.getBoundingClientRect() || {};
+
   prevSize.current = {
-    height: Math.round(img.height),
-    width: Math.round(img.width),
+    height: Math.round(height),
+    width: Math.round(width),
   };
   lastUpdatedBox.current = undefined;
 

@@ -8,11 +8,11 @@ import { CropperCursorMode, CropperProps } from '../src/types';
 
 const initialBoxes: CropperBox[] = [
   { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
-  { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
-  { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
-  { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
-  { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
-  { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
+  // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
+  // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
+  // { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
+  // { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
+  // { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
 ];
 
 const App = () => {
@@ -82,7 +82,7 @@ const App = () => {
           id='zoom'
           type='range'
           min={0.1}
-          max={2.0}
+          max={8.0}
           step={0.01}
           value={fileZoomMap[src] || 1}
           onChange={(e) => setZoom(Number(e.currentTarget.value))}
@@ -105,8 +105,8 @@ const App = () => {
       </span>
       <MultiCrops
         src={src}
-        width={`${100 * (fileZoomMap[src] || 1)}%`}
-        modifiable={true}
+        zoom={fileZoomMap[src] || 1}
+        modifiable={false}
         containerStyles={{
           height: '500px',
           width: '100%',
