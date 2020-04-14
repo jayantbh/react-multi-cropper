@@ -20,6 +20,9 @@ import {
 } from 'react';
 import createWorker from 'offscreen-canvas/create-worker';
 
+// @ts-ignore -- file generated on `yarn start`
+import CanvasWorkerModule from '../worker.bundle';
+
 const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
 const imageDebounceTime = 150;
 
@@ -449,7 +452,7 @@ export const useWorker = (
 ) => {
   useEffect(() => {
     if (!canvas || !hasOCSupport || workerRef.current) return;
-    workerRef.current = createWorker(canvas, './worker.js', (e) => {
+    workerRef.current = createWorker(canvas, CanvasWorkerModule, (e) => {
       if (e.data.imageMap) {
         const boxId = lastUpdatedBox.current?.id;
         const currentImgParam: CurrentImgParam = boxId

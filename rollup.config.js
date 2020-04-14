@@ -4,11 +4,10 @@ import external from 'rollup-plugin-peer-deps-external';
 import postcss from 'rollup-plugin-postcss';
 import resolve from '@rollup/plugin-node-resolve';
 import url from '@rollup/plugin-url';
-import svgr from '@svgr/rollup';
 import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
-import { terser } from 'rollup-plugin-terser';
+import fileAsBlob from 'rollup-plugin-file-as-blob';
 
 import pkg from './package.json';
 
@@ -26,11 +25,12 @@ const plugins = [
     autoModules: true,
   }),
   url(),
-  svgr(),
   globals(),
   builtins(),
   json(),
-  // terser(),
+  fileAsBlob({
+    include: '**/*/worker.bundle.js',
+  }),
 ];
 
 const pluginsTsExt = [
@@ -47,7 +47,6 @@ const commonExternal = [
 ];
 const commonConfig = {
   exports: 'named',
-  sourcemap: true,
   globals: {
     react: 'React',
     'react-dom': 'ReactDOM',
@@ -57,22 +56,25 @@ const commonConfig = {
 export default [
   {
     external: commonExternal,
+    input: 'src/worker.js',
+    output: [
+      {
+        file: 'src/worker.bundle.js',
+        format: 'cjs',
+        ...commonConfig,
+      },
+    ],
+    plugins,
+  },
+  {
+    external: commonExternal,
     input: 'src/index.ts',
     output: [
       {
         file: pkg.browser,
         format: 'cjs',
         ...commonConfig,
-      },
-    ],
-    plugins: pluginsTsExt,
-  },
-  {
-    input: 'src/worker.ts',
-    output: [
-      {
-        file: 'dist/worker.js',
-        format: 'cjs',
+        sourcemap: true
       },
     ],
     plugins: pluginsTsExt,
