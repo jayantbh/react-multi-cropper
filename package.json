@@ -2,6 +2,9 @@
   "name": "react-multi-cropper",
   "version": "0.2.1",
   "main": "dist/index.js",
+  "files": [
+    "dist/worker.js"
+  ],
   "license": "MIT",
   "author": {
     "name": "Jayant Bhawal",
