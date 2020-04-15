@@ -63,7 +63,7 @@ export const performCanvasPaint = (
   iWidth: number,
   zoom: number
 ) => {
-  if (!canvas || !img || !cont) return;
+  if (!canvas || !img || !cont || !iWidth || !iHeight) return;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -132,7 +132,7 @@ export const performOffscreenCanvasPaint = (
   iWidth: number,
   zoom: number
 ) => {
-  if (!worker || !img || !cont) return;
+  if (!worker || !img || !cont || !iWidth || !iHeight) return;
 
   const { x: ix, y: iy } = getImgBoundingRect(
     img,
