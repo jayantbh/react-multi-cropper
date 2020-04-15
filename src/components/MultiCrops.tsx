@@ -281,6 +281,13 @@ const MultiCrops: FC<CropperProps> = ({
         : undefined;
 
       props.onCrop?.({ type, event: e }, selections, currentImgParam);
+    } else {
+      props.onChange?.(
+        { type, event: e },
+        lastUpdatedBox.current,
+        drawingIndex.current,
+        props.boxes
+      );
     }
 
     isDrawing.current = false;
