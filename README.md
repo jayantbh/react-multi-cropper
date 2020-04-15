@@ -11,7 +11,7 @@ It's a fork of [this repo](https://github.com/beizhedenglong/react-multi-crops),
 - Better code design
 - More features
 
-![screenshot](https://snipboard.io/aWJHFU.jpg)
+[screenshot](https://snipboard.io/aWJHFU.jpg)
 
 
 ## Installation
@@ -68,7 +68,7 @@ const Cropper = ({ imageUrl }: { imageUrl: string ) => {
         boxes={boxes}
         onChange={updateBoxes}
         onCrop={(e, map) => setImageMap(map)}
-        onLoad={(e, map) => setImageMap(map)}
+        onLoad={(map) => setImageMap(map)}
       />
       {boxes.map((box, i) =>
         !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
@@ -77,6 +77,40 @@ const Cropper = ({ imageUrl }: { imageUrl: string ) => {
   );
 };
 ```
+
+#### How to reset zoom, rotation, and pan?
+In `examples/index.tsx`, you'll see an implementation of reset.
+```typescript jsx
+() => {
+  setRotation(0);
+  setZoom(1);
+  resetCenter();
+}
+```
+`setRotation`, and `setZoom` are simple state setting functions obtained from a `useState`.  
+`resetCenter` needs a few more lines.
+**Note:** Due to the current implementation, when resetting the component you must
+reset `rotation` before `zoom` to avoid bugs. It would be changed in the future to
+use a different update mechanism.
+
+The second argument of `onLoad` provides the reset handler.
+To call this from anywhere, you may want to assign this to a ref.
+
+```typescript jsx
+// Initialize a ref to store the function
+const resetCenterRef = useRef(() => {});
+const resetCenter = resetCenterRef.current;
+
+// Call function anywhere
+resetCenter();
+
+// Obtain the function from onLoad
+onLoad={(map, reset) => {
+  setImageMap(map);
+  resetCenterRef.current = reset;
+}}
+```
+
 
 ### Props for the `MultiCrops` component
 ```typescript
@@ -102,6 +136,7 @@ type CropperProps = {
 - The `onLoad` prop is **optional**, but useful for two things.
   1. To determine that the image has indeed loaded, same as an `img` tag.
   2. If you passed some predefined boxes, the supplied function will receive the image data associated with those boxes.
+  3. To get a resetCenter handler to reset the panned position of the image.
 - You need to pass a function the `onChange` prop if you want the default functionality to work out of the box.
   - It is however optional, in case you want the box drawing to be controlled externally.
 - The function supplied to `onCrop` will be called when a drawing/dragging/resizing operation was completed. This will be needed if you want to receive the image payload after a cropping action was done.
