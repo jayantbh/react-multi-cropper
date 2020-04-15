@@ -108,16 +108,10 @@ export const performCanvasPaint = (
   ctx.resetTransform();
 };
 
-const imgToImageData = (
-  img: HTMLImageElement,
-  height: number,
-  width: number
-) => {
-  const canvas = document.createElement('canvas');
-  canvas.height = height;
-  canvas.width = width;
+const imgToBitmap = (img: HTMLImageElement, height: number, width: number) => {
+  const canvas = new OffscreenCanvas(width, height);
   canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
-  return canvas.getContext('2d')?.getImageData(0, 0, width, height);
+  return canvas.transferToImageBitmap();
 };
 
 export const performOffscreenCanvasPaint = (
@@ -161,23 +155,26 @@ export const performOffscreenCanvasPaint = (
   const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
   const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
 
-  const imageData = imgToImageData(img, ihdpr, iwdpr);
+  const bitmap = imgToBitmap(img, ihdpr, iwdpr);
 
-  worker.post({
-    update: {
-      chdpr,
-      cwdpr,
-      tx,
-      ty,
-      xOff,
-      yOff,
-      iwdpr,
-      ihdpr,
-      src: img.src,
-      rotation,
-      imageData,
+  worker.post(
+    {
+      update: {
+        chdpr,
+        cwdpr,
+        tx,
+        ty,
+        xOff,
+        yOff,
+        iwdpr,
+        ihdpr,
+        src: img.src,
+        rotation,
+        bitmap,
+      },
     },
-  });
+    [bitmap]
+  );
 };
 
 export const getImageMapFromBoxes = (

@@ -48,23 +48,19 @@ const canvasToDataUrl = async (canvas) => {
 const performCanvasPaint = (e) => {
   if (!canvas) return;
 
-  const { chdpr, cwdpr, tx, ty, rotation, xOff, yOff, ihdpr, iwdpr, imageData, } = e.data.update;
+  const { chdpr, cwdpr, tx, ty, rotation, xOff, yOff, ihdpr, iwdpr, bitmap, } = e.data.update;
   canvas.height = chdpr;
   canvas.width = cwdpr;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const ofc = new OffscreenCanvas(iwdpr, ihdpr);
-  const ofctx = ofc.getContext('2d');
-  ofctx.putImageData(imageData, 0, 0);
-
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.translate(tx, ty);
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-tx, -ty);
-  ctx.drawImage(ofc, xOff, yOff, iwdpr, ihdpr);
+  ctx.drawImage(bitmap, xOff, yOff, iwdpr, ihdpr);
   ctx.resetTransform();
 };
 
