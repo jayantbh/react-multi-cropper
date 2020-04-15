@@ -421,6 +421,7 @@ export const onImageLoad = (
   ) => ReturnType<typeof getImageMapFromBoxes>,
   cont: HTMLDivElement | null,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
+  setStaticPanCoords: Dispatch<SetStateAction<Coordinates>>,
   iWidth: number,
   iHeight: number
 ): ReactEventHandler<HTMLImageElement> => (e) => {
@@ -442,7 +443,13 @@ export const onImageLoad = (
 
   requestAnimationFrame(() => {
     drawCanvas();
-    onLoad?.(getSelections(undefined, 'load'));
+    onLoad?.(getSelections(undefined, 'load'), () => {
+      setCenterCoords({
+        x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+        y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+      });
+      setStaticPanCoords({ x: 0, y: 0 });
+    });
   });
 };
 

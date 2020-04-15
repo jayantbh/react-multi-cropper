@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import MultiCrops from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
-import { CropperBox, CropperBoxDataMap } from '../dist';
-import { CropperCursorMode, CropperProps } from '../src/types';
+import {
+  CropperBox,
+  CropperBoxDataMap,
+  CropperCursorMode,
+  CropperProps,
+} from '../dist';
 
 const initialBoxes: CropperBox[] = [
   { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
@@ -16,6 +20,9 @@ const initialBoxes: CropperBox[] = [
 ];
 
 const App = () => {
+  const resetCenterRef = useRef(() => {});
+  const resetCenter = resetCenterRef.current;
+
   const [images, setImages] = useState([img1, img2]);
   const src = images[0];
 
@@ -78,6 +85,7 @@ const App = () => {
         onClick={() => {
           setRotation(0);
           setZoom(1);
+          resetCenter();
         }}
       >
         Reset
@@ -133,9 +141,10 @@ const App = () => {
           console.log('Delete', box, index, boxes);
           updateBoxes(e, box, index, boxes);
         }}
-        onLoad={(map) => {
+        onLoad={(map, reset) => {
           console.log('Loaded: ', map);
           setImageMap(map);
+          resetCenterRef.current = reset;
         }}
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}

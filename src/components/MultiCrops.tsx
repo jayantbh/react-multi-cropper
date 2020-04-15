@@ -263,6 +263,7 @@ const MultiCrops: FC<CropperProps> = ({
       getSelections,
       containerRef.current,
       setCenterCoords,
+      setStaticPanCoords,
       (fields?.imgBaseWidth || 0) * zoom,
       (fields?.imgBaseHeight || 0) * zoom
     )(e);
