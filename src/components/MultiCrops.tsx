@@ -29,13 +29,14 @@ import {
   getImageMapFromBoxes,
   getOffscreenImageMapFromBoxes,
   onImageLoad,
-  onZoom,
   performCanvasPaint,
   performOffscreenCanvasPaint,
   useCentering,
+  usePrevious,
   usePropResize,
   usePropRotation,
   useWorker,
+  useZoom,
 } from './MultiCrops.helpers';
 
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
@@ -207,29 +208,23 @@ const MultiCrops: FC<CropperProps> = ({
     props.modifiable
   );
 
-  const prevRotation = useRef(rotation);
-
-  useEffect(
-    () =>
-      onZoom(
-        imageRef.current,
-        containerRef.current,
-        prevImgSize,
-        autoSizeTimeout,
-        setCenterCoords,
-        props.src,
-        props.boxes,
-        props.onChange,
-        props.onCrop,
-        drawCanvas,
-        getSelections,
-        props.modifiable,
-        prevRotation,
-        rotation,
-        imgBaseWidth * zoom,
-        imgBaseHeight * zoom
-      ),
-    [zoom]
+  useZoom(
+    imageRef.current,
+    containerRef.current,
+    prevImgSize,
+    autoSizeTimeout,
+    setCenterCoords,
+    props.src,
+    props.boxes,
+    props.onChange,
+    props.onCrop,
+    drawCanvas,
+    getSelections,
+    props.modifiable,
+    rotation,
+    imgBaseWidth,
+    imgBaseHeight,
+    zoom
   );
 
   useResizeObserver({
@@ -449,13 +444,5 @@ const MultiCrops: FC<CropperProps> = ({
     </>
   );
 };
-
-function usePrevious<T>(value: T): T {
-  const ref = useRef<T>(value);
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
 
 export default MultiCrops;

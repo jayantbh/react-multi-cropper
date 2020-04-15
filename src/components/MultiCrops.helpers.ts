@@ -267,7 +267,7 @@ export const getOffscreenImageMapFromBoxes = (
   return {};
 };
 
-export const onZoom = (
+export const useZoom = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
   prevImgSize: MutableRefObject<RefSize | undefined>,
@@ -282,65 +282,68 @@ export const onZoom = (
     boxes: CropperProps['boxes']
   ) => ReturnType<typeof getImageMapFromBoxes>,
   modifiable: CropperProps['modifiable'] = true,
-  prevRotation: MutableRefObject<number>,
   rotation: number,
-  iWidth: number,
-  iHeight: number
+  imgBaseWidth: number,
+  imgBaseHeight: number,
+  zoom: number
 ) => {
-  const width = Math.round(iWidth);
-  const height = Math.round(iHeight);
-  const rotationDiff = rotation - prevRotation.current;
-  prevRotation.current = rotation;
+  const prevRotation = usePrevious(rotation);
 
-  const { height: prevHeight, width: prevWidth } = prevImgSize.current || {
-    height: 0,
-    width: 0,
-  };
-  if (width === 0 || height === 0) return;
-  if (prevHeight === 0 || prevWidth === 0) {
+  useEffect(() => {
+    const width = Math.round(imgBaseWidth * zoom);
+    const height = Math.round(imgBaseHeight * zoom);
+    const rotationDiff = rotation - prevRotation;
+
+    const { height: prevHeight, width: prevWidth } = prevImgSize.current || {
+      height: 0,
+      width: 0,
+    };
+    if (width === 0 || height === 0) return;
+    if (prevHeight === 0 || prevWidth === 0) {
+      prevImgSize.current = { height, width };
+      return;
+    }
+    const imageDidNotChange =
+      prevImgSize.current?.width === width &&
+      prevImgSize.current?.height === height;
+
+    if (
+      !cont ||
+      !img ||
+      !prevImgSize.current ||
+      img.getAttribute('src') !== src ||
+      imageDidNotChange
+    )
+      return;
+    const hRatio = height / prevHeight;
+    const wRatio = width / prevWidth;
+
     prevImgSize.current = { height, width };
-    return;
-  }
-  const imageDidNotChange =
-    prevImgSize.current?.width === width &&
-    prevImgSize.current?.height === height;
 
-  if (
-    !cont ||
-    !img ||
-    !prevImgSize.current ||
-    img.getAttribute('src') !== src ||
-    imageDidNotChange
-  )
-    return;
-  const hRatio = height / prevHeight;
-  const wRatio = width / prevWidth;
+    const newBoxes = boxes.map((box) => ({
+      ...box,
+      x: box.x * wRatio,
+      y: box.y * hRatio,
+      height: box.height * hRatio,
+      width: box.width * wRatio,
+      rotation: box.rotation + rotationDiff,
+    }));
 
-  prevImgSize.current = { height, width };
+    const imgRect = img.getBoundingClientRect();
+    const contRect = cont.getBoundingClientRect();
+    setCenterCoords({
+      x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+      y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+    });
+    onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
 
-  const newBoxes = boxes.map((box) => ({
-    ...box,
-    x: box.x * wRatio,
-    y: box.y * hRatio,
-    height: box.height * hRatio,
-    width: box.width * wRatio,
-    rotation: box.rotation + rotationDiff,
-  }));
-
-  const imgRect = img.getBoundingClientRect();
-  const contRect = cont.getBoundingClientRect();
-  setCenterCoords({
-    x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
-    y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
-  });
-  onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
-
-  if (!modifiable) return;
-  drawCanvas();
-  clearTimeout(autoSizeTimeout.current);
-  autoSizeTimeout.current = setTimeout(() => {
-    onCrop?.({ type: 'zoom' }, getSelections(newBoxes), undefined);
-  }, imageDebounceTime);
+    if (!modifiable) return;
+    drawCanvas();
+    clearTimeout(autoSizeTimeout.current);
+    autoSizeTimeout.current = setTimeout(() => {
+      onCrop?.({ type: 'zoom' }, getSelections(newBoxes), undefined);
+    }, imageDebounceTime);
+  }, [zoom]);
 };
 
 export const getCursorPosition = (
@@ -509,3 +512,11 @@ export const useWorker = (
     });
   }, [hasOCSupport, lastUpdatedBox.current]);
 };
+
+export function usePrevious<T>(value: T): T {
+  const ref = useRef<T>(value);
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
