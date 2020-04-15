@@ -267,7 +267,7 @@ export const getOffscreenImageMapFromBoxes = (
   return {};
 };
 
-export const onImageResize = (
+export const onZoom = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
   prevImgSize: MutableRefObject<RefSize | undefined>,
@@ -285,13 +285,10 @@ export const onImageResize = (
   prevRotation: MutableRefObject<number>,
   rotation: number,
   iWidth: number,
-  iHeight: number,
-  prevContSize: MutableRefObject<RefSize | undefined>
-) => ({ width: _w, height: _h }: RefSize = { width: 0, height: 0 }) => {
+  iHeight: number
+) => {
   const width = Math.round(iWidth);
   const height = Math.round(iHeight);
-  const cWidth = Math.round(_w);
-  const cHeight = Math.round(_h);
   const rotationDiff = rotation - prevRotation.current;
   prevRotation.current = rotation;
 
@@ -304,29 +301,22 @@ export const onImageResize = (
     prevImgSize.current = { height, width };
     return;
   }
-
   const imageDidNotChange =
     prevImgSize.current?.width === width &&
     prevImgSize.current?.height === height;
-
-  const containerDidNotChange =
-    prevContSize.current?.width === cWidth &&
-    prevContSize.current?.height === cHeight;
 
   if (
     !cont ||
     !img ||
     !prevImgSize.current ||
     img.getAttribute('src') !== src ||
-    (imageDidNotChange && containerDidNotChange)
+    imageDidNotChange
   )
     return;
-
   const hRatio = height / prevHeight;
   const wRatio = width / prevWidth;
 
   prevImgSize.current = { height, width };
-  prevContSize.current = { height: cHeight, width: cWidth };
 
   const newBoxes = boxes.map((box) => ({
     ...box,
@@ -343,13 +333,13 @@ export const onImageResize = (
     x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
     y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
   });
-  onChange?.({ type: 'auto-resize' }, undefined, undefined, newBoxes);
+  onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
 
   if (!modifiable) return;
   drawCanvas();
   clearTimeout(autoSizeTimeout.current);
   autoSizeTimeout.current = setTimeout(() => {
-    onCrop?.({ type: 'auto-resize' }, getSelections(newBoxes), undefined);
+    onCrop?.({ type: 'zoom' }, getSelections(newBoxes), undefined);
   }, imageDebounceTime);
 };
 

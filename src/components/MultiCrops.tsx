@@ -29,7 +29,7 @@ import {
   getImageMapFromBoxes,
   getOffscreenImageMapFromBoxes,
   onImageLoad,
-  onImageResize,
+  onZoom,
   performCanvasPaint,
   performOffscreenCanvasPaint,
   useCentering,
@@ -209,54 +209,56 @@ const MultiCrops: FC<CropperProps> = ({
 
   const prevRotation = useRef(rotation);
 
-  useEffect(() => {
-    onImageResize(
-      imageRef.current,
-      containerRef.current,
-      prevImgSize,
-      autoSizeTimeout,
-      setCenterCoords,
-      props.src,
-      props.boxes,
-      props.onChange,
-      props.onCrop,
-      drawCanvas,
-      getSelections,
-      props.modifiable,
-      prevRotation,
-      rotation,
-      imgBaseWidth * zoom,
-      imgBaseHeight * zoom,
-      prevContSize
-    )();
-  }, [zoom]);
+  useEffect(
+    () =>
+      onZoom(
+        imageRef.current,
+        containerRef.current,
+        prevImgSize,
+        autoSizeTimeout,
+        setCenterCoords,
+        props.src,
+        props.boxes,
+        props.onChange,
+        props.onCrop,
+        drawCanvas,
+        getSelections,
+        props.modifiable,
+        prevRotation,
+        rotation,
+        imgBaseWidth * zoom,
+        imgBaseHeight * zoom
+      ),
+    [zoom]
+  );
 
   useResizeObserver({
     ref: containerRef,
-    onResize: onImageResize(
-      imageRef.current,
-      containerRef.current,
-      prevImgSize,
-      autoSizeTimeout,
-      setCenterCoords,
-      props.src,
-      props.boxes,
-      props.onChange,
-      props.onCrop,
-      drawCanvas,
-      getSelections,
-      props.modifiable,
-      prevRotation,
-      rotation,
-      imgBaseWidth * zoom,
-      imgBaseHeight * zoom,
-      prevContSize
-    ),
+    onResize: ({ width: _w, height: _h }: RefSize) => {
+      const newWidth = Math.round(_w);
+      const newHeight = Math.round(_h);
+      const { width, height } = prevContSize.current || { width: 0, height: 0 };
+      if (
+        !containerRef.current ||
+        !imageRef.current ||
+        imageRef.current.getAttribute('src') !== props.src ||
+        (newHeight !== height && newWidth !== width)
+      )
+        return;
+
+      prevContSize.current = { height: newHeight, width: newWidth };
+
+      const imgRect = imageRef.current.getBoundingClientRect();
+      const contRect = containerRef.current.getBoundingClientRect();
+      setCenterCoords({
+        x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+        y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+      });
+    },
   });
 
   const onLoad = (e: SyntheticEvent<HTMLImageElement>) => {
     const fields = getUpdatedDimensions();
-    e.persist();
 
     onImageLoad(
       prevImgSize,
@@ -266,8 +268,8 @@ const MultiCrops: FC<CropperProps> = ({
       getSelections,
       containerRef.current,
       setCenterCoords,
-      fields?.imgRectHeight || 0,
-      fields?.imgRectWidth || 0
+      (fields?.imgBaseWidth || 0) * zoom,
+      (fields?.imgBaseHeight || 0) * zoom
     )(e);
   };
 

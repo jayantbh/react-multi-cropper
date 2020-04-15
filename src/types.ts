@@ -33,7 +33,7 @@ export type CropperEventType =
   | 'draw'
   | 'draw-end'
   | 'resize'
-  | 'auto-resize'
+  | 'zoom'
   | 'drag'
   | 'delete'
   | 'manual-resize'
