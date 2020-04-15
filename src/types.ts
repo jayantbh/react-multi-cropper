@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEvent, SyntheticEvent } from 'react';
+import { CSSProperties, MouseEvent } from 'react';
 import { DragEvent, ResizeEvent } from '@interactjs/types/types';
 import createWorker from 'offscreen-canvas/create-worker';
 
@@ -29,6 +29,7 @@ export type CurrentImg = {
 export type CurrentImgParam = undefined | CurrentImg;
 
 export type CropperEventType =
+  | 'load'
   | 'draw'
   | 'draw-end'
   | 'resize'
