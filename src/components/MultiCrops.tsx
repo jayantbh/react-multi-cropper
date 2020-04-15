@@ -210,7 +210,7 @@ const MultiCrops: FC<CropperProps> = ({
   const prevRotation = useRef(rotation);
 
   useEffect(() => {
-    const onResize = onImageResize(
+    onImageResize(
       imageRef.current,
       containerRef.current,
       prevImgSize,
@@ -228,10 +228,8 @@ const MultiCrops: FC<CropperProps> = ({
       imgBaseWidth * zoom,
       imgBaseHeight * zoom,
       prevContSize
-    );
-
-    onResize();
-  }, [zoom, imgRectWidth, imgRectHeight]);
+    )();
+  }, [zoom]);
 
   useResizeObserver({
     ref: containerRef,
