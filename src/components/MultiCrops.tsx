@@ -177,7 +177,6 @@ const MultiCrops: FC<CropperProps> = ({
     boxes: CropperProps['boxes'] = props.boxes,
     eventType: CropperEventType = 'draw-end'
   ) => {
-    console.log('getSelections', boxes, eventType);
     return !hasOCSupport
       ? getImageMapFromBoxes(boxes, containerRef.current, canvasRef.current)
       : getOffscreenImageMapFromBoxes(
