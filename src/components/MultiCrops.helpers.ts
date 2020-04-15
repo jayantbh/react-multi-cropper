@@ -288,6 +288,7 @@ export const useZoom = (
   zoom: number
 ) => {
   const prevRotation = usePrevious(rotation);
+  const prevSrc = usePrevious(src);
 
   useEffect(() => {
     const width = Math.round(imgBaseWidth * zoom);
@@ -312,7 +313,8 @@ export const useZoom = (
       !img ||
       !prevImgSize.current ||
       img.getAttribute('src') !== src ||
-      imageDidNotChange
+      imageDidNotChange ||
+      src !== prevSrc
     )
       return;
     const hRatio = height / prevHeight;
