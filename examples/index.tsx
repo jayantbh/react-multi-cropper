@@ -74,6 +74,14 @@ const App = () => {
       >
         Toggle Mode [{cursorMode}]
       </button>
+      <button
+        onClick={() => {
+          setRotation(0);
+          setZoom(1);
+        }}
+      >
+        Reset
+      </button>
       <span>
         <label htmlFor='zoom'>
           Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
