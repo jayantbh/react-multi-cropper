@@ -59,11 +59,14 @@ export const performCanvasPaint = (
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
   rotation: number,
-  iHeight: number,
-  iWidth: number,
   zoom: number
 ) => {
-  if (!canvas || !img || !cont || !iWidth || !iHeight) return;
+  if (!canvas || !img || !cont) return;
+
+  const iHeight = img.height * zoom;
+  const iWidth = img.width * zoom;
+
+  if (!iWidth || !iHeight) return;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -90,10 +93,6 @@ export const performCanvasPaint = (
 
   canvas.setAttribute('height', chdpr + '');
   canvas.setAttribute('width', cwdpr + '');
-  canvas.setAttribute(
-    'style',
-    `height: ${cHeight / 2}px; width: ${cWidth / 2}px;`
-  );
 
   const imgRect = img.getBoundingClientRect();
   const conRect = cont.getBoundingClientRect();
@@ -128,11 +127,14 @@ export const performOffscreenCanvasPaint = (
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
   rotation: number,
-  iHeight: number,
-  iWidth: number,
   zoom: number
 ) => {
-  if (!worker || !img || !cont || !iWidth || !iHeight) return;
+  if (!worker || !img || !cont) return;
+
+  const iHeight = img.height * zoom;
+  const iWidth = img.width * zoom;
+
+  if (!iWidth || !iHeight) return;
 
   const { x: ix, y: iy } = getImgBoundingRect(
     img,
@@ -266,7 +268,7 @@ export const getOffscreenImageMapFromBoxes = (
 export const onImageResize = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
-  prevSize: MutableRefObject<RefSize | undefined>,
+  prevImgSize: MutableRefObject<RefSize | undefined>,
   autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   src: CropperProps['src'],
@@ -279,28 +281,50 @@ export const onImageResize = (
   ) => ReturnType<typeof getImageMapFromBoxes>,
   modifiable: CropperProps['modifiable'] = true,
   prevRotation: MutableRefObject<number>,
-  rotation: number
-) => ({ width: _w, height: _h }: RefSize) => {
-  const width = Math.round(_w);
-  const height = Math.round(_h);
+  rotation: number,
+  iWidth: number,
+  iHeight: number,
+  prevContSize: MutableRefObject<RefSize | undefined>
+) => ({ width: _w, height: _h }: RefSize = { width: 0, height: 0 }) => {
+  const width = Math.round(iWidth);
+  const height = Math.round(iHeight);
+  const cWidth = Math.round(_w);
+  const cHeight = Math.round(_h);
   const rotationDiff = rotation - prevRotation.current;
   prevRotation.current = rotation;
+
+  const { height: prevHeight, width: prevWidth } = prevImgSize.current || {
+    height: 0,
+    width: 0,
+  };
+  if (width === 0 || height === 0) return;
+  if (prevHeight === 0 || prevWidth === 0) {
+    prevImgSize.current = { height, width };
+    return;
+  }
+
+  const imageDidNotChange =
+    prevImgSize.current?.width === width &&
+    prevImgSize.current?.height === height;
+
+  const containerDidNotChange =
+    prevContSize.current?.width === cWidth &&
+    prevContSize.current?.height === cHeight;
 
   if (
     !cont ||
     !img ||
-    !prevSize.current ||
+    !prevImgSize.current ||
     img.getAttribute('src') !== src ||
-    (prevSize.current.width === width && prevSize.current.height === height) ||
-    width === 0 ||
-    height === 0
+    (imageDidNotChange && containerDidNotChange)
   )
     return;
 
-  const hRatio = height / prevSize.current.height;
-  const wRatio = width / prevSize.current.width;
+  const hRatio = height / prevHeight;
+  const wRatio = width / prevWidth;
 
-  prevSize.current = { height, width };
+  prevImgSize.current = { height, width };
+  prevContSize.current = { height: cHeight, width: cWidth };
 
   const newBoxes = boxes.map((box) => ({
     ...box,
@@ -395,16 +419,16 @@ export const onImageLoad = (
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
   getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
   cont: HTMLDivElement | null,
-  setCenterCoords: Dispatch<SetStateAction<Coordinates>>
+  setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
+  iWidth: number,
+  iHeight: number
 ): ReactEventHandler<HTMLImageElement> => (e) => {
   const img = e.currentTarget;
   if (!img || !cont) return;
 
-  const { height = 0, width = 0 } = img.getBoundingClientRect() || {};
-
   prevSize.current = {
-    height: Math.round(height),
-    width: Math.round(width),
+    height: Math.round(iHeight),
+    width: Math.round(iWidth),
   };
   lastUpdatedBox.current = undefined;
 
@@ -417,7 +441,7 @@ export const onImageLoad = (
 
   requestAnimationFrame(() => {
     drawCanvas();
-    onLoad?.(e, getSelections());
+    onLoad?.(getSelections());
   });
 };
 

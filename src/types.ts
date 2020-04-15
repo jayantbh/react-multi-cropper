@@ -59,10 +59,7 @@ export type UpdateFunction = (
   boxes: CropperBox[]
 ) => any;
 
-export type ImgOnLoadWithImageData = (
-  e: SyntheticEvent<HTMLImageElement>,
-  map: CropperBoxDataMap
-) => any;
+export type ImgOnLoadWithImageData = (map: CropperBoxDataMap) => any;
 
 export type CropperProps = {
   src: string;
