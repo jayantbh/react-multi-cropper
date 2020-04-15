@@ -3,6 +3,7 @@ import {
   Coordinates,
   CropperBox,
   CropperBoxDataMap,
+  CropperEventType,
   CropperProps,
   CurrentImgParam,
   RefSize,
@@ -232,7 +233,8 @@ export const getImageMapFromBoxes = (
 export const getOffscreenImageMapFromBoxes = (
   boxes: CropperProps['boxes'],
   cont: HTMLDivElement | null,
-  worker: CanvasWorker
+  worker: CanvasWorker,
+  eventType: CropperEventType = 'draw-end'
 ): CropperBoxDataMap => {
   if (!cont || !worker) return {};
   const contRect = cont.getBoundingClientRect();
@@ -256,7 +258,10 @@ export const getOffscreenImageMapFromBoxes = (
   });
 
   worker.post({
-    retrieve: boxesForOfc,
+    retrieve: {
+      boxesForOfc,
+      eventType,
+    },
   });
 
   return {};
@@ -394,7 +399,10 @@ export const usePropResize = (
   height: number,
   onCrop: CropperProps['onCrop'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
+  getSelections: (
+    boxes?: CropperProps['boxes'],
+    eventType?: CropperEventType
+  ) => ReturnType<typeof getImageMapFromBoxes>,
   modifiable: CropperProps['modifiable'] = true
 ) => {
   if (!modifiable || !height || !width) return;
@@ -414,7 +422,10 @@ export const onImageLoad = (
   lastUpdatedBox: MutableRefObject<RefSize | undefined>,
   onLoad: CropperProps['onLoad'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
+  getSelections: (
+    boxes?: CropperProps['boxes'],
+    eventType?: CropperEventType
+  ) => ReturnType<typeof getImageMapFromBoxes>,
   cont: HTMLDivElement | null,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   iWidth: number,
@@ -438,7 +449,7 @@ export const onImageLoad = (
 
   requestAnimationFrame(() => {
     drawCanvas();
-    onLoad?.(getSelections());
+    onLoad?.(getSelections(undefined, 'load'));
   });
 };
 
@@ -500,7 +511,7 @@ export const useWorker = (
           : undefined;
 
         onCrop?.(
-          { type: 'draw-end' },
+          { type: e.data.eventType },
           e.data.imageMap as CropperBoxDataMap,
           currentImgParam
         );

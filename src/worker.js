@@ -67,7 +67,8 @@ const performCanvasPaint = (e) => {
 const getImageMap = async (e) => {
   if (!canvas) return;
 
-  const boxes = e.data.retrieve;
+  const boxes = e.data.retrieve.boxesForOfc;
+  const eventType = e.data.retrieve.eventType;
 
   const imageBoxPromises = boxes.map((box) => (async () => {
     if (box.width === 0 || box.height === 0 || !canvas) return box;
@@ -105,5 +106,5 @@ const getImageMap = async (e) => {
     [box.id]: box.finalImageUrl,
   }), {});
 
-  post({ imageMap }, getOrigin(e));
+  post({ imageMap, eventType }, getOrigin(e));
 };

@@ -21,6 +21,7 @@ import {
   CropperProps,
   CurrentImgParam,
   RefSize,
+  CropperEventType,
 } from '../types';
 import {
   getAbsoluteCursorPosition,
@@ -172,14 +173,20 @@ const MultiCrops: FC<CropperProps> = ({
           zoom
         );
 
-  const getSelections = (boxes: CropperProps['boxes'] = props.boxes) =>
-    !hasOCSupport
+  const getSelections = (
+    boxes: CropperProps['boxes'] = props.boxes,
+    eventType: CropperEventType = 'draw-end'
+  ) => {
+    console.log('getSelections', boxes, eventType);
+    return !hasOCSupport
       ? getImageMapFromBoxes(boxes, containerRef.current, canvasRef.current)
       : getOffscreenImageMapFromBoxes(
           boxes,
           containerRef.current,
-          workerRef.current
+          workerRef.current,
+          eventType
         );
+  };
 
   usePropResize(
     imgRectWidth,

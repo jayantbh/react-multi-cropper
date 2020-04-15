@@ -115,14 +115,18 @@ const App = () => {
         onChange={updateBoxes}
         onCrop={(e, map, currentImg) => {
           console.log('Crop', e, map, currentImg?.boxId);
-          setImageMap(map);
+          if (e.type === 'draw-end') {
+            if (!currentImg) return;
+            const { dataUrl, boxId } = currentImg;
+            setImageMap({ ...imageMap, [boxId]: dataUrl });
+          } else if (e.type === 'load') setImageMap(map);
         }}
         onDelete={(e, box, index, boxes) => {
           console.log('Delete', box, index, boxes);
           updateBoxes(e, box, index, boxes);
         }}
         onLoad={(map) => {
-          console.log('Loaded: ');
+          console.log('Loaded: ', map);
           setImageMap(map);
         }}
         cursorMode={cursorMode}
