@@ -237,7 +237,7 @@ const MultiCrops: FC<CropperProps> = ({
         !containerRef.current ||
         !imageRef.current ||
         imageRef.current.getAttribute('src') !== props.src ||
-        (newHeight !== height && newWidth !== width)
+        (newHeight === height && newWidth === width)
       )
         return;
 
