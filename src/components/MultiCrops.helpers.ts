@@ -3,6 +3,7 @@ import {
   Coordinates,
   CropperBox,
   CropperBoxDataMap,
+  CropperEventType,
   CropperProps,
   CurrentImgParam,
   RefSize,
@@ -59,11 +60,14 @@ export const performCanvasPaint = (
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
   rotation: number,
-  iHeight: number,
-  iWidth: number,
   zoom: number
 ) => {
   if (!canvas || !img || !cont) return;
+
+  const iHeight = img.height * zoom;
+  const iWidth = img.width * zoom;
+
+  if (!iWidth || !iHeight) return;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -90,10 +94,6 @@ export const performCanvasPaint = (
 
   canvas.setAttribute('height', chdpr + '');
   canvas.setAttribute('width', cwdpr + '');
-  canvas.setAttribute(
-    'style',
-    `height: ${cHeight / 2}px; width: ${cWidth / 2}px;`
-  );
 
   const imgRect = img.getBoundingClientRect();
   const conRect = cont.getBoundingClientRect();
@@ -109,16 +109,10 @@ export const performCanvasPaint = (
   ctx.resetTransform();
 };
 
-const imgToImageData = (
-  img: HTMLImageElement,
-  height: number,
-  width: number
-) => {
-  const canvas = document.createElement('canvas');
-  canvas.height = height;
-  canvas.width = width;
+const imgToBitmap = (img: HTMLImageElement, height: number, width: number) => {
+  const canvas = new OffscreenCanvas(width, height);
   canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
-  return canvas.getContext('2d')?.getImageData(0, 0, width, height);
+  return canvas.transferToImageBitmap();
 };
 
 export const performOffscreenCanvasPaint = (
@@ -128,11 +122,14 @@ export const performOffscreenCanvasPaint = (
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
   rotation: number,
-  iHeight: number,
-  iWidth: number,
   zoom: number
 ) => {
   if (!worker || !img || !cont) return;
+
+  const iHeight = img.height * zoom;
+  const iWidth = img.width * zoom;
+
+  if (!iWidth || !iHeight) return;
 
   const { x: ix, y: iy } = getImgBoundingRect(
     img,
@@ -159,23 +156,26 @@ export const performOffscreenCanvasPaint = (
   const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
   const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
 
-  const imageData = imgToImageData(img, ihdpr, iwdpr);
+  const bitmap = imgToBitmap(img, ihdpr, iwdpr);
 
-  worker.post({
-    update: {
-      chdpr,
-      cwdpr,
-      tx,
-      ty,
-      xOff,
-      yOff,
-      iwdpr,
-      ihdpr,
-      src: img.src,
-      rotation,
-      imageData,
+  worker.post(
+    {
+      update: {
+        chdpr,
+        cwdpr,
+        tx,
+        ty,
+        xOff,
+        yOff,
+        iwdpr,
+        ihdpr,
+        src: img.src,
+        rotation,
+        bitmap,
+      },
     },
-  });
+    [bitmap]
+  );
 };
 
 export const getImageMapFromBoxes = (
@@ -233,7 +233,8 @@ export const getImageMapFromBoxes = (
 export const getOffscreenImageMapFromBoxes = (
   boxes: CropperProps['boxes'],
   cont: HTMLDivElement | null,
-  worker: CanvasWorker
+  worker: CanvasWorker,
+  eventType: CropperEventType = 'draw-end'
 ): CropperBoxDataMap => {
   if (!cont || !worker) return {};
   const contRect = cont.getBoundingClientRect();
@@ -257,16 +258,19 @@ export const getOffscreenImageMapFromBoxes = (
   });
 
   worker.post({
-    retrieve: boxesForOfc,
+    retrieve: {
+      boxesForOfc,
+      eventType,
+    },
   });
 
   return {};
 };
 
-export const onImageResize = (
+export const useZoom = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
-  prevSize: MutableRefObject<RefSize | undefined>,
+  prevImgSize: MutableRefObject<RefSize | undefined>,
   autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   src: CropperProps['src'],
@@ -278,53 +282,70 @@ export const onImageResize = (
     boxes: CropperProps['boxes']
   ) => ReturnType<typeof getImageMapFromBoxes>,
   modifiable: CropperProps['modifiable'] = true,
-  prevRotation: MutableRefObject<number>,
-  rotation: number
-) => ({ width: _w, height: _h }: RefSize) => {
-  const width = Math.round(_w);
-  const height = Math.round(_h);
-  const rotationDiff = rotation - prevRotation.current;
-  prevRotation.current = rotation;
+  rotation: number,
+  imgBaseWidth: number,
+  imgBaseHeight: number,
+  zoom: number
+) => {
+  const prevRotation = usePrevious(rotation);
+  const prevSrc = usePrevious(src);
 
-  if (
-    !cont ||
-    !img ||
-    !prevSize.current ||
-    img.getAttribute('src') !== src ||
-    (prevSize.current.width === width && prevSize.current.height === height) ||
-    width === 0 ||
-    height === 0
-  )
-    return;
+  useEffect(() => {
+    const width = Math.round(imgBaseWidth * zoom);
+    const height = Math.round(imgBaseHeight * zoom);
+    const rotationDiff = rotation - prevRotation;
 
-  const hRatio = height / prevSize.current.height;
-  const wRatio = width / prevSize.current.width;
+    const { height: prevHeight, width: prevWidth } = prevImgSize.current || {
+      height: 0,
+      width: 0,
+    };
+    if (width === 0 || height === 0) return;
+    if (prevHeight === 0 || prevWidth === 0) {
+      prevImgSize.current = { height, width };
+      return;
+    }
+    const imageDidNotChange =
+      prevImgSize.current?.width === width &&
+      prevImgSize.current?.height === height;
 
-  prevSize.current = { height, width };
+    if (
+      !cont ||
+      !img ||
+      !prevImgSize.current ||
+      img.getAttribute('src') !== src ||
+      imageDidNotChange ||
+      src !== prevSrc
+    )
+      return;
+    const hRatio = height / prevHeight;
+    const wRatio = width / prevWidth;
 
-  const newBoxes = boxes.map((box) => ({
-    ...box,
-    x: box.x * wRatio,
-    y: box.y * hRatio,
-    height: box.height * hRatio,
-    width: box.width * wRatio,
-    rotation: box.rotation + rotationDiff,
-  }));
+    prevImgSize.current = { height, width };
 
-  const imgRect = img.getBoundingClientRect();
-  const contRect = cont.getBoundingClientRect();
-  setCenterCoords({
-    x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
-    y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
-  });
-  onChange?.({ type: 'auto-resize' }, undefined, undefined, newBoxes);
+    const newBoxes = boxes.map((box) => ({
+      ...box,
+      x: box.x * wRatio,
+      y: box.y * hRatio,
+      height: box.height * hRatio,
+      width: box.width * wRatio,
+      rotation: box.rotation + rotationDiff,
+    }));
 
-  if (!modifiable) return;
-  drawCanvas();
-  clearTimeout(autoSizeTimeout.current);
-  autoSizeTimeout.current = setTimeout(() => {
-    onCrop?.({ type: 'auto-resize' }, getSelections(newBoxes), undefined);
-  }, imageDebounceTime);
+    const imgRect = img.getBoundingClientRect();
+    const contRect = cont.getBoundingClientRect();
+    setCenterCoords({
+      x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+      y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+    });
+    onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
+
+    if (!modifiable) return;
+    drawCanvas();
+    clearTimeout(autoSizeTimeout.current);
+    autoSizeTimeout.current = setTimeout(() => {
+      onCrop?.({ type: 'zoom' }, getSelections(newBoxes), undefined);
+    }, imageDebounceTime);
+  }, [zoom]);
 };
 
 export const getCursorPosition = (
@@ -373,7 +394,10 @@ export const usePropResize = (
   height: number,
   onCrop: CropperProps['onCrop'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
+  getSelections: (
+    boxes?: CropperProps['boxes'],
+    eventType?: CropperEventType
+  ) => ReturnType<typeof getImageMapFromBoxes>,
   modifiable: CropperProps['modifiable'] = true
 ) => {
   if (!modifiable || !height || !width) return;
@@ -393,18 +417,22 @@ export const onImageLoad = (
   lastUpdatedBox: MutableRefObject<RefSize | undefined>,
   onLoad: CropperProps['onLoad'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: () => ReturnType<typeof getImageMapFromBoxes>,
+  getSelections: (
+    boxes?: CropperProps['boxes'],
+    eventType?: CropperEventType
+  ) => ReturnType<typeof getImageMapFromBoxes>,
   cont: HTMLDivElement | null,
-  setCenterCoords: Dispatch<SetStateAction<Coordinates>>
+  setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
+  setStaticPanCoords: Dispatch<SetStateAction<Coordinates>>,
+  iWidth: number,
+  iHeight: number
 ): ReactEventHandler<HTMLImageElement> => (e) => {
   const img = e.currentTarget;
   if (!img || !cont) return;
 
-  const { height = 0, width = 0 } = img.getBoundingClientRect() || {};
-
   prevSize.current = {
-    height: Math.round(height),
-    width: Math.round(width),
+    height: Math.round(iHeight),
+    width: Math.round(iWidth),
   };
   lastUpdatedBox.current = undefined;
 
@@ -417,7 +445,13 @@ export const onImageLoad = (
 
   requestAnimationFrame(() => {
     drawCanvas();
-    onLoad?.(e, getSelections());
+    onLoad?.(getSelections(undefined, 'load'), () => {
+      setCenterCoords({
+        x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
+        y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+      });
+      setStaticPanCoords({ x: 0, y: 0 });
+    });
   });
 };
 
@@ -479,7 +513,7 @@ export const useWorker = (
           : undefined;
 
         onCrop?.(
-          { type: 'draw-end' },
+          { type: e.data.eventType },
           e.data.imageMap as CropperBoxDataMap,
           currentImgParam
         );
@@ -487,3 +521,11 @@ export const useWorker = (
     });
   }, [hasOCSupport, lastUpdatedBox.current]);
 };
+
+export function usePrevious<T>(value: T): T {
+  const ref = useRef<T>(value);
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}

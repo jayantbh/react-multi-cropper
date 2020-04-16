@@ -10,6 +10,11 @@ if (typeof window !== 'undefined') {
         this.canvas.width = width;
         this.canvas.height = height;
 
+        this.canvas.transferToImageBitmap = () => {
+          const ctx = this.canvas.getContext('2d');
+          if (!ctx) return;
+          return ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        };
         this.canvas.convertToBlob = () => {
           return new Promise((resolve) => {
             this.canvas.toBlob(resolve);
