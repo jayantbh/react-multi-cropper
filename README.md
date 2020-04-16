@@ -88,7 +88,7 @@ In `examples/index.tsx`, you'll see an implementation of reset.
 }
 ```
 `setRotation`, and `setZoom` are simple state setting functions obtained from a `useState`.  
-`resetCenter` needs a few more lines.
+`resetCenter` needs a few more lines.  
 **Note:** Due to the current implementation, when resetting the component you must
 reset `rotation` before `zoom` to avoid bugs. It would be changed in the future to
 use a different update mechanism.
