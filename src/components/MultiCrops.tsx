@@ -55,7 +55,7 @@ const MultiCrops: FC<CropperProps> = ({
   zoom = 1,
   ...props
 }) => {
-  const { src: prevSrc } = usePrevious({ src: props.src });
+  const prevSrc = usePrevious(props.src);
   const srcChanged = prevSrc !== props.src;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,6 @@ const MultiCrops: FC<CropperProps> = ({
   const pointA = useRef<Partial<Coordinates>>(blankCoords);
   const id = useRef<string>(sid.generate());
   const drawingIndex = useRef(-1);
-  const prevImgSize = useRef<RefSize | undefined>(undefined);
   const prevContSize = useRef<RefSize | undefined>(undefined);
   const lastUpdatedBox = useRef<CropperBox | undefined>(undefined);
   const isDrawing = useRef<boolean>(false);
@@ -206,7 +205,6 @@ const MultiCrops: FC<CropperProps> = ({
   useZoom(
     imageRef.current,
     containerRef.current,
-    prevImgSize,
     autoSizeTimeout,
     setCenterCoords,
     props.src,
@@ -248,10 +246,9 @@ const MultiCrops: FC<CropperProps> = ({
   });
 
   const onLoad = (e: SyntheticEvent<HTMLImageElement>) => {
-    const fields = getUpdatedDimensions();
+    getUpdatedDimensions();
 
     onImageLoad(
-      prevImgSize,
       lastUpdatedBox,
       props.onLoad,
       drawCanvas,
@@ -259,8 +256,6 @@ const MultiCrops: FC<CropperProps> = ({
       containerRef.current,
       setCenterCoords,
       setStaticPanCoords,
-      (fields?.imgBaseWidth || 0) * zoom,
-      (fields?.imgBaseHeight || 0) * zoom,
       getUpdatedDimensions
     )(e);
   };

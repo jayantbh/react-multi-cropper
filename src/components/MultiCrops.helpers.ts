@@ -270,7 +270,6 @@ export const getOffscreenImageMapFromBoxes = (
 export const useZoom = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
-  prevImgSize: MutableRefObject<RefSize | undefined>,
   autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   src: CropperProps['src'],
@@ -289,38 +288,31 @@ export const useZoom = (
 ) => {
   const prevRotation = usePrevious(rotation);
   const prevSrc = usePrevious(src);
+  const prevSize = usePrevious({
+    width: Math.round(imgBaseWidth * zoom),
+    height: Math.round(imgBaseHeight * zoom),
+  });
 
   useEffect(() => {
     const width = Math.round(imgBaseWidth * zoom);
     const height = Math.round(imgBaseHeight * zoom);
     const rotationDiff = rotation - prevRotation;
 
-    const { height: prevHeight, width: prevWidth } = prevImgSize.current || {
-      height: 0,
-      width: 0,
-    };
     if (width === 0 || height === 0) return;
-    if (prevHeight === 0 || prevWidth === 0) {
-      prevImgSize.current = { height, width };
-      return;
-    }
+
     const imageDidNotChange =
-      prevImgSize.current?.width === width &&
-      prevImgSize.current?.height === height;
+      prevSize.width === width && prevSize.height === height;
 
     if (
       !cont ||
       !img ||
-      !prevImgSize.current ||
       img.getAttribute('src') !== src ||
       imageDidNotChange ||
       src !== prevSrc
     )
       return;
-    const hRatio = height / prevHeight;
-    const wRatio = width / prevWidth;
-
-    prevImgSize.current = { height, width };
+    const hRatio = height / prevSize.height;
+    const wRatio = width / prevSize.width;
 
     const newBoxes = boxes.map((box) => ({
       ...box,
@@ -413,7 +405,6 @@ export const usePropResize = (
 };
 
 export const onImageLoad = (
-  prevSize: MutableRefObject<RefSize | undefined>,
   lastUpdatedBox: MutableRefObject<RefSize | undefined>,
   onLoad: CropperProps['onLoad'],
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
@@ -424,17 +415,11 @@ export const onImageLoad = (
   cont: HTMLDivElement | null,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   setStaticPanCoords: Dispatch<SetStateAction<Coordinates>>,
-  iWidth: number,
-  iHeight: number,
   getUpdatedDimensions: (doStateUpdate?: boolean) => any
 ): ReactEventHandler<HTMLImageElement> => (e) => {
   const img = e.currentTarget;
   if (!img || !cont) return;
 
-  prevSize.current = {
-    height: Math.round(iHeight),
-    width: Math.round(iWidth),
-  };
   lastUpdatedBox.current = undefined;
 
   const imgRect = img.getBoundingClientRect();
