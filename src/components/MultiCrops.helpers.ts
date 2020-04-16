@@ -425,7 +425,8 @@ export const onImageLoad = (
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   setStaticPanCoords: Dispatch<SetStateAction<Coordinates>>,
   iWidth: number,
-  iHeight: number
+  iHeight: number,
+  getUpdatedDimensions: (doStateUpdate?: boolean) => any
 ): ReactEventHandler<HTMLImageElement> => (e) => {
   const img = e.currentTarget;
   if (!img || !cont) return;
@@ -446,6 +447,7 @@ export const onImageLoad = (
   requestAnimationFrame(() => {
     drawCanvas();
     onLoad?.(getSelections(undefined, 'load'), () => {
+      getUpdatedDimensions();
       setCenterCoords({
         x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
         y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
