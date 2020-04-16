@@ -458,7 +458,10 @@ export const usePropRotation = (
   const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
 
   useEffect(() => {
-    if (srcChanged) return;
+    if (srcChanged) {
+      prevRotation.current = rotation;
+      return;
+    }
 
     const rotationDiff = rotation - prevRotation.current;
     const newBoxes = boxes.map((box) => ({
