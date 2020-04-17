@@ -22,6 +22,7 @@ import {
   CurrentImgParam,
   RefSize,
   CropperEventType,
+  CartesianSize,
 } from '../types';
 import {
   getAbsoluteCursorPosition,
@@ -48,6 +49,8 @@ type Dimensions = {
   imgBaseHeight: number;
   imgBaseWidth: number;
 };
+
+const scalingFactor = 2;
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -78,6 +81,14 @@ const MultiCrops: FC<CropperProps> = ({
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
 
   const hasOCSupport = !!canvasRef.current?.transferControlToOffscreen;
+
+  const img = imageRef.current;
+  const xScale = (img?.naturalWidth || 0) / ((img?.width || 0) * zoom);
+  const yScale = (img?.naturalHeight || 0) / ((img?.height || 0) * zoom);
+  const imgScale: CartesianSize = {
+    x: Number.isFinite(xScale) ? xScale * scalingFactor : scalingFactor,
+    y: Number.isFinite(yScale) ? yScale * scalingFactor : scalingFactor,
+  };
 
   const [
     { imgRectHeight, imgRectWidth, imgBaseHeight, imgBaseWidth },
@@ -156,7 +167,8 @@ const MultiCrops: FC<CropperProps> = ({
           staticPanCoords,
           activePanCoords,
           rotation,
-          zoom
+          zoom,
+          imgScale
         )
       : performOffscreenCanvasPaint(
           imageRef.current,
@@ -165,7 +177,8 @@ const MultiCrops: FC<CropperProps> = ({
           staticPanCoords,
           activePanCoords,
           rotation,
-          zoom
+          zoom,
+          imgScale
         );
 
   const getSelections = (
@@ -173,12 +186,18 @@ const MultiCrops: FC<CropperProps> = ({
     eventType: CropperEventType = 'draw-end'
   ) => {
     return !hasOCSupport
-      ? getImageMapFromBoxes(boxes, containerRef.current, canvasRef.current)
+      ? getImageMapFromBoxes(
+          boxes,
+          containerRef.current,
+          canvasRef.current,
+          imgScale
+        )
       : getOffscreenImageMapFromBoxes(
           boxes,
           containerRef.current,
           workerRef.current,
-          eventType
+          eventType,
+          imgScale
         );
   };
 

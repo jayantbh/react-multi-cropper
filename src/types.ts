@@ -5,6 +5,7 @@ import createWorker from 'offscreen-canvas/create-worker';
 export type DataUrl = string;
 
 export type Coordinates = { x: number; y: number };
+export type CartesianSize = Coordinates;
 
 export type CropperBoxId = string;
 

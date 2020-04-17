@@ -1,5 +1,6 @@
 import {
   CanvasWorker,
+  CartesianSize,
   Coordinates,
   CropperBox,
   CropperBoxDataMap,
@@ -24,7 +25,6 @@ import createWorker from 'offscreen-canvas/create-worker';
 // @ts-ignore -- file generated on `yarn start`
 import CanvasWorkerModule from '../worker.bundle';
 
-const dpr = 1; //typeof window !== 'undefined' ? window.devicePixelRatio : 1;
 const imageDebounceTime = 150;
 
 const setTimeout =
@@ -78,17 +78,17 @@ const getPaintVariables = (
     x: cx,
     y: cy,
   } = cont.getBoundingClientRect();
-  const chdpr = cHeight * dpr; // ch = container height
-  const cwdpr = cWidth * dpr; // cw = container width
-  const ihdpr = iHeight * dpr; // ih = image height
-  const iwdpr = iWidth * dpr; //  iw = image width
-  const xOff = (ix - cx) * dpr;
-  const yOff = (iy - cy) * dpr;
+  const chdpr = cHeight; // ch = container height
+  const cwdpr = cWidth; // cw = container width
+  const ihdpr = iHeight; // ih = image height
+  const iwdpr = iWidth; //  iw = image width
+  const xOff = ix - cx;
+  const yOff = iy - cy;
 
   const imgRect = img.getBoundingClientRect();
   const conRect = cont.getBoundingClientRect();
-  const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
-  const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
+  const tx = (imgRect.right + imgRect.left) / 2 - conRect.left;
+  const ty = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
 
   return { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty };
 };
@@ -100,7 +100,8 @@ export const performCanvasPaint = (
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
   rotation: number,
-  zoom: number
+  zoom: number,
+  imgScale: CartesianSize
 ) => {
   if (!canvas || !img || !cont) return;
 
@@ -117,21 +118,34 @@ export const performCanvasPaint = (
   if (!paintVariables) return;
   const { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty } = paintVariables;
 
-  canvas.setAttribute('height', chdpr + '');
-  canvas.setAttribute('width', cwdpr + '');
+  canvas.setAttribute('height', chdpr * imgScale.y + '');
+  canvas.setAttribute('width', cwdpr * imgScale.x + '');
 
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.translate(tx, ty);
+  ctx.translate(tx * imgScale.x, ty * imgScale.y);
   ctx.rotate((rotation * Math.PI) / 180);
-  ctx.translate(-tx, -ty);
-  ctx.drawImage(img, xOff, yOff, iwdpr, ihdpr);
+  ctx.translate(-tx * imgScale.x, -ty * imgScale.y);
+  ctx.drawImage(
+    img,
+    xOff * imgScale.x,
+    yOff * imgScale.y,
+    iwdpr * imgScale.x,
+    ihdpr * imgScale.y
+  );
   ctx.resetTransform();
 };
 
-const imgToBitmap = (img: HTMLImageElement, height: number, width: number) => {
-  const canvas = new OffscreenCanvas(width, height);
-  canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
+const imgToBitmap = (
+  img: HTMLImageElement,
+  height: number,
+  width: number,
+  imgScale: CartesianSize
+) => {
+  const canvas = new OffscreenCanvas(width * imgScale.x, height * imgScale.y);
+  canvas
+    .getContext('2d')
+    ?.drawImage(img, 0, 0, width * imgScale.x, height * imgScale.y);
   return canvas.transferToImageBitmap();
 };
 
@@ -142,8 +156,10 @@ export const performOffscreenCanvasPaint = (
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
   rotation: number,
-  zoom: number
+  zoom: number,
+  imgScale: CartesianSize
 ) => {
+  console.log(imgScale);
   if (!worker || !img || !cont) return;
 
   const paintVariables = getPaintVariables(
@@ -156,7 +172,7 @@ export const performOffscreenCanvasPaint = (
   if (!paintVariables) return;
   const { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty } = paintVariables;
 
-  const bitmap = imgToBitmap(img, ihdpr, iwdpr);
+  const bitmap = imgToBitmap(img, ihdpr, iwdpr, imgScale);
 
   worker.post(
     {
@@ -172,6 +188,7 @@ export const performOffscreenCanvasPaint = (
         src: img.src,
         rotation,
         bitmap,
+        imgScale,
       },
     },
     [bitmap]
@@ -181,8 +198,10 @@ export const performOffscreenCanvasPaint = (
 export const getImageMapFromBoxes = (
   boxes: CropperProps['boxes'],
   cont: HTMLDivElement | null,
-  canvas: HTMLCanvasElement | null
+  canvas: HTMLCanvasElement | null,
+  imgScale: CartesianSize
 ): CropperBoxDataMap => {
+  console.log(imgScale);
   if (!cont || !canvas) return {};
   const ctx = canvas.getContext('2d');
   if (!ctx) return {};
@@ -208,8 +227,8 @@ export const getImageMapFromBoxes = (
     const btlRect = boxTopLeftEl.getBoundingClientRect();
     const targetX = btlRect.x - contRect.x;
     const targetY = btlRect.y - contRect.y;
-    const boxTopLeftX = targetX * dpr + width;
-    const boxTopLeftY = targetY * dpr + height;
+    const boxTopLeftX = targetX * imgScale.x + width;
+    const boxTopLeftY = targetY * imgScale.y + height;
 
     ctx.translate(boxTopLeftX, boxTopLeftY);
     ctx.rotate((-box.rotation * Math.PI) / 180);
@@ -219,8 +238,8 @@ export const getImageMapFromBoxes = (
     const rotatedImageData = ctx.getImageData(
       boxTopLeftX,
       boxTopLeftY,
-      box.width * dpr,
-      box.height * dpr
+      box.width * imgScale.x,
+      box.height * imgScale.y
     );
 
     const finalImageUrl = imageDataToDataUrl(rotatedImageData);
@@ -234,33 +253,37 @@ export const getOffscreenImageMapFromBoxes = (
   boxes: CropperProps['boxes'],
   cont: HTMLDivElement | null,
   worker: CanvasWorker,
-  eventType: CropperEventType = 'draw-end'
+  eventType: CropperEventType = 'draw-end',
+  imgScale: CartesianSize
 ): CropperBoxDataMap => {
+  console.log(imgScale);
   if (!cont || !worker) return {};
   const contRect = cont.getBoundingClientRect();
 
-  const boxesForOfc = boxes.map((box) => {
-    if (box.width === 0 || box.height === 0) return {};
+  const boxesForOfc = boxes
+    .map((box) => {
+      if (box.width === 0 || box.height === 0) return;
 
-    const boxTopLeftEl = document
-      .getElementById(box.id)
-      ?.querySelector('.rmc__crop__corner-element__top-left');
-    if (!boxTopLeftEl) return;
+      const boxTopLeftEl = document
+        .getElementById(box.id)
+        ?.querySelector('.rmc__crop__corner-element__top-left');
+      if (!boxTopLeftEl) return;
 
-    const btlRect = boxTopLeftEl.getBoundingClientRect();
+      const btlRect = boxTopLeftEl.getBoundingClientRect();
 
-    return {
-      ...box,
-      dpr,
-      btlRect,
-      contRect,
-    };
-  });
+      return {
+        ...box,
+        btlRect,
+        contRect,
+      };
+    })
+    .filter((_) => _);
 
   worker.post({
     retrieve: {
       boxesForOfc,
       eventType,
+      imgScale,
     },
   });
 
