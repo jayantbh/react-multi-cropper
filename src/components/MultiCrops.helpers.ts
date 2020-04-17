@@ -24,7 +24,7 @@ import createWorker from 'offscreen-canvas/create-worker';
 // @ts-ignore -- file generated on `yarn start`
 import CanvasWorkerModule from '../worker.bundle';
 
-const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+const dpr = 1; //typeof window !== 'undefined' ? window.devicePixelRatio : 1;
 const imageDebounceTime = 150;
 
 const setTimeout =
@@ -53,24 +53,17 @@ export const getImgBoundingRect = (
   return rect;
 };
 
-export const performCanvasPaint = (
-  img: HTMLImageElement | null,
-  cont: HTMLDivElement | null,
-  canvas: HTMLCanvasElement | null,
+const getPaintVariables = (
+  img: HTMLImageElement,
+  cont: HTMLDivElement,
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates,
-  rotation: number,
   zoom: number
 ) => {
-  if (!canvas || !img || !cont) return;
-
   const iHeight = img.height * zoom;
   const iWidth = img.width * zoom;
 
   if (!iWidth || !iHeight) return;
-
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
 
   const { x: ix, y: iy } = getImgBoundingRect(
     img,
@@ -92,13 +85,40 @@ export const performCanvasPaint = (
   const xOff = (ix - cx) * dpr;
   const yOff = (iy - cy) * dpr;
 
-  canvas.setAttribute('height', chdpr + '');
-  canvas.setAttribute('width', cwdpr + '');
-
   const imgRect = img.getBoundingClientRect();
   const conRect = cont.getBoundingClientRect();
   const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
   const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
+
+  return { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty };
+};
+
+export const performCanvasPaint = (
+  img: HTMLImageElement | null,
+  cont: HTMLDivElement | null,
+  canvas: HTMLCanvasElement | null,
+  staticPanCoords: Coordinates,
+  activePanCoords: Coordinates,
+  rotation: number,
+  zoom: number
+) => {
+  if (!canvas || !img || !cont) return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const paintVariables = getPaintVariables(
+    img,
+    cont,
+    staticPanCoords,
+    activePanCoords,
+    zoom
+  );
+  if (!paintVariables) return;
+  const { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty } = paintVariables;
+
+  canvas.setAttribute('height', chdpr + '');
+  canvas.setAttribute('width', cwdpr + '');
 
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -126,35 +146,15 @@ export const performOffscreenCanvasPaint = (
 ) => {
   if (!worker || !img || !cont) return;
 
-  const iHeight = img.height * zoom;
-  const iWidth = img.width * zoom;
-
-  if (!iWidth || !iHeight) return;
-
-  const { x: ix, y: iy } = getImgBoundingRect(
+  const paintVariables = getPaintVariables(
     img,
+    cont,
     staticPanCoords,
     activePanCoords,
     zoom
   );
-
-  const {
-    height: cHeight,
-    width: cWidth,
-    x: cx,
-    y: cy,
-  } = cont.getBoundingClientRect();
-  const chdpr = cHeight * dpr; // ch = container height
-  const cwdpr = cWidth * dpr; // cw = container width
-  const ihdpr = iHeight * dpr; // ih = image height
-  const iwdpr = iWidth * dpr; //  iw = image width
-  const xOff = (ix - cx) * dpr;
-  const yOff = (iy - cy) * dpr;
-
-  const imgRect = img.getBoundingClientRect();
-  const conRect = cont.getBoundingClientRect();
-  const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
-  const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
+  if (!paintVariables) return;
+  const { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty } = paintVariables;
 
   const bitmap = imgToBitmap(img, ihdpr, iwdpr);
 
