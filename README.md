@@ -142,4 +142,4 @@ type CropperProps = {
 - The function supplied to `onCrop` will be called when a drawing/dragging/resizing operation was completed. This will be needed if you want to receive the image payload after a cropping action was done.
   - The first argument is an `Interactable` event that tells you all you need to know about the event that was triggered to cause this function to fire.
   - The second argument is a dictionary of box.id's and their respective base64 encoded image contents.
-- The `modifiable: true` functionality is slightly buggy with rotated boxes.
+- The `modifiable: true` functionality is quite buggy. Usage with this prop as `true` is not recommended yet.
