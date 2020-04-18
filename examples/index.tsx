@@ -66,7 +66,7 @@ const App = () => {
   const setZoom = (zoom: number) => {
     setFileZoomMap({
       ...fileZoomMap,
-      [src]: zoom,
+      [src]: Math.max(0.1, Math.min(zoom, 2)),
     });
   };
 
@@ -122,6 +122,7 @@ const App = () => {
       <MultiCrops
         src={src}
         zoom={fileZoomMap[src] || 1}
+        onZoomGesture={setZoom}
         modifiable={false}
         containerStyles={{
           height: '500px',

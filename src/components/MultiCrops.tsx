@@ -416,14 +416,18 @@ const MultiCrops: FC<CropperProps> = ({
         ref={containerRef}
         draggable={false}
         onWheel={(e) => {
-          const { deltaX, deltaY } = e;
+          const { deltaX, deltaY, shiftKey } = e;
 
           cancelAnimationFrame(wheelFrame.current);
           wheelFrame.current = requestAnimationFrame(() => {
-            setStaticPanCoords({
-              x: staticPanCoords.x - deltaX * pxScaleH,
-              y: staticPanCoords.y - deltaY * pxScaleW,
-            });
+            if (shiftKey) {
+              props.onZoomGesture?.(zoom + deltaY * 0.01);
+            } else {
+              setStaticPanCoords({
+                x: staticPanCoords.x - deltaX * pxScaleH,
+                y: staticPanCoords.y - deltaY * pxScaleW,
+              });
+            }
           });
         }}
       >

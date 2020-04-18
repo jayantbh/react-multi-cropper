@@ -75,6 +75,7 @@ export type CropperProps = {
   onDelete?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
+  onZoomGesture?: (newZoom: number) => any;
   containerClassName?: string;
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
