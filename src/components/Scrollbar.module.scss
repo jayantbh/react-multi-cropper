@@ -12,6 +12,7 @@ $track: 10px;
   bottom: $spacing;
   cursor: ew-resize;
   margin-right: $track;
+  min-width: 50px;
 }
 
 .vscroll {
@@ -19,6 +20,7 @@ $track: 10px;
   right: $spacing;
   cursor: ns-resize;
   margin-bottom: $track;
+  min-height: 50px;
 }
 
 .scroll-wrapper {
