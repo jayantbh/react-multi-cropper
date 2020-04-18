@@ -12,6 +12,7 @@ import sid from 'shortid';
 import useResizeObserver from 'use-resize-observer';
 
 import Crop from './Crop';
+import Scrollbar from './Scrollbar';
 import css from './MultiCrops.module.scss';
 import {
   Coordinates,
@@ -36,6 +37,7 @@ import {
   usePrevious,
   usePropResize,
   usePropRotation,
+  useScrollbars,
   useWorker,
   useZoom,
 } from './MultiCrops.helpers';
@@ -51,6 +53,7 @@ type Dimensions = {
 };
 
 const scalingFactor = 2;
+const scrollbarSpacing = 6;
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -130,6 +133,11 @@ const MultiCrops: FC<CropperProps> = ({
     doStateUpdate && setDimensions(fields);
     return fields;
   };
+
+  const { wl, wr, ht, hb, pxScaleW, pxScaleH } = useScrollbars(
+    containerRef.current,
+    imageRef.current
+  );
 
   useEffect(() => {
     getUpdatedDimensions();
@@ -450,6 +458,32 @@ const MultiCrops: FC<CropperProps> = ({
             />
           ))}
         </div>
+        <Scrollbar
+          type={'horizontal'}
+          style={{
+            left: `calc(${wl}% + ${scrollbarSpacing}px)`,
+            right: `calc(${wr}% + ${scrollbarSpacing}px)`,
+          }}
+          onScroll={(diff: number) =>
+            setStaticPanCoords({
+              ...staticPanCoords,
+              x: staticPanCoords.x + diff * pxScaleH,
+            })
+          }
+        />
+        <Scrollbar
+          type={'vertical'}
+          style={{
+            top: `calc(${ht}% + ${scrollbarSpacing}px)`,
+            bottom: `calc(${hb}% + ${scrollbarSpacing}px)`,
+          }}
+          onScroll={(diff: number) =>
+            setStaticPanCoords({
+              ...staticPanCoords,
+              y: staticPanCoords.y + diff * pxScaleW,
+            })
+          }
+        />
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
     </>

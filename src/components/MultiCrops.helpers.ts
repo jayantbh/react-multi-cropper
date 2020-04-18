@@ -539,3 +539,36 @@ export function usePrevious<T>(value: T): T {
   });
   return ref.current;
 }
+
+export const useScrollbars = (
+  cont?: HTMLDivElement | null,
+  img?: HTMLImageElement | null
+) => {
+  if (!cont || !img)
+    return { wl: 0, wr: 0, ht: 0, hb: 0, pxScaleW: 1, pxScaleH: 1 };
+
+  const cRect = cont.getBoundingClientRect();
+  const iRect = img.getBoundingClientRect();
+
+  const resultantBoundsWL = cRect.right - iRect.left;
+  const resultantBoundsWR = iRect.right - cRect.left;
+  const resultantBoundsHT = cRect.bottom - iRect.top;
+  const resultantBoundsHB = iRect.bottom - cRect.top;
+
+  const wlExcess = Math.max(resultantBoundsWL / cRect.width - 1, 0);
+  const wrExcess = Math.max(resultantBoundsWR / cRect.width - 1, 0);
+  const htExcess = Math.max(resultantBoundsHT / cRect.height - 1, 0);
+  const hbExcess = Math.max(resultantBoundsHB / cRect.height - 1, 0);
+
+  const wl = (wlExcess / (wlExcess + wrExcess + 1)) * 100;
+  const wr = (wrExcess / (wrExcess + wrExcess + 1)) * 100;
+  const ht = (htExcess / (htExcess + wrExcess + 1)) * 100;
+  const hb = (hbExcess / (hbExcess + wrExcess + 1)) * 100;
+
+  const _pxScaleW = 100 / (100 - wl + wr);
+  const _pxScaleH = 100 / (100 - hb + ht);
+  const pxScaleW = Number.isFinite(_pxScaleW) ? _pxScaleW : 0;
+  const pxScaleH = Number.isFinite(_pxScaleH) ? _pxScaleH : 0;
+
+  return { wl, wr, ht, hb, pxScaleW, pxScaleH };
+};
