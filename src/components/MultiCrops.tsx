@@ -78,6 +78,7 @@ const MultiCrops: FC<CropperProps> = ({
 
   const panFrame = useRef(-1);
   const wheelFrame = useRef(-1);
+  const keyFrame = useRef(-1);
   const autoSizeTimeout = useRef(-1);
 
   const [isPanning, setIsPanning] = useState(false);
@@ -403,6 +404,7 @@ const MultiCrops: FC<CropperProps> = ({
   return (
     <>
       <div
+        tabIndex={0}
         className={[
           css.container,
           cursorMode === 'pan' ? css.pan : '',
@@ -426,6 +428,31 @@ const MultiCrops: FC<CropperProps> = ({
               setStaticPanCoords({
                 x: staticPanCoords.x - deltaX * pxScaleH,
                 y: staticPanCoords.y - deltaY * pxScaleW,
+              });
+            }
+          });
+        }}
+        onKeyDown={(e) => {
+          const { key, shiftKey } = e;
+          cancelAnimationFrame(keyFrame.current);
+          keyFrame.current = requestAnimationFrame(() => {
+            if (shiftKey) {
+              const delta =
+                key === 'ArrowRight' || key === 'ArrowUp'
+                  ? 0.05
+                  : key === 'ArrowLeft' || key === 'ArrowDown'
+                  ? -0.05
+                  : 0;
+              props.onZoomGesture?.(zoom + delta);
+            } else {
+              const deltaX =
+                key === 'ArrowRight' ? 10 : key === 'ArrowLeft' ? -10 : 0;
+              const deltaY =
+                key === 'ArrowDown' ? 10 : key === 'ArrowUp' ? -10 : 0;
+
+              setStaticPanCoords({
+                x: staticPanCoords.x + deltaX * pxScaleH,
+                y: staticPanCoords.y + deltaY * pxScaleW,
               });
             }
           });
