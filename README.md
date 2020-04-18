@@ -144,4 +144,5 @@ type CropperProps = {
   - The first argument is an `Interactable` event that tells you all you need to know about the event that was triggered to cause this function to fire.
   - The second argument is a dictionary of box.id's and their respective base64 encoded image contents.
 - The `modifiable: true` functionality is quite buggy. Usage with this prop as `true` is not recommended yet.
-- Mouse/Touchpad wheel to pan/zoom is supported. But touchpad zoom gesture is not. Example for wheel zoom is present in the examples/index.tsx
+- Mouse/Touchpad wheel to pan/zoom is supported. But touchpad zoom gesture is not. Example for wheel zoom is present in the examples/index.tsx.
+- Arrow Keys based pan/zoom is supported.
