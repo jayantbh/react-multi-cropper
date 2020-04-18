@@ -159,7 +159,6 @@ export const performOffscreenCanvasPaint = (
   zoom: number,
   imgScale: CartesianSize
 ) => {
-  console.log(imgScale);
   if (!worker || !img || !cont) return;
 
   const paintVariables = getPaintVariables(
@@ -201,7 +200,6 @@ export const getImageMapFromBoxes = (
   canvas: HTMLCanvasElement | null,
   imgScale: CartesianSize
 ): CropperBoxDataMap => {
-  console.log(imgScale);
   if (!cont || !canvas) return {};
   const ctx = canvas.getContext('2d');
   if (!ctx) return {};
@@ -256,7 +254,6 @@ export const getOffscreenImageMapFromBoxes = (
   eventType: CropperEventType = 'draw-end',
   imgScale: CartesianSize
 ): CropperBoxDataMap => {
-  console.log(imgScale);
   if (!cont || !worker) return {};
   const contRect = cont.getBoundingClientRect();
 
