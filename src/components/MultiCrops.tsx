@@ -77,6 +77,7 @@ const MultiCrops: FC<CropperProps> = ({
   const isDrawing = useRef<boolean>(false);
 
   const panFrame = useRef(-1);
+  const wheelFrame = useRef(-1);
   const autoSizeTimeout = useRef(-1);
 
   const [isPanning, setIsPanning] = useState(false);
@@ -414,6 +415,17 @@ const MultiCrops: FC<CropperProps> = ({
         onMouseUp={handleMouseUp}
         ref={containerRef}
         draggable={false}
+        onWheel={(e) => {
+          const { deltaX, deltaY } = e;
+
+          cancelAnimationFrame(wheelFrame.current);
+          wheelFrame.current = requestAnimationFrame(() => {
+            setStaticPanCoords({
+              x: staticPanCoords.x - deltaX * pxScaleH,
+              y: staticPanCoords.y - deltaY * pxScaleW,
+            });
+          });
+        }}
       >
         <img
           ref={imageRef}
