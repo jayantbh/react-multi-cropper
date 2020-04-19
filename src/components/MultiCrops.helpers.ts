@@ -561,9 +561,9 @@ export const useScrollbars = (
   const hbExcess = Math.max(resultantBoundsHB / cRect.height - 1, 0);
 
   const wl = (wlExcess / (wlExcess + wrExcess + 1)) * 100;
-  const wr = (wrExcess / (wrExcess + wrExcess + 1)) * 100;
-  const ht = (htExcess / (htExcess + wrExcess + 1)) * 100;
-  const hb = (hbExcess / (hbExcess + wrExcess + 1)) * 100;
+  const wr = (wrExcess / (wlExcess + wrExcess + 1)) * 100;
+  const ht = (htExcess / (htExcess + hbExcess + 1)) * 100;
+  const hb = (hbExcess / (htExcess + hbExcess + 1)) * 100;
 
   const _pxScaleW = 100 / (100 - wl + wr);
   const _pxScaleH = 100 / (100 - hb + ht);
