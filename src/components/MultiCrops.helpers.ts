@@ -15,16 +15,9 @@ import {
   useRef,
   useState,
 } from 'react';
-
-const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+import { fabric } from 'fabric';
+const dpr = window.devicePixelRatio;
 const imageDebounceTime = 500;
-
-const setTimeout =
-  typeof window !== 'undefined' ? window.setTimeout : global.setTimeout;
-const clearTimeout = (t: number | NodeJS.Timeout) =>
-  typeof window !== 'undefined'
-    ? window.clearTimeout(t as number)
-    : global.clearTimeout(t as NodeJS.Timeout);
 
 export const getImgBoundingRect = (
   img: HTMLImageElement,
@@ -43,64 +36,166 @@ export const getImgBoundingRect = (
 };
 
 export const performCanvasPaint = (
-  img: HTMLImageElement | null,
-  cont: HTMLDivElement | null,
-  canvas: HTMLCanvasElement | null,
-  staticPanCoords: Coordinates,
-  activePanCoords: Coordinates,
-  rotation: number
+  image: any,
+  canvasFab: any,
+  canvasTar: any,
+  rotation: any,
 ) => {
-  if (!canvas || !img || !cont) return;
+  if (!canvasTar || !image || !canvasFab) return;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvasTar.getContext('2d');
   if (!ctx) return;
-
-  const iHeight = img.height;
-  const iWidth = img.width;
-  const { x: ix, y: iy } = getImgBoundingRect(
-    img,
-    staticPanCoords,
-    activePanCoords
-  );
-
   const {
-    height: cHeight,
-    width: cWidth,
-    x: cx,
-    y: cy,
-  } = cont.getBoundingClientRect();
-  const chdpr = cHeight * dpr; // ch = container height
-  const cwdpr = cWidth * dpr; // cw = container width
-  const ihdpr = iHeight * dpr; // ih = image height
-  const iwdpr = iWidth * dpr; //  iw = image width
-  const xOff = (ix - cx) * dpr;
-  const yOff = (iy - cy) * dpr;
-
-  canvas.setAttribute('height', chdpr + '');
-  canvas.setAttribute('width', cwdpr + '');
-  canvas.setAttribute(
-    'style',
-    `height: ${cHeight / 2}px; width: ${cWidth / 2}px;`
-  );
-
-  const imgRect = img.getBoundingClientRect();
-  const conRect = cont.getBoundingClientRect();
-  const tx = ((imgRect.right + imgRect.left) / 2 - conRect.left) * dpr;
-  const ty = ((imgRect.bottom + imgRect.top) / 2 - conRect.top) * dpr;
-
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    height,
+    width,
+  } = canvasFab.getElement().getBoundingClientRect();
+  canvasTar.height = height * dpr;
+  canvasTar.width = width * dpr;
+  const tx = image.translateX * dpr;
+  const ty = image.translateY * dpr;
+  const aspectRatio = image.width / image.height;
+  ctx.fillRect(0, 0, canvasFab.width, canvasFab.height);
   ctx.translate(tx, ty);
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-tx, -ty);
-  ctx.drawImage(img, xOff, yOff, iwdpr, ihdpr);
+  ctx.drawImage(image.getElement(), 0, 0, height * dpr * aspectRatio, height * dpr);
+  console.log('translate',image.translateX, image.translateY)
   ctx.resetTransform();
-};
+  // const iHeight = img.height;
+  // const iWidth = img.width;
+  // const { x: ix, y: iy } = getImgBoundingRect(
+  //   img,
+  //   staticPanCoords,
+  //   activePanCoords
+  // );
 
+};
+export const getCroppedImageFromBox = (
+  image: any,
+  canvas: any,
+  rotation: any,
+  boxes: any,
+  staticPanCoords:any,
+): any => {
+  if (!canvas || !image) return {};
+  const {
+    height,
+    width,
+  } = canvas.getElement().getBoundingClientRect();
+  const aspectRatio = image.width / image.height;
+
+  // ctx.resetTransform();
+  console.log(rotation);
+  let map: any = {};
+  canvas.getObjects().map((box: any) => {
+    console.log('box', box.angle, box.left,box.top, image.left, image.top, box);
+    if (box.width === 0 || box.height === 0) return;
+    // const targetX = box.left;
+    // const targetY = box.top;
+    console.log('boxes',boxes);
+    const boxRect = boxes.find((b:any) => b.id===box.id)
+    let  angle  = boxRect ? boxRect.rotation : 0;
+    let {angle:rotateAngle} = box;
+    console.log('anlges',angle, rotateAngle)
+    let tempCanvas = document.createElement('canvas');
+    let ctx: any = tempCanvas.getContext('2d');
+    tempCanvas.height = height*dpr;
+    tempCanvas.width = width*dpr;
+    let tx = image.translateX - staticPanCoords.x;
+    let ty = image.translateY - staticPanCoords.y;
+    // console.log(image);
+    console.log('translate',staticPanCoords,tx, ty);
+    ctx.fillRect(0, 0, width, height);
+    const boxTopLeftX = image.translateX * dpr;
+    const boxTopLeftY = image.translateY * dpr;
+    ctx.translate(boxTopLeftX, boxTopLeftY);
+    ctx.rotate(angle * Math.PI/ 180);
+    ctx.translate(-boxTopLeftX, -boxTopLeftY);
+    ctx.drawImage(image.getElement(), tx*dpr,ty*dpr,height * dpr * aspectRatio, height * dpr);
+
+    // ctx.resetTransform();
+    canvas.discardActiveObject();
+    canvas.renderAll();
+    let activeObject1 = new fabric.ActiveSelection([image, box], {
+
+    });
+    canvas.setActiveObject(activeObject1);
+    if (activeObject1 != null) {
+      activeObject1.rotate(-rotateAngle);
+
+      canvas.discardActiveObject();
+    }
+
+    console.log('box', box.angle, box.left,box.top, image.left, image.top, box);
+    const rotatedImageData = ctx.getImageData(
+      box.left * dpr,
+      box.top * dpr,
+      box.width * dpr,
+      box.height * dpr
+    );
+    let activeObject2 = new fabric.ActiveSelection([image, box], {
+
+    });
+    canvas.setActiveObject(activeObject2);
+    if (activeObject2 != null) {
+      activeObject2.rotate(rotateAngle);
+
+      canvas.discardActiveObject();
+    }
+    canvas.renderAll();
+    console.log('box', box.angle, box.left,box.top, image.left, image.top, box);
+    const finalImageUrl = imageDataToDataUrl(rotatedImageData);
+    if (!finalImageUrl) return;
+    map = { ...map, [box.id]: finalImageUrl };
+    return;
+  }, {})
+  return map
+}
+export const getPaintVariables = (
+  img: any,
+  canvas: any,
+  // staticPanCoords: Coordinates,
+  // activePanCoords: Coordinates,
+  zoom: number
+) => {
+  const iHeight = img.height * zoom;
+  const iWidth = img.width * zoom;
+
+  if (!iWidth || !iHeight) return;
+
+  // const { x: ix, y: iy } = getImgBoundingRect(
+  //   img,
+  //   staticPanCoords,
+  //   activePanCoords,
+  //   // zoom
+  // );
+  const { x: ix, y: iy } = img.getBoundingRect();
+
+  // const {
+  //   height: cHeight,
+  //   width: cWidth,
+  //   x: cx,
+  //   y: cy,
+  // } = cont.getBoundingClientRect();
+  const chdpr = canvas.getHeight(); // ch = container height
+  const cwdpr = canvas.getWidth(); // cw = container width
+  const ihdpr = iHeight; // ih = image height
+  const iwdpr = iWidth; //  iw = image width
+  const xOff = ix;
+  const yOff = iy;
+
+  const imgRect = img.getBoundingClientRect();
+  const conRect = canvas.getBoundingRect();
+  const tx = (imgRect.right + imgRect.left) / 2 - conRect.left;
+  const ty = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
+
+  return { chdpr, cwdpr, ihdpr, iwdpr, xOff, yOff, tx, ty };
+};
 export const getImageMapFromBoxes = (
   boxes: CropperProps['boxes'],
-  cont: HTMLDivElement | null,
-  canvas: HTMLCanvasElement | null
+  cont: any | null,
+  canvas: HTMLCanvasElement | null,
+
 ): CropperBoxDataMap => {
   if (!cont || !canvas) return {};
   const ctx = canvas.getContext('2d');
@@ -154,11 +249,11 @@ export const onImageResize = (
   cont: HTMLDivElement | null,
   canvas: HTMLCanvasElement | null,
   prevSize: MutableRefObject<RefSize | undefined>,
-  autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
+  autoSizeTimeout: MutableRefObject<number>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   staticPanCoords: Coordinates,
-  activePanCoords: Coordinates,
-  rotation: number,
+  // activePanCoords: Coordinates,
+  // rotation: number,
   src: CropperProps['src'],
   boxes: CropperProps['boxes'],
   onChange: CropperProps['onChange'],
@@ -200,13 +295,13 @@ export const onImageResize = (
     cont,
     canvas,
     staticPanCoords,
-    activePanCoords,
-    rotation
+    // activePanCoords,
+    // rotation
   );
-  onChange?.({ type: 'auto-resize' }, undefined, undefined, newBoxes);
+  onChange ?.({ type: 'auto-resize' }, undefined, undefined, newBoxes);
   clearTimeout(autoSizeTimeout.current);
-  autoSizeTimeout.current = setTimeout(() => {
-    onCrop?.(
+  autoSizeTimeout.current = window.setTimeout(() => {
+    onCrop ?.(
       { type: 'manual-resize' },
       getImageMapFromBoxes(newBoxes, cont, canvas),
       undefined
@@ -234,18 +329,18 @@ export const getAbsoluteCursorPosition = (e: MouseEvent) => ({
 });
 
 export const useCentering = (
-  img: HTMLImageElement | null,
+  img: any,
   cont: HTMLDivElement | null,
   staticPanCoords: Coordinates,
   activePanCoords: Coordinates
 ): [Coordinates, Dispatch<SetStateAction<Coordinates>>] => {
   const [centerCoords, setCenterCoords] = useState<Coordinates>({ x: 0, y: 0 });
-
+  console.log('inside center calc')
   useEffect(() => {
     if (!img || !cont) return;
-
-    const imgRect = img.getBoundingClientRect();
+    const imgRect = img.getBoundingRect();
     const conRect = cont.getBoundingClientRect();
+    console.log('inside center calc', imgRect, conRect);
     const x = (imgRect.right + imgRect.left) / 2 - conRect.left;
     const y = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
 
@@ -262,13 +357,13 @@ export const usePropResize = (
   drawCanvas: () => ReturnType<typeof performCanvasPaint>,
   getSelections: () => ReturnType<typeof getImageMapFromBoxes>
 ) => {
-  const propSizeTimeout = useRef<number | NodeJS.Timeout>(-1);
+  const propSizeTimeout = useRef(-1);
 
   useEffect(() => {
     clearTimeout(propSizeTimeout.current);
-    propSizeTimeout.current = setTimeout(() => {
+    propSizeTimeout.current = window.setTimeout(() => {
       drawCanvas();
-      onCrop?.({ type: 'manual-resize' }, getSelections(), undefined);
+      onCrop ?.({ type: 'manual-resize' }, getSelections(), undefined);
     }, imageDebounceTime);
   }, [width, height]);
 };
@@ -290,7 +385,7 @@ export const onImageLoad = (
   lastUpdatedBox.current = undefined;
 
   drawCanvas();
-  onLoad?.(e, getSelections());
+  onLoad ?.(e, getSelections());
 };
 
 export const usePropRotation = (
@@ -305,7 +400,7 @@ export const usePropRotation = (
 ) => {
   const prevRotation = useRef(rotation);
   const rotationFrame = useRef(-1);
-  const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
+  const rotationTimeout = useRef(-1);
 
   useEffect(() => {
     cancelAnimationFrame(rotationFrame.current);
@@ -318,12 +413,12 @@ export const usePropRotation = (
 
       prevRotation.current = rotation;
 
-      onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
+      onChange ?.({ type: 'rotate' }, undefined, undefined, newBoxes);
 
       clearTimeout(rotationTimeout.current);
-      rotationTimeout.current = setTimeout(() => {
+      rotationTimeout.current = window.setTimeout(() => {
         drawCanvas();
-        onCrop?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
+        onCrop ?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
       }, imageDebounceTime);
     });
   }, [rotation]);

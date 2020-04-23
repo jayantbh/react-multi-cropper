@@ -23,6 +23,7 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
 
   canvas.width = imageData.width;
   canvas.height = imageData.height;
+  console.log(imageData.width, imageData.height)
   ctx.putImageData(imageData, 0, 0);
 
   return canvas.toDataURL();

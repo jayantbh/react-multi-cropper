@@ -75,6 +75,8 @@
     "react-dom": "^16.2.0"
   },
   "dependencies": {
+    "@types/fabric": "^3.6.2",
+    "fabric": "^3.6.3",
     "interactjs": "1.9.4",
     "shortid": "^2.2.15",
     "use-resize-observer": "^6.0.0"

@@ -65,8 +65,8 @@ export type ImgOnLoadWithImageData = (
 
 export type CropperProps = {
   src: string;
-  width?: number | string;
-  height?: number | string;
+  width: number;
+  height: number;
   rotation?: number; // degrees
   boxes: CropperBox[];
   onChange?: UpdateFunction;
@@ -77,6 +77,7 @@ export type CropperProps = {
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
   modifiable?: boolean;
+  zoom?: number;
 };
 
 export type RefSize = {

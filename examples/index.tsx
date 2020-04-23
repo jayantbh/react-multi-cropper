@@ -7,19 +7,19 @@ import { CropperBox, CropperBoxDataMap } from '../dist';
 import { CropperCursorMode } from '../src/types';
 
 const initialBoxes = [
-  { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
-  { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
-  { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
-  { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
-  { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
-  { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
+  // { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
+  // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
+  // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
+  // { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
+  // { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
+  // { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
 ];
 
 const App = () => {
   const [images, setImages] = useState([img1, img2]);
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
-  const [cursorMode, setCursorMode] = useState<CropperCursorMode>('pan');
+  const [cursorMode, setCursorMode] = useState<CropperCursorMode>('draw');
   const [boxes, setBoxes] = useState<CropperBox[]>(initialBoxes);
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
@@ -64,8 +64,9 @@ const App = () => {
         />
       </span>
       <MultiCrops
+        zoom={zoom}
         src={images[0]}
-        width={`${100 * zoom}%`}
+        // width={`${100 * zoom}%`}
         modifiable={false}
         containerStyles={{
           height: '500px',
@@ -73,8 +74,8 @@ const App = () => {
         }}
         boxes={boxes}
         onChange={updateBoxes}
-        onCrop={(e, map, currentImg) => {
-          console.log('Crop', e, map, currentImg?.boxId);
+        onCrop={( e, map, currentImg) => {
+          console.log('Crop',e, map, currentImg?.boxId);
           setImageMap(map);
         }}
         onDelete={(e, box, index, boxes) => {

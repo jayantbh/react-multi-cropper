@@ -4,10 +4,11 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAdSURBVHgBARIA7f8B9PT0/9DQ0AAAxMTE//T09P93uA1zvgnyuwAAAABJRU5ErkJggg==');
+  // background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAdSURBVHgBARIA7f8B9PT0/9DQ0AAAxMTE//T09P93uA1zvgnyuwAAAABJRU5ErkJggg==');
   background-size: 20px;
   image-rendering: pixelated;
   user-select: none;
+  width: 100%;
 }
 
 .pan {
@@ -20,6 +21,14 @@
 
 .canvas {
   display: none;
+
+}
+.canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+#main-canvas {
+  width: 100% !important;
 }
 
 .img {
