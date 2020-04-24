@@ -12,6 +12,7 @@ export const performCanvasPaint = (
   canvasFab: any,
   canvasTar: any,
   rotation: any,
+
 ) => {
   if (!canvasTar || !image || !canvasFab) return;
 
@@ -43,6 +44,7 @@ export const getCroppedImageFromBox = (
   rotation: number,
   // boxes: any,
   staticPanCoords:any,
+  boxes: any[]
 ): any => {
   if (!canvas || !image) return {};
   const {
@@ -55,7 +57,7 @@ export const getCroppedImageFromBox = (
 
   console.log(rotation);
   let map: any = {};
-  canvas.getObjects().map((box: CustomRect) => {
+  boxes.map((box: CustomRect) => {
     if (box.width === 0 || box.height === 0) return;
     let {angle:rotateAngle = 0,  initRotation =0 } = box;
     let tempCanvas = document.createElement('canvas');

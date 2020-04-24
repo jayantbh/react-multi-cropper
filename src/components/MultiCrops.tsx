@@ -62,6 +62,7 @@ const MultiCrops: FC<CropperProps> = ({
   const rotationRef = useRef<any>(null);
   const boxesRef = useRef<any>(props.boxes);
   const activeGroupRef = useRef<any>(null);
+  const imageMapRef = useRef<any>({});
 
   const getUpdatedDimensions = () => {
     if (!imageRef.current) return;
@@ -70,17 +71,17 @@ const MultiCrops: FC<CropperProps> = ({
     const imageRefWidth = imageRef.current ?.width || 0;
     const containerRefHeight = canvasFab.current ?.getHeight() || 0;
     const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
-    
+
     const imgBaseHeight = containerRefHeight;
     const imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
     return { height: imgBaseHeight, width: imgBaseWidth };
   };
 
 
-  const getSelections = () =>
-    getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords);
+  const getSelections = (box: any) =>
+    getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords, [box]);
 
- 
+
   useEffect(() => {
 
     let canvas = new fabric.Canvas("main-canvas");
@@ -93,18 +94,17 @@ const MultiCrops: FC<CropperProps> = ({
     fabric.Image.fromURL(props.src, (img: any) => {
 
       img.set('objectCaching', false);
-     
+
       imageRef.current = img;
       let dimensions: any = getUpdatedDimensions();
-      
+
       img.scaleToWidth(dimensions.width);
       img.scaleToHeight(dimensions.height);
 
-    
+
       canvasFab.current.setBackgroundImage(img);
       canvasFab.current.renderAll();
       let imgValues = getCenterCoords(img);
-      console.log('translate coords', imgValues.translateX, imgValues.translateY)
       setStaticPanCoords({ x: imgValues.translateX, y: imgValues.translateY });
       performCanvasPaint(img, canvasFab.current, canvasRef.current, rotation);
 
@@ -115,15 +115,13 @@ const MultiCrops: FC<CropperProps> = ({
 
 
   useEffect(() => {
-    console.log('rotationn', rotation);
-    console.log(canvasFab.current.getObjects());
     if (imageRef.current) {
       canvasFab.current.discardActiveObject();
       canvasFab.current.renderAll();
-     
+
       activeGroupRef.current = new fabric.ActiveSelection([imageRef.current, ...canvasFab.current.getObjects()], {
         hasControls: false,
-       
+
       })
       canvasFab.current.setActiveObject(activeGroupRef.current);
       if (activeGroupRef.current != null) {
@@ -136,7 +134,7 @@ const MultiCrops: FC<CropperProps> = ({
 
     }
     rotationRef.current = rotation;
-   
+
 
   }, [rotation])
 
@@ -147,7 +145,6 @@ const MultiCrops: FC<CropperProps> = ({
       canvasFab.current.set({ selection: true })
     }
     canvasFab.current.on('mouse:down', (e: any) => {
-      console.log('mouse selected');
       if (!e.target || e.target.type !== 'rect') {
         handleMouseDown(e);
       }
@@ -158,16 +155,51 @@ const MultiCrops: FC<CropperProps> = ({
     canvasFab.current.on('mouse:up', (e: MouseEvent) => { handleMouseUp(e); });
     canvasFab.current.on("object:modified", (e: any) => {
       console.log('changed', e);
-      handleCrop('drag');
+      handleCrop('drag', e.target);
 
     })
-   
+    // canvasFab.current.on("object:added", (e: any )=> {
+
+    // })
+    canvasFab.current.on("object:removed", (e: any) => {
+      
+      imageMapRef.current[e.target.id] = undefined;
+      const boxId = e.target.id;
+      const currentImgParam: CurrentImgParam = boxId
+        ? {
+          boxId,
+          dataUrl: imageMapRef.current[boxId],
+        }
+        : undefined;
+
+      let boxes = [...boxesRef.current];
+      const index = boxes.findIndex((box: any) => boxId === box.id);
+      if (index != -1)
+          boxes.splice(index,1);
+      boxesRef.current = boxes;
+      onChange ?.(
+        { type: 'delete', event: e },
+        lastUpdatedBox.current,
+        drawingIndex.current,
+        boxesRef.current,
+      );
+      props.onCrop ?.({ type: 'delete' }, imageMapRef.current, currentImgParam);
+
+
+
+      isDrawing.current = false;
+
+      // props.onCrop ?.({  }, imageMapRef.current, e.target.id);
+
+    })
+
     return () => {
       canvasFab.current.off('mouse:down');
       canvasFab.current.off('mouse:move');
       canvasFab.current.off('mouse:up');
 
       canvasFab.current.off("object:modified");
+      canvasFab.current.off("object:removed");
     }
   }, [cursorMode, staticPanCoords])
 
@@ -184,22 +216,22 @@ const MultiCrops: FC<CropperProps> = ({
 
   useEffect(() => {
     boxesRef.current = props.boxes;
-    handleCrop('draw');
+    // handleCrop('draw');
   }, [props.boxes])
 
-  const handleCrop = (type: CropperEvent['type']) => {
-    const selections = getSelections();
-
-    console.log(selections);
-    const boxId = lastUpdatedBox.current ?.id;
+  const handleCrop = (type: CropperEvent['type'], box: any) => {
+    const selections = getSelections(box);
+    imageMapRef.current = { ...imageMapRef.current, ...selections };
+    lastUpdatedBox.current = null;
+    const boxId = box.id;
     const currentImgParam: CurrentImgParam = boxId
       ? {
         boxId,
-        dataUrl: selections[boxId],
+        dataUrl: imageMapRef.current[boxId],
       }
       : undefined;
 
-    props.onCrop ?.({ type }, selections, currentImgParam);
+    props.onCrop ?.({ type }, imageMapRef.current, currentImgParam);
 
     isDrawing.current = false;
   };
@@ -212,7 +244,7 @@ const MultiCrops: FC<CropperProps> = ({
     } else
       if (cursorMode === 'draw') {
         pointA.current = canvasFab.current.getPointer(e);
-        drawingIndex.current = props.boxes.length;
+        drawingIndex.current = boxesRef.current.length;
         id.current = sid.generate();
         isDrawing.current = true;
         let rect: CustomRect = new CustomRect(id.current, rotationRef.current,
@@ -229,8 +261,8 @@ const MultiCrops: FC<CropperProps> = ({
           }
         )
         canvasFab.current ?.add(rect);
-
         lastUpdatedBox.current = rect;
+        
         canvasFab.current ?.renderAll();
       }
   };
@@ -239,16 +271,14 @@ const MultiCrops: FC<CropperProps> = ({
       const pointB = canvasFab.current.getPointer(e);
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
-     
+
       let intialPoint: any = pointA.current;
       const xDiff = -1 * (intialPoint.x - pointB.x);
       const yDiff = -1 * (intialPoint.y - pointB.y);
-      console.log(xDiff, yDiff);
       [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
 
         const translateX = rect.left + xDiff;
         const translateY = rect.top + yDiff;
-        console.log(rect.left, rect.top, translateX, translateY)
         rect.set({ left: translateX, top: translateY });
         return;
       })
@@ -256,13 +286,13 @@ const MultiCrops: FC<CropperProps> = ({
 
       canvasFab.current.renderAll();
       pointA.current = pointB;
-     
+
     } else if (cursorMode === 'draw') {
       const pointB = canvasFab.current.getPointer(e);
       if (!isDrawing.current) return;
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
-     
+
       let rect = lastUpdatedBox.current;
       rect.set({
         left: Math.min(pointA.current.x, pointB.x),
@@ -272,27 +302,29 @@ const MultiCrops: FC<CropperProps> = ({
       })
       canvasFab.current.renderAll();
       lastUpdatedBox.current = rect;
-    
-    }
-  };
-  const handleMouseUp = (e: MouseEvent) => {
-    if (cursorMode === 'pan') {
-      
-    } else if (cursorMode === 'draw') {
-      if (!isDrawing.current) return;
-      if (!lastUpdatedBox.current) return;
       const boxes = boxesRef.current;
-      const nextBoxes = [...boxes, lastUpdatedBox.current];
-
-      isDrawing.current = false;
-
+      boxes[drawingIndex.current] = lastUpdatedBox.current;
+      // const nextBoxes = [...boxes, lastUpdatedBox.current];
       onChange ?.(
         { type: 'draw', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        nextBoxes,
+        boxes,
       );
-      lastUpdatedBox.current = null;
+
+    }
+  };
+  const handleMouseUp = (e: MouseEvent) => {
+    if (cursorMode === 'pan') {
+
+    } else if (cursorMode === 'draw') {
+      if (!isDrawing.current) return;
+      if (!lastUpdatedBox.current) return;
+      
+
+      isDrawing.current = false;
+      console.log('mousup', e);
+      handleCrop('draw', lastUpdatedBox.current);
 
 
     }
