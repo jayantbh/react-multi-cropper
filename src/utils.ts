@@ -1,3 +1,5 @@
+import { fabric } from 'fabric';
+
 export function update<T>(index: number, item: T, items: T[]): T[] {
   return [...items.slice(0, index), item, ...items.slice(index + 1)];
 }
@@ -28,3 +30,8 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
 
   return canvas.toDataURL();
 };
+export const getCenterCoords = (image: fabric.Image) => {
+  const matrix = image.calcTransformMatrix();
+  const values = fabric.util.qrDecompose(matrix);
+  return values;
+}

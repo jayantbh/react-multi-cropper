@@ -1,5 +1,6 @@
 import { CSSProperties, MouseEvent, SyntheticEvent } from 'react';
 import { DragEvent, ResizeEvent } from '@interactjs/types/types';
+import { fabric } from 'fabric';
 
 export type DataUrl = string;
 
@@ -84,3 +85,19 @@ export type RefSize = {
   width: number;
   height: number;
 };
+
+export class CustomRect extends fabric.Rect {
+  id: string;
+  initRotation: number;
+  /**
+	 * Constructor
+	 * @param [options] Options object
+	 */
+  constructor(id: string, rotation: number,options?:fabric.IRectOptions) {
+    super(options);
+    this.id = id;
+    this.initRotation = rotation
+  }
+
+  
+}
