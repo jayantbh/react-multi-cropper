@@ -15,7 +15,7 @@ import {
   getCroppedImageFromBox,
   performCanvasPaint,
 } from './MultiCrops.helpers';
-import { getCenterCoords } from '../utils';
+import { getCenterCoords, getImageDimensions } from '../utils';
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 console.log(controls)
@@ -64,18 +64,28 @@ const MultiCrops: FC<CropperProps> = ({
   const activeGroupRef = useRef<any>(null);
   const imageMapRef = useRef<any>({});
 
-  const getUpdatedDimensions = () => {
-    if (!imageRef.current) return;
+  // const getUpdatedDimensions = () => {
+  //   if (!imageRef.current) return;
 
-    const imageRefHeight = imageRef.current ?.height || 0;
-    const imageRefWidth = imageRef.current ?.width || 0;
-    const containerRefHeight = canvasFab.current ?.getHeight() || 0;
-    const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
-
-    const imgBaseHeight = containerRefHeight;
-    const imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
-    return { height: imgBaseHeight, width: imgBaseWidth };
-  };
+  //   const imageRefHeight = imageRef.current ?.height || 0;
+  //   const imageRefWidth = imageRef.current ?.width || 0;
+  //   const containerRefHeight = containerRef.current ?.offsetHeight || 0;
+  //   const containerRefWidth = containerRef.current ?.offsetWidth || 0;
+  //   const contAspectRatio = containerRefWidth / containerRefHeight;
+  //   const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
+  //   let imgBaseHeight, imgBaseWidth;
+  //   if (contAspectRatio > imgAspectRatio) {
+  //     imgBaseHeight = containerRefHeight;
+  //     imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
+  //   } else {
+  //     imgBaseWidth = containerRefWidth;
+  //     imgBaseHeight = imgBaseWidth/imgAspectRatio;
+  //   }
+  //   console.log(contAspectRatio, imgAspectRatio, imgBaseHeight, imgBaseWidth, containerRefHeight,containerRefWidth);
+  //   // const imgBaseHeight = (imgAspectRatio > contAspectRatio) ? containerRefHeight : imageRefHeight;
+  //   // const imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
+  //   return { height: imgBaseHeight, width: imgBaseWidth };
+  // };
 
 
   const getSelections = (box: any) =>
@@ -96,7 +106,7 @@ const MultiCrops: FC<CropperProps> = ({
       img.set('objectCaching', false);
 
       imageRef.current = img;
-      let dimensions: any = getUpdatedDimensions();
+      let dimensions: any = getImageDimensions(imageRef.current, canvasFab.current.getElement());
 
       img.scaleToWidth(dimensions.width);
       img.scaleToHeight(dimensions.height);
@@ -254,10 +264,10 @@ const MultiCrops: FC<CropperProps> = ({
             fill: 'transparent',
             hasBorders: true,
             stroke: 'black',
-            strokeWidth: 1,
+            strokeWidth: 2,
             hasRotatingPoint: false,
             transparentCorners: true,
-
+            strokeUniform: true,
           }
         )
         canvasFab.current ?.add(rect);

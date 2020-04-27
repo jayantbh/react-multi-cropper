@@ -1,7 +1,7 @@
 import {
   CustomRect
 } from '../types';
-import { imageDataToDataUrl, getCenterCoords } from '../utils';
+import { imageDataToDataUrl, getCenterCoords, getImageDimensions } from '../utils';
 
 import { fabric } from 'fabric';
 const dpr =  2;// window.devicePixelRatio;
@@ -51,7 +51,7 @@ export const getCroppedImageFromBox = (
     height,
     width,
   } = canvas.getElement().getBoundingClientRect();
-  const aspectRatio = (image.width || 0) / (image.height || 0);
+  // const aspectRatio = (image.width || 0) / (image.height || 0);
 
   let imgValues = getCenterCoords(image);
 
@@ -72,8 +72,10 @@ export const getCroppedImageFromBox = (
     ctx.translate(boxTopLeftX, boxTopLeftY);
     ctx.rotate(initRotation * Math.PI/ 180);
     ctx.translate(-boxTopLeftX, -boxTopLeftY);
-    ctx.drawImage(image.getElement(), tx*dpr,ty*dpr,height * dpr * aspectRatio, height * dpr);
+    let {height:imageHeight, width:imageWidth}  = getImageDimensions(image, canvas.getElement())
+    ctx.drawImage(image.getElement(), tx*dpr,ty*dpr,imageWidth* dpr, imageHeight * dpr);
 
+    let activeObject = canvas.getActiveObject();
     canvas.discardActiveObject();
     canvas.renderAll();
     let activeObject1 = new fabric.ActiveSelection([image, box], {
@@ -101,6 +103,7 @@ export const getCroppedImageFromBox = (
 
       canvas.discardActiveObject();
     }
+    canvas.setActiveObject(activeObject);
     canvas.renderAll();
     const finalImageUrl = imageDataToDataUrl(rotatedImageData);
     if (!finalImageUrl) return;

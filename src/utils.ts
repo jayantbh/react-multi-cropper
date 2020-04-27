@@ -35,3 +35,21 @@ export const getCenterCoords = (image: fabric.Image) => {
   const values = fabric.util.qrDecompose(matrix);
   return values;
 }
+
+export const getImageDimensions = (image: any, container:any) => {
+  const imageRefHeight = image.height || 0;
+    const imageRefWidth = image.width || 0;
+    const containerRefHeight = container?.offsetHeight || 0;
+    const containerRefWidth = container?.offsetWidth || 0;
+    const contAspectRatio = containerRefWidth / containerRefHeight;
+    const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
+    let imgBaseHeight, imgBaseWidth;
+    if (contAspectRatio > imgAspectRatio) {
+      imgBaseHeight = containerRefHeight;
+      imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
+    } else {
+      imgBaseWidth = containerRefWidth;
+      imgBaseHeight = imgBaseWidth/imgAspectRatio;
+    }
+    return { height: imgBaseHeight, width: imgBaseWidth };
+}
