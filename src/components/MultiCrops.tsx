@@ -53,7 +53,6 @@ type Dimensions = {
   imgBaseWidth: number;
 };
 
-const scalingFactor = 2;
 const scrollbarSpacing = 6;
 
 const MultiCrops: FC<CropperProps> = ({
@@ -91,6 +90,15 @@ const MultiCrops: FC<CropperProps> = ({
   const img = imageRef.current;
   const xScale = (img?.naturalWidth || 0) / ((img?.width || 0) * zoom);
   const yScale = (img?.naturalHeight || 0) / ((img?.height || 0) * zoom);
+  const scalingFactor = (() => {
+    const w = img?.naturalWidth || 0;
+    const h = img?.naturalHeight || 0;
+    const size = Math.max(w, h);
+    const targetSize = 1500;
+
+    if (!size) return 1;
+    return targetSize / size;
+  })();
   const imgScale: CartesianSize = {
     x: Number.isFinite(xScale) ? xScale * scalingFactor : scalingFactor,
     y: Number.isFinite(yScale) ? yScale * scalingFactor : scalingFactor,
