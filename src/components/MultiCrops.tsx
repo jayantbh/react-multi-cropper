@@ -34,6 +34,7 @@ import {
   performCanvasPaint,
   performOffscreenCanvasPaint,
   useCentering,
+  useMounting,
   usePrevious,
   usePropResize,
   usePropRotation,
@@ -401,6 +402,26 @@ const MultiCrops: FC<CropperProps> = ({
     props.onChange?.(e, box, index, boxes);
   };
 
+  useMounting(containerRef, (e: WheelEvent) => {
+    if (props.disableMouse) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    const { deltaX, deltaY, shiftKey } = e;
+
+    cancelAnimationFrame(wheelFrame.current);
+    wheelFrame.current = requestAnimationFrame(() => {
+      if (shiftKey) {
+        props.onZoomGesture?.(zoom + deltaY * 0.01);
+      } else {
+        setStaticPanCoords({
+          x: staticPanCoords.x - deltaX * pxScaleH,
+          y: staticPanCoords.y - deltaY * pxScaleW,
+        });
+      }
+    });
+  });
+
   return (
     <>
       <div
@@ -417,22 +438,16 @@ const MultiCrops: FC<CropperProps> = ({
         onMouseUp={handleMouseUp}
         ref={containerRef}
         draggable={false}
-        onWheel={(e) => {
-          const { deltaX, deltaY, shiftKey } = e;
-
-          cancelAnimationFrame(wheelFrame.current);
-          wheelFrame.current = requestAnimationFrame(() => {
-            if (shiftKey) {
-              props.onZoomGesture?.(zoom + deltaY * 0.01);
-            } else {
-              setStaticPanCoords({
-                x: staticPanCoords.x - deltaX * pxScaleH,
-                y: staticPanCoords.y - deltaY * pxScaleW,
-              });
-            }
-          });
+        onScroll={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Hello');
         }}
         onKeyDown={(e) => {
+          if (props.disableKeyboard) return;
+
+          e.preventDefault();
+          e.stopPropagation();
           const { key, shiftKey } = e;
           cancelAnimationFrame(keyFrame.current);
           keyFrame.current = requestAnimationFrame(() => {
@@ -507,6 +522,7 @@ const MultiCrops: FC<CropperProps> = ({
             left: `calc(${wl}% + ${scrollbarSpacing}px)`,
             right: `calc(${wr}% + ${scrollbarSpacing}px)`,
           }}
+          isHidden={!wl && !wr}
           onScroll={(diff: number) =>
             setStaticPanCoords({
               ...staticPanCoords,
@@ -520,6 +536,7 @@ const MultiCrops: FC<CropperProps> = ({
             top: `calc(${ht}% + ${scrollbarSpacing}px)`,
             bottom: `calc(${hb}% + ${scrollbarSpacing}px)`,
           }}
+          isHidden={!ht && !hb}
           onScroll={(diff: number) =>
             setStaticPanCoords({
               ...staticPanCoords,

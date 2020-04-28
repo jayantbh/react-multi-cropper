@@ -6,11 +6,12 @@ type ScrollType = 'horizontal' | 'vertical';
 type ScrollbarProps = {
   type: ScrollType;
   onScroll: (difference: number) => any;
+  isHidden?: boolean;
 };
 
 const Scrollbar: FC<
   Omit<HTMLAttributes<HTMLDivElement>, 'onScroll'> & ScrollbarProps
-> = ({ onScroll, type, ...props }) => {
+> = ({ onScroll, type, isHidden, ...props }) => {
   const isVertical = type === 'vertical';
 
   const [isScrolling, setScroll] = useState(false);
@@ -23,6 +24,7 @@ const Scrollbar: FC<
       style={{
         pointerEvents: isScrolling ? 'initial' : 'none',
         cursor: isVertical ? 'ns-resize' : 'ew-resize',
+        opacity: isHidden ? 0 : 1,
       }}
       onMouseUp={(e) => {
         e.stopPropagation();

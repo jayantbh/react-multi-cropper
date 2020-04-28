@@ -572,3 +572,18 @@ export const useScrollbars = (
 
   return { wl, wr, ht, hb, pxScaleW, pxScaleH };
 };
+
+export const useMounting = (
+  cont: MutableRefObject<HTMLDivElement | null>,
+  listener: EventListener
+) => {
+  useEffect(() => {
+    if (!cont.current) return;
+    cont.current.addEventListener('wheel', listener);
+
+    return () => {
+      if (!cont.current) return;
+      cont.current.removeEventListener('wheel', listener);
+    };
+  });
+};

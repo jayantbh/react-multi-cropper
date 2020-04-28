@@ -80,6 +80,8 @@ export type CropperProps = {
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
   modifiable?: boolean;
+  disableKeyboard?: boolean;
+  disableMouse?: boolean;
 };
 
 export type RefSize = {
