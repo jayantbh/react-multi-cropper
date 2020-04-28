@@ -55,7 +55,7 @@ const MultiCrops: FC<CropperProps> = ({
   const lastUpdatedBox = useRef<any>(null);
   const isDrawing = useRef<boolean>(false);
   const mainCanvasRef = useRef<any>(null)
-  const imageSrcMap= useRef<any>({});
+  const imageSrcMap = useRef<any>({});
   const [isPanning, setIsPanning] = useState(false);
   // const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   let canvasFab = useRef<any>(null);
@@ -64,13 +64,14 @@ const MultiCrops: FC<CropperProps> = ({
   const activeGroupRef = useRef<any>(null);
   const imageMapRef = useRef<any>({});
   const imageSource = useRef<any>(props.src);
-  const staticPanCoords = useRef({ x: 0, y: 0 });
+  const isReset = useRef<any>(false);
+  // const staticPanCoords = useRef({ x: 0, y: 0 });
 
-  const setStaticPanCoords = ({x,y}:Coordinates) => {
-    staticPanCoords.current = {x,y};
-  }
+  // const setStaticPanCoords = ({ x, y }: Coordinates) => {
+  //   staticPanCoords.current = { x, y };
+  // }
   const drawBoxes = (boxes: any) => {
-    console.log('boxes',canvasFab.current.getObjects());
+    console.log('boxes', canvasFab.current.getObjects());
     boxes.map((box: any) => {
       let rect: CustomRect = new CustomRect(box.id, box.initRotation || 0,
         {
@@ -95,7 +96,7 @@ const MultiCrops: FC<CropperProps> = ({
   }
 
   const getSelections = (box: any) =>
-    getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords.current, [box]);
+    getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, [box]);
 
 
   useEffect(() => {
@@ -104,34 +105,33 @@ const MultiCrops: FC<CropperProps> = ({
     canvas.setDimensions({ width: containerRef.current ?.offsetWidth || 1000, height: containerRef.current ?.offsetHeight || 1000 });
     canvasFab.current = canvas;
   }, [])
-    useEffect(() => {
-      console.log('boxes here')
-      // canvasFab.current.getObjects() = props.boxes;
-      detachListeners();
-      imageSource.current = props.src;
-      imageRef.current = imageSrcMap.current[props.src];
-      canvasFab.current.remove(...canvasFab.current.getObjects());
-      if (imageRef.current) {
-        let imgValues = getCenterCoords(imageRef.current);
-        rotationRef.current = imgValues.angle;
-      setStaticPanCoords({ x: imgValues.translateX, y: imgValues.translateY });
+  useEffect(() => {
+    console.log('boxes here')
+    // canvasFab.current.getObjects() = props.boxes;
+    detachListeners();
+    imageSource.current = props.src;
+    imageRef.current = imageSrcMap.current[props.src];
+    canvasFab.current.remove(...canvasFab.current.getObjects());
+    if (imageRef.current) {
+      let imgValues = getCenterCoords(imageRef.current);
+      rotationRef.current = imgValues.angle;
 
-      } else {
-        rotationRef.current = 0;
-      }
-      canvasFab.current.renderAll();
-      drawBoxes(props.boxes);
-    }, [props.src]);
+    } else {
+      rotationRef.current = 0;
+    }
+    canvasFab.current.renderAll();
+    drawBoxes(props.boxes);
+  }, [props.src]);
 
-    useEffect(() => {
-      // canvasFab.current.getObjects() = props.boxes;
-    },[props.boxes]);
+  useEffect(() => {
+    // canvasFab.current.getObjects() = props.boxes;
+  }, [props.boxes]);
   // }
 
   useEffect(() => {
     // imageSource.current = props.src;
     if (imageRef.current) {
-      
+
       canvasFab.current.setBackgroundImage(imageRef.current);
       // drawBoxes(canvasFab.current.getObjects());
       attachListeners();
@@ -149,10 +149,8 @@ const MultiCrops: FC<CropperProps> = ({
         canvasFab.current.renderAll();
         let imgValues = getCenterCoords(img);
         console.log('imgValues', imgValues);
-        setStaticPanCoords({ x: imgValues.translateX, y: imgValues.translateY });
-
         performCanvasPaint(img, canvasFab.current, canvasRef.current, rotation);
-        
+
       },
         { selectable: false, hasRotatingPoint: false, lockScalingX: true, lockScalingY: true }
       );
@@ -183,9 +181,27 @@ const MultiCrops: FC<CropperProps> = ({
 
     }
     rotationRef.current = rotation;
+    if (isReset.current) {
+      let imgValues = getCenterCoords(imageRef.current);
+      imageRef.current.set({ left: 0, top: 0 });
+      let newImgValues = getCenterCoords(imageRef.current);
+      console.log(imgValues, newImgValues);
+      const diffx = -1*(imgValues.translateX - newImgValues.translateX);
+      const diffy = -1*(imgValues.translateY - newImgValues.translateY);
+
+      [...canvasFab.current.getObjects()].map((rect) => {
+        const translateX = rect.left + diffx;
+        const translateY = rect.top + diffy;
+        rect.set({ left: translateX, top: translateY });
+        rect.setCoords();
+        return;
+      });
+      canvasFab.current.renderAll();
+      isReset.current = false;
+    }
 
 
-  }, [rotation])
+  }, [rotation, isReset.current])
 
   useEffect(() => {
     if (cursorMode == 'pan') {
@@ -193,7 +209,7 @@ const MultiCrops: FC<CropperProps> = ({
     } else {
       canvasFab.current.set({ selection: true })
     }
-    
+
     attachListeners();
     return () => {
       detachListeners();
@@ -224,7 +240,7 @@ const MultiCrops: FC<CropperProps> = ({
         }
         : undefined;
 
-      
+
       onChange ?.(
         { type: 'delete', event: e },
         lastUpdatedBox.current,
@@ -254,7 +270,7 @@ const MultiCrops: FC<CropperProps> = ({
     }
   }, [props.zoom])
 
-  
+
 
   const handleCrop = (type: CropperEvent['type'], box: any) => {
     const selections = getSelections(box);
@@ -274,7 +290,7 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const handleAllCrops = (boxes: any) => {
-    const imageMap = getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords.current, boxes);
+    const imageMap = getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, boxes);
     imageMapRef.current = imageMap;
     props.onCrop ?.({ type: 'draw' }, imageMapRef.current);
   }
@@ -323,6 +339,7 @@ const MultiCrops: FC<CropperProps> = ({
         const translateX = rect.left + xDiff;
         const translateY = rect.top + yDiff;
         rect.set({ left: translateX, top: translateY });
+        rect.setCoords();
         return;
       })
 
@@ -365,17 +382,24 @@ const MultiCrops: FC<CropperProps> = ({
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
       if (!lastUpdatedBox.current) return;
-      
+
 
       isDrawing.current = false;
       console.log('mousup', e);
-      
+
       handleCrop('draw-end', lastUpdatedBox.current);
       canvasFab.current.discardActiveObject();
       canvasFab.current.renderAll();
     }
     pointA.current = {};
   };
+  const handleReset = () => {
+
+    isReset.current = true;
+    props ?.onReset();
+
+    canvasFab.current.renderAll();
+  }
 
   const onChange: CropperProps['onChange'] = (e, box, index, boxes) => {
     lastUpdatedBox.current = box;
@@ -396,6 +420,12 @@ const MultiCrops: FC<CropperProps> = ({
         ref={containerRef}
         draggable={false}
       >
+        <button
+
+          onClick={handleReset}
+        >
+          Reset
+      </button>
         <canvas
           className={[
             cursorMode === 'pan' ? css.pan : '',
@@ -403,6 +433,7 @@ const MultiCrops: FC<CropperProps> = ({
             props.containerClassName || '',
           ].join(' ')}
           ref={mainCanvasRef} id="main-canvas" style={{ width: '100%', height: '100%' }} ></canvas>
+
       </div>
       <canvas id="canvas-fab" className={css.canvas} ref={canvasRef} />
     </>

@@ -42,8 +42,6 @@ export const getCroppedImageFromBox = (
   image: fabric.Image,
   canvas: fabric.Canvas,
   rotation: number,
-  // boxes: any,
-  staticPanCoords:any,
   boxes: any[]
 ): any => {
   if (!canvas || !image) return {};
@@ -63,7 +61,6 @@ export const getCroppedImageFromBox = (
     let ctx: any = tempCanvas.getContext('2d');
     tempCanvas.height = height*dpr;
     tempCanvas.width = width*dpr;
-    console.log('imgValues',imgValues, staticPanCoords);
     let {height:imageHeight, width:imageWidth}  = getImageDimensions(image, canvas.getElement())
     let tx = imgValues.translateX - imageWidth/2;
     let ty = imgValues.translateY - imageHeight/2;

@@ -130,6 +130,10 @@ const App = () => {
           );
           setImageMap(map);
         }}
+        onReset={() => {
+          setRotation(0);
+          setZoom(1);
+        }}
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}
       />

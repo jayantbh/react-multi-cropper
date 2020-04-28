@@ -79,6 +79,7 @@ export type CropperProps = {
   cursorMode?: CropperCursorMode;
   modifiable?: boolean;
   zoom?: number;
+  onReset?: any
 };
 
 export type RefSize = {
