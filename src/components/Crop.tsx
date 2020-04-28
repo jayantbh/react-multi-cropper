@@ -1,7 +1,7 @@
-import React, { Component, CSSProperties, MouseEvent } from 'react';
+import React, { Component, CSSProperties, FC, MouseEvent } from 'react';
 import interact from 'interactjs';
 import type { ResizeEvent, Rect, DragEvent } from '@interactjs/types/types';
-import { DeleteIcon, NumberIcon } from './Icons';
+import { BoxLabel } from './BoxLabel';
 import { update, remove, oneLevelEquals } from '../utils';
 import {
   CropperBox,
@@ -20,6 +20,7 @@ type Props = {
   onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
   modifiable?: CropperProps['modifiable'];
+  CustomLabel?: FC<{ box: CropperBox; index: number }>;
 };
 
 class Crop extends Component<Props> {
@@ -77,7 +78,7 @@ class Crop extends Component<Props> {
   };
 
   componentDidMount(): void {
-    if (!this.crop) return;
+    if (!this.props.modifiable || !this.crop) return;
     // @ts-ignore
     interact(this.crop)
       .draggable({})
@@ -99,7 +100,13 @@ class Crop extends Component<Props> {
   }
 
   render() {
-    const { box, index, style = {}, modifiable = true } = this.props;
+    const {
+      box,
+      index,
+      style = {},
+      modifiable = true,
+      CustomLabel,
+    } = this.props;
     return (
       <div
         id={box.id}
@@ -109,11 +116,12 @@ class Crop extends Component<Props> {
         }}
         ref={(c) => (this.crop = c)}
       >
-        <NumberIcon number={index + 1} />
-        <DeleteIcon
+        <BoxLabel
           onClick={this.handleDelete}
           style={{ pointerEvents: 'initial' }}
-        />
+        >
+          {CustomLabel ? <CustomLabel box={box} index={index} /> : null}
+        </BoxLabel>
         {FourDivs}
       </div>
     );

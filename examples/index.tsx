@@ -128,6 +128,11 @@ const App = () => {
           height: '500px',
           width: '100%',
         }}
+        CustomLabel={({ index }) =>
+          index > 1 ? (
+            <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
+          ) : null
+        }
         boxes={fileBoxesMap[src] || []}
         onChange={updateBoxes}
         onCrop={(e, map, currentImg) => {
