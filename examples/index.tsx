@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import MultiCrops from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 import { CropperBox, CropperBoxDataMap } from '../dist';
-import { CropperCursorMode } from '../src/types';
+import { CropperCursorMode, CropperProps } from '../src/types';
 
 const initialBoxes = [
   // { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
@@ -17,14 +17,51 @@ const initialBoxes = [
 
 const App = () => {
   const [images, setImages] = useState([img1, img2]);
-  const [zoom, setZoom] = useState(1.0);
-  const [rotation, setRotation] = useState(0);
+  // const [zoom, setZoom] = useState(1.0);
+  // const [rotation, setRotation] = useState(0);
   const [cursorMode, setCursorMode] = useState<CropperCursorMode>('draw');
-  const [boxes, setBoxes] = useState<CropperBox[]>(initialBoxes);
-
+  // const [boxes, setBoxes] = useState<CropperBox[]>(initialBoxes);
+  const src = images[0];
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
+  const [fileBoxesMap, setFileBoxesMap] = useState<
+    { [key in string]?: CropperBox[] }
+  >({ [src]: initialBoxes });
+  const [fileRotationMap, setFileRotationMap] = useState<
+    { [key in string]?: number }
+  >({});
+  const [fileZoomMap, setFileZoomMap] = useState<{ [key in string]?: number }>(
+    {}
+  );
 
-  const updateBoxes = useCallback((e, bx, i, _boxes) => setBoxes(_boxes), []);
+  useEffect(() => {
+    setCursorMode('draw');
+    setFileRotationMap({
+      ...fileRotationMap,
+      [src]: fileRotationMap[src] || 0,
+    });
+  }, [src]);
+
+  const setRotation = (rot: number) => {
+    setFileRotationMap({
+      ...fileRotationMap,
+      [src]: rot,
+    });
+  };
+
+  const setZoom = (zoom: number) => {
+    setFileZoomMap({
+      ...fileZoomMap,
+      [src]: Math.max(0.1, Math.min(zoom, 2)),
+    });
+  };
+
+  const updateBoxes: CropperProps['onChange'] = (e, bx, i, _boxes) => {
+    console.log(e.type, src, fileBoxesMap[src]?.length, _boxes.length);
+    setFileBoxesMap({
+      ...fileBoxesMap,
+      [src]: [..._boxes],
+    });
+  };
 
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
@@ -38,20 +75,23 @@ const App = () => {
         Toggle Mode [{cursorMode}]
       </button>
       <span>
-        <label htmlFor='zoom'>Zoom: ({zoom.toFixed(2)})</label>
+        <label htmlFor='zoom'>
+        Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
+        </label>
         <input
           id='zoom'
           type='range'
           min={0.1}
           max={2.0}
           step={0.01}
-          value={zoom}
+          value={fileZoomMap[src] || 1}
           onChange={(e) => setZoom(Number(e.currentTarget.value))}
         />
       </span>
       <span>
         <label htmlFor='rotation'>
-          Rotation: ({rotation.toString().padStart(3, '0')} deg)
+        Rotation: ({(fileRotationMap[src] || 0).toString().padStart(3, '0')}{' '}
+          deg)
         </label>
         <input
           id='rotation'
@@ -59,12 +99,12 @@ const App = () => {
           min={0}
           max={360}
           step={1}
-          value={rotation}
+          value={fileRotationMap[src] || 0} 
           onChange={(e) => setRotation(Number(e.currentTarget.value))}
         />
       </span>
       <MultiCrops
-        zoom={zoom}
+        zoom={fileZoomMap[src] || 1}
         src={images[0]}
         // width={`${100 * zoom}%`}
         modifiable={false}
@@ -72,10 +112,10 @@ const App = () => {
           height: '500px',
           width: '100%',
         }}
-        boxes={boxes}
+        boxes={fileBoxesMap[src] || []}
         onChange={updateBoxes}
-        onCrop={( e, map, currentImg) => {
-          console.log('Crop',e, map, currentImg?.boxId);
+        onCrop={(e, map, currentImg?) => {
+          console.log('Crop', e, map, currentImg ?.boxId);
           setImageMap(map);
         }}
         onDelete={(e, box, index, boxes) => {
@@ -91,9 +131,9 @@ const App = () => {
           setImageMap(map);
         }}
         cursorMode={cursorMode}
-        rotation={rotation}
+        rotation={fileRotationMap[src] || 0}
       />
-      {boxes.map(
+       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
       )}
     </div>

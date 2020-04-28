@@ -55,41 +55,47 @@ const MultiCrops: FC<CropperProps> = ({
   const lastUpdatedBox = useRef<any>(null);
   const isDrawing = useRef<boolean>(false);
   const mainCanvasRef = useRef<any>(null)
-
+  const imageSrcMap= useRef<any>({});
   const [isPanning, setIsPanning] = useState(false);
-  const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
+  // const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   let canvasFab = useRef<any>(null);
-  const rotationRef = useRef<any>(null);
-  const boxesRef = useRef<any>(props.boxes);
+  const rotationRef = useRef<any>(rotation);
+  // const boxesRef = useRef<any>(props.boxes);
   const activeGroupRef = useRef<any>(null);
   const imageMapRef = useRef<any>({});
+  const imageSource = useRef<any>(props.src);
+  const staticPanCoords = useRef({ x: 0, y: 0 });
 
-  // const getUpdatedDimensions = () => {
-  //   if (!imageRef.current) return;
-
-  //   const imageRefHeight = imageRef.current ?.height || 0;
-  //   const imageRefWidth = imageRef.current ?.width || 0;
-  //   const containerRefHeight = containerRef.current ?.offsetHeight || 0;
-  //   const containerRefWidth = containerRef.current ?.offsetWidth || 0;
-  //   const contAspectRatio = containerRefWidth / containerRefHeight;
-  //   const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
-  //   let imgBaseHeight, imgBaseWidth;
-  //   if (contAspectRatio > imgAspectRatio) {
-  //     imgBaseHeight = containerRefHeight;
-  //     imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
-  //   } else {
-  //     imgBaseWidth = containerRefWidth;
-  //     imgBaseHeight = imgBaseWidth/imgAspectRatio;
-  //   }
-  //   console.log(contAspectRatio, imgAspectRatio, imgBaseHeight, imgBaseWidth, containerRefHeight,containerRefWidth);
-  //   // const imgBaseHeight = (imgAspectRatio > contAspectRatio) ? containerRefHeight : imageRefHeight;
-  //   // const imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
-  //   return { height: imgBaseHeight, width: imgBaseWidth };
-  // };
-
+  const setStaticPanCoords = ({x,y}:Coordinates) => {
+    staticPanCoords.current = {x,y};
+  }
+  const drawBoxes = (boxes: any) => {
+    console.log('boxes',canvasFab.current.getObjects());
+    boxes.map((box: any) => {
+      let rect: CustomRect = new CustomRect(box.id, box.initRotation || 0,
+        {
+          height: box.height,
+          width: box.width,
+          top: box.top,
+          left: box.left,
+          fill: 'transparent',
+          hasBorders: true,
+          stroke: 'black',
+          strokeWidth: 2,
+          hasRotatingPoint: false,
+          transparentCorners: true,
+          strokeUniform: true,
+          angle: box.angle
+        }
+      )
+      canvasFab.current ?.add(rect);
+    })
+    handleAllCrops(canvasFab.current.getObjects());
+    canvasFab.current.renderAll();
+  }
 
   const getSelections = (box: any) =>
-    getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords, [box]);
+    getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords.current, [box]);
 
 
   useEffect(() => {
@@ -98,33 +104,66 @@ const MultiCrops: FC<CropperProps> = ({
     canvas.setDimensions({ width: containerRef.current ?.offsetWidth || 1000, height: containerRef.current ?.offsetHeight || 1000 });
     canvasFab.current = canvas;
   }, [])
-  useEffect(() => {
-
-
-    fabric.Image.fromURL(props.src, (img: any) => {
-
-      img.set('objectCaching', false);
-
-      imageRef.current = img;
-      let dimensions: any = getImageDimensions(imageRef.current, canvasFab.current.getElement());
-
-      img.scaleToWidth(dimensions.width);
-      img.scaleToHeight(dimensions.height);
-
-
-      canvasFab.current.setBackgroundImage(img);
-      canvasFab.current.renderAll();
-      let imgValues = getCenterCoords(img);
+    useEffect(() => {
+      console.log('boxes here')
+      // canvasFab.current.getObjects() = props.boxes;
+      detachListeners();
+      imageSource.current = props.src;
+      imageRef.current = imageSrcMap.current[props.src];
+      canvasFab.current.remove(...canvasFab.current.getObjects());
+      if (imageRef.current) {
+        let imgValues = getCenterCoords(imageRef.current);
+        rotationRef.current = imgValues.angle;
       setStaticPanCoords({ x: imgValues.translateX, y: imgValues.translateY });
-      performCanvasPaint(img, canvasFab.current, canvasRef.current, rotation);
 
-    },
-      { selectable: false, hasRotatingPoint: false, lockScalingX: true, lockScalingY: true }
-    );
-  }, [])
+      } else {
+        rotationRef.current = 0;
+      }
+      canvasFab.current.renderAll();
+      drawBoxes(props.boxes);
+    }, [props.src]);
+
+    useEffect(() => {
+      // canvasFab.current.getObjects() = props.boxes;
+    },[props.boxes]);
+  // }
+
+  useEffect(() => {
+    // imageSource.current = props.src;
+    if (imageRef.current) {
+      
+      canvasFab.current.setBackgroundImage(imageRef.current);
+      // drawBoxes(canvasFab.current.getObjects());
+      attachListeners();
+      canvasFab.current.renderAll();
+    } else {
+      fabric.Image.fromURL(imageSource.current, (img: any) => {
+        img.set('objectCaching', false);
+        // let {left = 0, top = 0} = imageRef.current || {};
+        let dimensions: any = getImageDimensions(img, canvasFab.current.getElement());
+        imageRef.current = img;
+        imageSrcMap.current[imageSource.current] = img;
+        img.scaleToWidth(dimensions.width);
+        img.scaleToHeight(dimensions.height);
+        canvasFab.current.setBackgroundImage(img);
+        canvasFab.current.renderAll();
+        let imgValues = getCenterCoords(img);
+        console.log('imgValues', imgValues);
+        setStaticPanCoords({ x: imgValues.translateX, y: imgValues.translateY });
+
+        performCanvasPaint(img, canvasFab.current, canvasRef.current, rotation);
+        
+      },
+        { selectable: false, hasRotatingPoint: false, lockScalingX: true, lockScalingY: true }
+      );
+    }
+  }, [imageSource.current])
+
+
 
 
   useEffect(() => {
+    console.log('rotation called', rotationRef.current);
     if (imageRef.current) {
       canvasFab.current.discardActiveObject();
       canvasFab.current.renderAll();
@@ -154,6 +193,13 @@ const MultiCrops: FC<CropperProps> = ({
     } else {
       canvasFab.current.set({ selection: true })
     }
+    
+    attachListeners();
+    return () => {
+      detachListeners();
+    }
+  }, [cursorMode])
+  const attachListeners = () => {
     canvasFab.current.on('mouse:down', (e: any) => {
       if (!e.target || e.target.type !== 'rect') {
         handleMouseDown(e);
@@ -165,14 +211,10 @@ const MultiCrops: FC<CropperProps> = ({
     canvasFab.current.on('mouse:up', (e: MouseEvent) => { handleMouseUp(e); });
     canvasFab.current.on("object:modified", (e: any) => {
       console.log('changed', e);
-      handleCrop('drag', e.target);
-
+      handleCrop('resize', e.target);
     })
-    // canvasFab.current.on("object:added", (e: any )=> {
-
-    // })
     canvasFab.current.on("object:removed", (e: any) => {
-      
+      console.log(' delete event', e);
       imageMapRef.current[e.target.id] = undefined;
       const boxId = e.target.id;
       const currentImgParam: CurrentImgParam = boxId
@@ -182,37 +224,25 @@ const MultiCrops: FC<CropperProps> = ({
         }
         : undefined;
 
-      let boxes = [...boxesRef.current];
-      const index = boxes.findIndex((box: any) => boxId === box.id);
-      if (index != -1)
-          boxes.splice(index,1);
-      boxesRef.current = boxes;
+      
       onChange ?.(
         { type: 'delete', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        boxesRef.current,
+        canvasFab.current.getObjects(),
       );
       props.onCrop ?.({ type: 'delete' }, imageMapRef.current, currentImgParam);
-
-
-
       isDrawing.current = false;
-
-      // props.onCrop ?.({  }, imageMapRef.current, e.target.id);
-
     })
+  }
+  const detachListeners = () => {
+    canvasFab.current.off('mouse:down');
+    canvasFab.current.off('mouse:move');
+    canvasFab.current.off('mouse:up');
 
-    return () => {
-      canvasFab.current.off('mouse:down');
-      canvasFab.current.off('mouse:move');
-      canvasFab.current.off('mouse:up');
-
-      canvasFab.current.off("object:modified");
-      canvasFab.current.off("object:removed");
-    }
-  }, [cursorMode, staticPanCoords])
-
+    canvasFab.current.off("object:modified");
+    canvasFab.current.off("object:removed");
+  }
   useEffect(() => {
     let { zoom = 0 } = props;
     console.log('zoom', zoom, props.zoom);
@@ -224,10 +254,7 @@ const MultiCrops: FC<CropperProps> = ({
     }
   }, [props.zoom])
 
-  useEffect(() => {
-    boxesRef.current = props.boxes;
-    // handleCrop('draw');
-  }, [props.boxes])
+  
 
   const handleCrop = (type: CropperEvent['type'], box: any) => {
     const selections = getSelections(box);
@@ -246,6 +273,12 @@ const MultiCrops: FC<CropperProps> = ({
     isDrawing.current = false;
   };
 
+  const handleAllCrops = (boxes: any) => {
+    const imageMap = getCroppedImageFromBox(imageRef.current, canvasFab.current, rotation, staticPanCoords.current, boxes);
+    imageMapRef.current = imageMap;
+    props.onCrop ?.({ type: 'draw' }, imageMapRef.current);
+  }
+
 
   const handleMouseDown = (e: MouseEvent) => {
     if (cursorMode === 'pan') {
@@ -254,7 +287,7 @@ const MultiCrops: FC<CropperProps> = ({
     } else
       if (cursorMode === 'draw') {
         pointA.current = canvasFab.current.getPointer(e);
-        drawingIndex.current = boxesRef.current.length;
+        drawingIndex.current = canvasFab.current.getObjects().length;
         id.current = sid.generate();
         isDrawing.current = true;
         let rect: CustomRect = new CustomRect(id.current, rotationRef.current,
@@ -272,7 +305,7 @@ const MultiCrops: FC<CropperProps> = ({
         )
         canvasFab.current ?.add(rect);
         lastUpdatedBox.current = rect;
-        
+
         canvasFab.current ?.renderAll();
       }
   };
@@ -312,21 +345,23 @@ const MultiCrops: FC<CropperProps> = ({
       })
       canvasFab.current.renderAll();
       lastUpdatedBox.current = rect;
-      const boxes = boxesRef.current;
-      boxes[drawingIndex.current] = lastUpdatedBox.current;
       // const nextBoxes = [...boxes, lastUpdatedBox.current];
       onChange ?.(
         { type: 'draw', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        boxes,
+        canvasFab.current.getObjects(),
       );
-
     }
   };
   const handleMouseUp = (e: MouseEvent) => {
     if (cursorMode === 'pan') {
-
+      onChange ?.(
+        { type: 'draw', event: e },
+        lastUpdatedBox.current,
+        drawingIndex.current,
+        canvasFab.current.getObjects(),
+      );
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
       if (!lastUpdatedBox.current) return;
@@ -334,9 +369,10 @@ const MultiCrops: FC<CropperProps> = ({
 
       isDrawing.current = false;
       console.log('mousup', e);
-      handleCrop('draw', lastUpdatedBox.current);
-
-
+      
+      handleCrop('draw-end', lastUpdatedBox.current);
+      canvasFab.current.discardActiveObject();
+      canvasFab.current.renderAll();
     }
     pointA.current = {};
   };

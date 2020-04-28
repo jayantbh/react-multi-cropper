@@ -49,7 +49,7 @@ export type CropperEvent = {
 export type CropTriggerFunctionWithImageData = (
   e: CropperEvent,
   dataMap: CropperBoxDataMap,
-  currentImg: CurrentImgParam
+  currentImg?: CurrentImgParam
 ) => any;
 
 export type UpdateFunction = (

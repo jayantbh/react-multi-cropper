@@ -54,7 +54,6 @@ export const getCroppedImageFromBox = (
   // const aspectRatio = (image.width || 0) / (image.height || 0);
 
   let imgValues = getCenterCoords(image);
-
   console.log(rotation);
   let map: any = {};
   boxes.map((box: CustomRect) => {
@@ -64,15 +63,16 @@ export const getCroppedImageFromBox = (
     let ctx: any = tempCanvas.getContext('2d');
     tempCanvas.height = height*dpr;
     tempCanvas.width = width*dpr;
-    let tx = imgValues.translateX - staticPanCoords.x;
-    let ty = imgValues.translateY - staticPanCoords.y;
+    console.log('imgValues',imgValues, staticPanCoords);
+    let {height:imageHeight, width:imageWidth}  = getImageDimensions(image, canvas.getElement())
+    let tx = imgValues.translateX - imageWidth/2;
+    let ty = imgValues.translateY - imageHeight/2;
     ctx.fillRect(0, 0, width, height);
     const boxTopLeftX = imgValues.translateX * dpr;
     const boxTopLeftY = imgValues.translateY * dpr;
     ctx.translate(boxTopLeftX, boxTopLeftY);
     ctx.rotate(initRotation * Math.PI/ 180);
     ctx.translate(-boxTopLeftX, -boxTopLeftY);
-    let {height:imageHeight, width:imageWidth}  = getImageDimensions(image, canvas.getElement())
     ctx.drawImage(image.getElement(), tx*dpr,ty*dpr,imageWidth* dpr, imageHeight * dpr);
 
     let activeObject = canvas.getActiveObject();
