@@ -36,20 +36,40 @@ export const getCenterCoords = (image: fabric.Image) => {
   return values;
 }
 
-export const getImageDimensions = (image: any, container:any) => {
+export const getImageDimensions = (image: any, container: any) => {
   const imageRefHeight = image.height || 0;
-    const imageRefWidth = image.width || 0;
-    const containerRefHeight = container?.offsetHeight || 0;
-    const containerRefWidth = container?.offsetWidth || 0;
-    const contAspectRatio = containerRefWidth / containerRefHeight;
-    const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
-    let imgBaseHeight, imgBaseWidth;
-    if (contAspectRatio > imgAspectRatio) {
-      imgBaseHeight = containerRefHeight;
-      imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
-    } else {
-      imgBaseWidth = containerRefWidth;
-      imgBaseHeight = imgBaseWidth/imgAspectRatio;
-    }
-    return { height: imgBaseHeight, width: imgBaseWidth };
+  const imageRefWidth = image.width || 0;
+  const containerRefHeight = container ?.offsetHeight || 0;
+  const containerRefWidth = container ?.offsetWidth || 0;
+  const contAspectRatio = containerRefWidth / containerRefHeight;
+  const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
+  let imgBaseHeight, imgBaseWidth;
+  if (contAspectRatio > imgAspectRatio) {
+    imgBaseHeight = containerRefHeight;
+    imgBaseWidth = (imgBaseHeight || 0) * imgAspectRatio;
+  } else {
+    imgBaseWidth = containerRefWidth;
+    imgBaseHeight = imgBaseWidth / imgAspectRatio;
+  }
+  return { height: imgBaseHeight, width: imgBaseWidth };
+}
+
+export const getScrollPositions = (canvas: any, image: any) => {
+  const canHeight = canvas.getHeight();
+  const canWidth = canvas.getWidth();
+  let zoom = canvas.getZoom();
+  let { height: imageHeight, width: imageWidth } = getImageDimensions(image, canvas.getElement());
+  let { translateX: centerX, translateY: centerY } = getCenterCoords(image);
+  // setCenterCoords({x:centerX,y:centerY});
+  const bottom = ((imageHeight / 2) - (canHeight - centerY)) * (zoom);
+  const top = image.top * zoom + (imageHeight / 2) * (zoom - 1);
+  const left = image.left * zoom + (imageWidth / 2) * (zoom - 1);
+  const right = ((imageWidth / 2) - (canWidth - centerX)) * (zoom);
+  console.log(bottom, top, left, right, zoom);
+  const wr = 1 * (left / canWidth) * 100
+  const wl = 1 * (right / canWidth) * 100;
+  const hb = 1 * (top / canHeight) * 100;
+  const ht = 1 * (bottom / canHeight) * 100;
+  console.log('scroll pos', wl, wr, ht, hb);
+  return zoom < 1 ? { wl: 0, wr: 0, ht: 0, hb: 0 } : { wl, wr, ht, hb };
 }

@@ -1,0 +1,41 @@
+$spacing: 6px;
+$track: 10px;
+
+.scrollbar {
+  background: #00000088;
+  position: absolute;
+  border-radius: 100vw;
+}
+
+.hscroll {
+  height: $track;
+  bottom: $spacing;
+  cursor: ew-resize;
+  margin-right: $track;
+  min-width: 50px;
+}
+
+.vscroll {
+  width: $track;
+  right: $spacing;
+  cursor: ns-resize;
+  margin-bottom: $track;
+  min-height: 50px;
+}
+
+.scroll-wrapper {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transition: opacity 0.25s;
+}
+
+.scroll-wrapper,
+.scrollbar {
+  transition: opacity 0.25s ease-out;
+  &:not(:hover) {
+    opacity: 0.75;
+  }
+}
