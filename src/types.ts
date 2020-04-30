@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEvent, SyntheticEvent } from 'react';
+import { CSSProperties, MouseEvent } from 'react';
 import { DragEvent, ResizeEvent } from '@interactjs/types/types';
 import { fabric } from 'fabric';
 
@@ -60,8 +60,8 @@ export type UpdateFunction = (
 ) => any;
 
 export type ImgOnLoadWithImageData = (
-  e: SyntheticEvent<HTMLImageElement>,
-  map: CropperBoxDataMap
+  map: CropperBoxDataMap,
+  resetCenter: () => any
 ) => any;
 
 export type CropperProps = {
@@ -80,6 +80,9 @@ export type CropperProps = {
   modifiable?: boolean;
   zoom?: number;
   onReset?: any
+  onZoomGesture?: (newZoom: number) => any;
+  disableKeyboard?: boolean;
+  disableMouse?: boolean;
 };
 
 export type RefSize = {

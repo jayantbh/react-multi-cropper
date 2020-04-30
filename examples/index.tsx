@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import MultiCrops from '../dist';
 import img1 from './imgs/sample1.jpg';
@@ -16,6 +16,8 @@ const initialBoxes = [
 ];
 
 const App = () => {
+  const resetCenterRef = useRef(() => {});
+  const initReset = resetCenterRef.current;
   const [images, setImages] = useState([img1, img2]);
   // const [zoom, setZoom] = useState(1.0);
   // const [rotation, setRotation] = useState(0);
@@ -74,6 +76,15 @@ const App = () => {
       >
         Toggle Mode [{cursorMode}]
       </button>
+      <button
+        onClick={() => {
+          initReset();
+          setRotation(0);
+          setZoom(1);
+        }}
+      >
+        Reset
+      </button>
       <span>
         <label htmlFor='zoom'>
         Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
@@ -122,13 +133,10 @@ const App = () => {
           console.log('Delete', box, index, boxes);
           updateBoxes(e, box, index, boxes);
         }}
-        onLoad={(e, map) => {
-          console.log(
-            'Loaded: ',
-            e.currentTarget.height,
-            e.currentTarget.width
-          );
+        onZoomGesture={setZoom}
+        onLoad={(map, reset) => {
           setImageMap(map);
+          resetCenterRef.current = reset;
         }}
         onReset={() => {
           setRotation(0);

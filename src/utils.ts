@@ -58,18 +58,20 @@ export const getScrollPositions = (canvas: any, image: any) => {
   const canHeight = canvas.getHeight();
   const canWidth = canvas.getWidth();
   let zoom = canvas.getZoom();
+  console.log('image Pos',image.left, image.top, canHeight,canWidth);
   let { height: imageHeight, width: imageWidth } = getImageDimensions(image, canvas.getElement());
-  let { translateX: centerX, translateY: centerY } = getCenterCoords(image);
-  // setCenterCoords({x:centerX,y:centerY});
-  const bottom = ((imageHeight / 2) - (canHeight - centerY)) * (zoom);
-  const top = image.top * zoom + (imageHeight / 2) * (zoom - 1);
-  const left = image.left * zoom + (imageWidth / 2) * (zoom - 1);
-  const right = ((imageWidth / 2) - (canWidth - centerX)) * (zoom);
+  // const top = Math.max (image.top * zoom + (imageHeight / 2) * (zoom - 1), 0);
+  // const bottom = Math.max((canHeight - (image.top + imageHeight)*zoom) + (imageHeight / 2) * (zoom - 1), 0);
+  // const left = Math.max ((image.left) * zoom + (imageWidth / 2) * (zoom - 1), 0);
+  // const right = Math.max((canHeight - (image.left + imageWidth)*zoom) + (imageWidth / 2) * (zoom - 1), 0)
+  const bottom = Math.max((image.top + imageHeight)*zoom - canHeight, 0);
+  const top = Math.max((- image.top)*zoom, 0 )
+  const right = Math.max((image.left + imageWidth)*zoom - canWidth, 0);
+  const left = Math.max((-image.left)*zoom, 0 )
   console.log(bottom, top, left, right, zoom);
-  const wr = 1 * (left / canWidth) * 100
-  const wl = 1 * (right / canWidth) * 100;
-  const hb = 1 * (top / canHeight) * 100;
-  const ht = 1 * (bottom / canHeight) * 100;
-  console.log('scroll pos', wl, wr, ht, hb);
+  const wr = 1 * (right / (imageWidth*zoom*2)) * 100
+  const wl = 1 * (left / (imageWidth*zoom*2)) * 100;
+  const hb = 1 * (bottom / (imageHeight*zoom*2)) * 100;
+  const ht = 1 * (top / (imageHeight*zoom*2)) * 100;
   return zoom < 1 ? { wl: 0, wr: 0, ht: 0, hb: 0 } : { wl, wr, ht, hb };
 }
