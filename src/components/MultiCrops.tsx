@@ -163,7 +163,7 @@ const MultiCrops: FC<CropperProps> = ({
         canvasFab.current.renderAll();
         let imgValues = getCenterCoords(img);
         console.log('imgValues', imgValues);
-
+        attachListeners();
         performCanvasPaint(img, canvasFab.current, canvasRef.current, rotation);
         setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
       },
