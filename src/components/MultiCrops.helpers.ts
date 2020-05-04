@@ -58,6 +58,7 @@ export const getCroppedImageFromBox = (
   boxes.map((box: CustomRect) => {
     if (box.width === 0 || box.height === 0) return;
     let { angle: rotateAngle = 0, initRotation = 0 } = box;
+    console.log('rotateAngle',rotateAngle);
     let tempCanvas = document.createElement('canvas');
     let ctx: any = tempCanvas.getContext('2d');
     tempCanvas.height = height * dpr;
@@ -76,28 +77,23 @@ export const getCroppedImageFromBox = (
     let activeObject = canvas.getActiveObject();
     canvas.discardActiveObject();
     canvas.renderAll();
-    let activeObject1 = new fabric.ActiveSelection([image, box], {
-
+    let activeObject1: any = new fabric.ActiveSelection([image, box], {
+      hasRotatingPoint: false
     });
     canvas.setActiveObject(activeObject1);
     if (activeObject1 != null) {
       activeObject1.rotate(-rotateAngle);
-
-      canvas.discardActiveObject();
     }
-
+    let boxValues = getCenterCoords(box);
     const rotatedImageData = ctx.getImageData(
-      (box.left || 0) * dpr,
-      (box.top || 0) * dpr,
-      box.getScaledWidth() * dpr,
-      box.getScaledHeight() * dpr
+      (boxValues.translateX - (box.getScaledWidth())/2) * dpr,
+      (boxValues.translateY - (box.getScaledHeight())/2) * dpr,
+      (box.getScaledWidth()) * dpr,
+      (box.getScaledHeight() )* dpr
     );
-    let activeObject2 = new fabric.ActiveSelection([image, box], {
-
-    });
-    canvas.setActiveObject(activeObject2);
-    if (activeObject2 != null) {
-      activeObject2.rotate(rotateAngle);
+    canvas.setActiveObject(activeObject1);
+    if (activeObject1 != null) {
+      activeObject1.rotate(0);
 
       canvas.discardActiveObject();
     }

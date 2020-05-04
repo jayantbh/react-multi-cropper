@@ -30,7 +30,7 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
 
   return canvas.toDataURL();
 };
-export const getCenterCoords = (image: fabric.Image) => {
+export const getCenterCoords = (image: any) => {
   const matrix = image.calcTransformMatrix();
   const values = fabric.util.qrDecompose(matrix);
   return values;
@@ -58,7 +58,6 @@ export const getScrollPositions = (canvas: any, image: any) => {
   const canHeight = canvas.getHeight();
   const canWidth = canvas.getWidth();
   let zoom = canvas.getZoom();
-  console.log('image Pos',image.left, image.top, canHeight,canWidth);
   let { height: imageHeight, width: imageWidth } = getImageDimensions(image, canvas.getElement());
   // const top = Math.max (image.top * zoom + (imageHeight / 2) * (zoom - 1), 0);
   // const bottom = Math.max((canHeight - (image.top + imageHeight)*zoom) + (imageHeight / 2) * (zoom - 1), 0);
@@ -68,7 +67,6 @@ export const getScrollPositions = (canvas: any, image: any) => {
   const top = Math.max((- image.top)*zoom, 0 )
   const right = Math.max((image.left + imageWidth)*zoom - canWidth, 0);
   const left = Math.max((-image.left)*zoom, 0 )
-  console.log(bottom, top, left, right, zoom);
   const wr = 1 * (right / (imageWidth*zoom*2)) * 100
   const wl = 1 * (left / (imageWidth*zoom*2)) * 100;
   const hb = 1 * (bottom / (imageHeight*zoom*2)) * 100;

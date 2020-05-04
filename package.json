@@ -76,10 +76,7 @@
   },
   "dependencies": {
     "@types/fabric": "^3.6.2",
-    "fabric": "^3.6.3",
-    "fabric-customise-controls": "^2.0.6-beta",
-    "interactjs": "1.9.4",
-    "shortid": "^2.2.15",
-    "use-resize-observer": "^6.0.0"
+    "fabric": "^4.0.0-beta.12",
+    "shortid": "^2.2.15"
   }
 }

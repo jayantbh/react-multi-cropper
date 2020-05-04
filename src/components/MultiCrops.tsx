@@ -1,7 +1,7 @@
 import React, { FC, MouseEvent, useRef, useEffect, useState } from 'react';
 import sid from 'shortid';
 import { fabric } from 'fabric';
-import * as controls from 'fabric-customise-controls';
+// import * as controls from 'fabric-customise-controls';
 import css from './MultiCrops.module.scss';
 import cross from '../cross.svg';
 import {
@@ -22,28 +22,44 @@ const scrollbarSpacing = 6;;
 import { getCenterCoords, getImageDimensions } from '../utils';
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
-console.log(controls)
-let canvas: any = fabric.Canvas;
+// console.log(controls)
+// let canvas: any = fabric.Canvas;
 let object: any = fabric.Object;
-canvas.prototype.customiseControls({
-  tr: {
-    action: 'remove',
-    cursor: 'pointer'
-  },
-})
-object.prototype.customiseCornerIcons({
-
-  tr: {
-    icon: cross,
-    settings: {
-      borderColor: 'red',
-      cornerSize: 25,
-      cornerShape: 'circle',
-      cornerBackgroundColor: 'white',
-      cornerPadding: 10
-    },
-  },
-})
+// canvas.prototype.customiseControls({
+//   tr: {
+//     action: 'remove',
+//     cursor: 'pointer'
+//   },
+// });
+var img = document.createElement('img');
+img.src = cross;
+const renderIcon = function (this: any, ctx: any, left: any, top: any, fabricObject: any) {
+  var size = (this as any).cornerSize;
+  ctx.save();
+  ctx.translate(left, top);
+  // ctx.beginPath();
+  // ctx.arc(0, 0, size/2, 0, 2 * Math.PI);
+  // ctx.fillStyle = "rgba(255,255,255,1)";
+  // ctx.fill();
+  ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+  ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  
+  ctx.restore();
+}
+object.prototype.controls.deleteControl = new (fabric as any).Control({
+  position: { x: 0.5, y: -0.5 },
+  offsetY: 0,
+  cursorStyle: 'pointer',
+  mouseUpHandler: deleteObject,
+  render: renderIcon,
+  cornerSize: 24
+});
+function deleteObject(eventData: any, target: any) {
+  console.log(eventData);
+  var canvas = target.canvas;
+  canvas.remove(target);
+  canvas.requestRenderAll();
+}
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -65,6 +81,9 @@ const MultiCrops: FC<CropperProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   let canvasFab = useRef<any>(null);
   const rotationRef = useRef<any>(rotation);
+  const panFrame = useRef(-1);
+  const wheelFrame = useRef(-1);
+  const keyFrame = useRef(-1);
   // const boxesRef = useRef<any>(props.boxes);
   const activeGroupRef = useRef<any>(null);
   const imageMapRef = useRef<any>({});
@@ -144,15 +163,15 @@ const MultiCrops: FC<CropperProps> = ({
       canvasFab.current.setBackgroundImage(imageRef.current);
       // drawBoxes(canvasFab.current.getObjects());
       attachListeners();
-      
+
       canvasFab.current.renderAll();
     } else {
       fabric.Image.fromURL(imageSource.current, (img: any) => {
         img.set('objectCaching', false);
         // let {left = 0, top = 0} = imageRef.current || {};
         let dimensions: any = getImageDimensions(img, canvasFab.current.getElement());
-        let x = (canvasFab.current.getWidth()  - dimensions.width)/2;
-        let y = (canvasFab.current.getHeight()  - dimensions.height)/2;
+        let x = (canvasFab.current.getWidth() - dimensions.width) / 2;
+        let y = (canvasFab.current.getHeight() - dimensions.height) / 2;
         imageRef.current = img;
         imageSrcMap.current[imageSource.current] = img;
         img.scaleToWidth(dimensions.width);
@@ -170,14 +189,14 @@ const MultiCrops: FC<CropperProps> = ({
         { selectable: false, hasRotatingPoint: false, lockScalingX: true, lockScalingY: true }
       );
     }
-    
+
   }, [imageSource.current])
 
   useEffect(() => {
     const cb = () => {
       isReset.current = true;
     }
-    props.onLoad?.(imageMapRef.current, cb);
+    props.onLoad ?.(imageMapRef.current, cb);
   }, []);
 
 
@@ -204,10 +223,11 @@ const MultiCrops: FC<CropperProps> = ({
     rotationRef.current = rotation;
     console.log('reset', isReset.current);
     if (isReset.current) {
+      canvasFab.current.setDimensions({ width: containerRef.current ?.offsetWidth || 1000, height: containerRef.current ?.offsetHeight || 1000 });
       let imgValues = getCenterCoords(imageRef.current);
       let dimensions: any = getImageDimensions(imageRef.current, canvasFab.current.getElement());
-      let x = (canvasFab.current.getWidth()  - dimensions.width)/2;
-      let y = (canvasFab.current.getHeight()  - dimensions.height)/2;
+      let x = (canvasFab.current.getWidth() - dimensions.width) / 2;
+      let y = (canvasFab.current.getHeight() - dimensions.height) / 2;
       imageRef.current.set({ left: x, top: y });
       let newImgValues = getCenterCoords(imageRef.current);
       console.log(imgValues, newImgValues);
@@ -276,20 +296,33 @@ const MultiCrops: FC<CropperProps> = ({
       isDrawing.current = false;
     })
     canvasFab.current.on('mouse:wheel', function (opt: any) {
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+      let shiftKey = opt.e.shiftKey;
       const deltaY = opt.e.deltaY;
       const deltaX = opt.e.deltaX;
       console.log(deltaY, deltaX);
-      [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
 
-        const translateX = rect.left - deltaX;
-        const translateY = rect.top - deltaY;
-        rect.set({ left: translateX, top: translateY });
-        rect.setCoords();
-        return;
-      })
-      setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
+      if (shiftKey) {
+        let zoom = canvasFab.current.getZoom();
+        props.onZoomGesture ?.(zoom + deltaY * 0.01);
+      } else {
+        cancelAnimationFrame(wheelFrame.current)
+        wheelFrame.current = requestAnimationFrame(() => {
+          [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
 
-      canvasFab.current.renderAll()
+            const translateX = rect.left - deltaX;
+            const translateY = rect.top - deltaY;
+            rect.set({ left: translateX, top: translateY });
+            rect.setCoords();
+            return;
+          })
+          setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
+
+          canvasFab.current.renderAll()
+        }
+        )
+      }
     })
   }
   const detachListeners = () => {
@@ -358,10 +391,10 @@ const MultiCrops: FC<CropperProps> = ({
             stroke: 'black',
             strokeWidth: 2,
             hasRotatingPoint: false,
-            transparentCorners: true,
             strokeUniform: true,
           }
         )
+        rect.setControlsVisibility({ mtr: false, tr: false });
         canvasFab.current ?.add(rect);
         lastUpdatedBox.current = rect;
 
@@ -377,14 +410,17 @@ const MultiCrops: FC<CropperProps> = ({
       let intialPoint: any = pointA.current;
       const xDiff = -1 * (intialPoint.x - pointB.x);
       const yDiff = -1 * (intialPoint.y - pointB.y);
-      [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
+      cancelAnimationFrame(panFrame.current);
+      panFrame.current = requestAnimationFrame(() =>
+        [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
 
-        const translateX = rect.left + xDiff;
-        const translateY = rect.top + yDiff;
-        rect.set({ left: translateX, top: translateY });
-        rect.setCoords();
-        return;
-      })
+          const translateX = rect.left + xDiff;
+          const translateY = rect.top + yDiff;
+          rect.set({ left: translateX, top: translateY });
+          rect.setCoords();
+          return;
+        })
+      );
 
 
       canvasFab.current.renderAll();
@@ -417,6 +453,7 @@ const MultiCrops: FC<CropperProps> = ({
   };
   const handleMouseUp = (e: MouseEvent) => {
     if (cursorMode === 'pan') {
+      cancelAnimationFrame(panFrame.current);
       onChange ?.(
         { type: 'draw', event: e },
         lastUpdatedBox.current,
@@ -426,8 +463,6 @@ const MultiCrops: FC<CropperProps> = ({
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
       if (!lastUpdatedBox.current) return;
-
-
       isDrawing.current = false;
       console.log('mousup', e);
 
@@ -462,41 +497,45 @@ const MultiCrops: FC<CropperProps> = ({
         }}
         tabIndex={-1}
         onKeyDown={(e) => {
-          console.log('heyevent', e);
           if (props.disableKeyboard) return;
 
           e.preventDefault();
           e.stopPropagation();
           const { key, shiftKey } = e;
-          if (shiftKey) {
-            const delta =
-              key === 'ArrowRight' || key === 'ArrowUp'
-                ? 0.05
-                : key === 'ArrowLeft' || key === 'ArrowDown'
-                  ? -0.05
-                  : 0;
-            props.onZoomGesture ?.(zoom + delta);
-          } else {
-            const deltaX =
-              key === 'ArrowRight' ? 10 : key === 'ArrowLeft' ? -10 : 0;
-            const deltaY =
-              key === 'ArrowDown' ? 10 : key === 'ArrowUp' ? -10 : 0;
-            [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
+          cancelAnimationFrame(keyFrame.current);
+          keyFrame.current = requestAnimationFrame(() => {
+            if (shiftKey) {
+              const delta =
+                key === 'ArrowRight' || key === 'ArrowUp'
+                  ? 0.05
+                  : key === 'ArrowLeft' || key === 'ArrowDown'
+                    ? -0.05
+                    : 0;
+              props.onZoomGesture ?.(zoom + delta);
+            } else {
+              const deltaX =
+                key === 'ArrowRight' ? 10 : key === 'ArrowLeft' ? -10 : 0;
+              const deltaY =
+                key === 'ArrowDown' ? 10 : key === 'ArrowUp' ? -10 : 0;
+              [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
 
-              const translateX = rect.left + deltaX;
-              const translateY = rect.top + deltaY;
-              rect.set({ left: translateX, top: translateY });
-              rect.setCoords();
-              return;
-            })
-            setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
+                const translateX = rect.left + deltaX;
+                const translateY = rect.top + deltaY;
+                rect.set({ left: translateX, top: translateY });
+                rect.setCoords();
+                return;
+              })
+              setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
 
-            canvasFab.current.renderAll()
+              canvasFab.current.renderAll()
 
+            }
           }
+          )
+
         }}
       >
-        
+
         <canvas
           className={[
             cursorMode === 'pan' ? css.pan : '',
