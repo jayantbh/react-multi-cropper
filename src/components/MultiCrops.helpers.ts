@@ -7,6 +7,17 @@ import { fabric } from 'fabric';
 
 const dpr = 2;// window.devicePixelRatio;
 
+import {
+  Dispatch,
+  // MouseEvent,
+  MutableRefObject,
+  // ReactEventHandler,
+  SetStateAction,
+  useEffect,
+
+  // useRef,
+  // useState,
+} from 'react';
 
 export const performCanvasPaint = (
   image: fabric.Image,
@@ -58,7 +69,7 @@ export const getCroppedImageFromBox = (
   boxes.map((box: CustomRect) => {
     if (box.width === 0 || box.height === 0) return;
     let { angle: rotateAngle = 0, initRotation = 0 } = box;
-    console.log('rotateAngle',rotateAngle);
+    console.log('rotateAngle', rotateAngle);
     let tempCanvas = document.createElement('canvas');
     let ctx: any = tempCanvas.getContext('2d');
     tempCanvas.height = height * dpr;
@@ -86,10 +97,10 @@ export const getCroppedImageFromBox = (
     }
     let boxValues = getCenterCoords(box);
     const rotatedImageData = ctx.getImageData(
-      (boxValues.translateX - (box.getScaledWidth())/2) * dpr,
-      (boxValues.translateY - (box.getScaledHeight())/2) * dpr,
+      (boxValues.translateX - (box.getScaledWidth()) / 2) * dpr,
+      (boxValues.translateY - (box.getScaledHeight()) / 2) * dpr,
       (box.getScaledWidth()) * dpr,
-      (box.getScaledHeight() )* dpr
+      (box.getScaledHeight()) * dpr
     );
     canvas.setActiveObject(activeObject1);
     if (activeObject1 != null) {
@@ -115,7 +126,7 @@ export const useScrollbars = (
   if (!canvas || !image)
     return { wl: 0, wr: 0, ht: 0, hb: 0 };
   // useEffect(() => {
-   return getScrollPositions(canvas, image);
+  return getScrollPositions(canvas, image);
   // setScrollPositions({ wl, wr, ht, hb });
   // },[canvas, image])
   // return 
@@ -147,3 +158,106 @@ export const useScrollbars = (
   // return { wl, wr, ht, hb, pxScaleW, pxScaleH };
 
 };
+
+export const useRotation = (
+  image: fabric.Image,
+  canvas: fabric.Canvas,
+  container: any,
+  rotation: number,
+  rotationRef: MutableRefObject<number | undefined>,
+  isReset: MutableRefObject<boolean | undefined>
+) => {
+  useEffect(() => {
+    if (image) {
+      canvas.discardActiveObject();
+      canvas.renderAll();
+
+      let activeObject = new fabric.ActiveSelection([image, ...canvas.getObjects()], {
+        hasControls: false,
+
+      })
+      canvas.setActiveObject(activeObject);
+      if (activeObject != null) {
+        activeObject.rotate(rotation - (rotationRef.current || 0));
+
+        canvas.discardActiveObject();
+
+        canvas.renderAll();
+      }
+      rotationRef.current = rotation;
+      if (isReset.current) {
+        resetToCenter(image, canvas, container);
+        isReset.current = false;
+      }
+
+    }
+  }, [rotation, isReset.current])
+}
+
+export const resetToCenter = (
+  image: fabric.Image,
+  canvas: fabric.Canvas,
+  container: any
+) => {
+  canvas.setDimensions({ width: container ?.offsetWidth || 1000, height: container ?.offsetHeight || 1000 });
+  let imgValues = getCenterCoords(image);
+  let dimensions: any = getImageDimensions(image, canvas.getElement());
+  let x = (canvas.getWidth() - dimensions.width) / 2;
+  let y = (canvas.getHeight() - dimensions.height) / 2;
+  image.set({ left: x, top: y });
+  let newImgValues = getCenterCoords(image);
+  console.log(imgValues, newImgValues);
+  const diffx = -1 * (imgValues.translateX - newImgValues.translateX);
+  const diffy = -1 * (imgValues.translateY - newImgValues.translateY);
+
+  [...canvas.getObjects()].map((rect) => {
+    const translateX = (rect.left || 0) + diffx;
+    const translateY = (rect.top || 0) + diffy;
+    rect.set({ left: translateX, top: translateY });
+    rect.setCoords();
+    return;
+  });
+  canvas.renderAll();
+}
+
+export const useCursor = (
+  canvas: any,
+  attachListeners: Function,
+  detachListeners: Function,
+  cursorMode: string
+) => {
+  useEffect(() => {
+    if (canvas) {
+      if (cursorMode == 'pan') {
+        canvas.set({ selection: false })
+      } else {
+        canvas.set({ selection: true })
+      }
+
+      attachListeners();
+      return () => {
+        detachListeners();
+      }
+    }
+    return;
+  }, [cursorMode])
+}
+
+export const useZoom = (
+  image: fabric.Image,
+  canvas: fabric.Canvas,
+  zoom: number,
+  setScrollPositions: Dispatch<SetStateAction<any>>,
+) => {
+  useEffect(() => {
+    console.log('zoom', zoom);
+    if (zoom > 20) zoom = 20;
+    if (zoom < 0.01) zoom = 0.01;
+    if (image) {
+      let imgValues = getCenterCoords(image);
+      console.log('zoom,', imgValues, canvas.getWidth(), canvas.getHeight());
+      canvas.zoomToPoint(new fabric.Point(imgValues.translateX, imgValues.translateY), zoom);
+    }
+    setScrollPositions(useScrollbars(canvas, image));
+  }, [zoom])
+}
