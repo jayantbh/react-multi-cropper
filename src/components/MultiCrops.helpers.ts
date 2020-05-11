@@ -9,14 +9,10 @@ const dpr = 2;// window.devicePixelRatio;
 
 import {
   Dispatch,
-  // MouseEvent,
   MutableRefObject,
-  // ReactEventHandler,
   SetStateAction,
   useEffect,
 
-  // useRef,
-  // useState,
 } from 'react';
 
 export const performCanvasPaint = (
@@ -45,7 +41,6 @@ export const performCanvasPaint = (
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-tx, -ty);
   ctx.drawImage(image.getElement(), 0, 0, height * dpr * aspectRatio, height * dpr);
-  console.log('translate', imgValues.translateX, imgValues.translateY)
   ctx.resetTransform();
 
 
@@ -53,7 +48,6 @@ export const performCanvasPaint = (
 export const getCroppedImageFromBox = (
   image: fabric.Image,
   canvas: fabric.Canvas,
-  rotation: number,
   boxes: any[]
 ): any => {
   if (!canvas || !image) return {};
@@ -61,15 +55,12 @@ export const getCroppedImageFromBox = (
     height,
     width,
   } = canvas.getElement().getBoundingClientRect();
-  // const aspectRatio = (image.width || 0) / (image.height || 0);
 
   let imgValues = getCenterCoords(image);
-  console.log(rotation);
   let map: any = {};
   boxes.map((box: CustomRect) => {
     if (box.width === 0 || box.height === 0) return;
     let { angle: rotateAngle = 0, initRotation = 0 } = box;
-    console.log('rotateAngle', rotateAngle);
     let tempCanvas = document.createElement('canvas');
     let ctx: any = tempCanvas.getContext('2d');
     tempCanvas.height = height * dpr;
@@ -84,7 +75,6 @@ export const getCroppedImageFromBox = (
     ctx.rotate(initRotation * Math.PI / 180);
     ctx.translate(-boxTopLeftX, -boxTopLeftY);
     ctx.drawImage(image.getElement(), tx * dpr, ty * dpr, imageWidth * dpr, imageHeight * dpr);
-
     let activeObject = canvas.getActiveObject();
     canvas.discardActiveObject();
     canvas.renderAll();
@@ -108,7 +98,9 @@ export const getCroppedImageFromBox = (
 
       canvas.discardActiveObject();
     }
-    canvas.setActiveObject(activeObject);
+    if (activeObject) {
+      canvas.setActiveObject(activeObject);
+    }
     canvas.renderAll();
     const finalImageUrl = imageDataToDataUrl(rotatedImageData);
     if (!finalImageUrl) return;
@@ -122,41 +114,10 @@ export const useScrollbars = (
   canvas?: any,
   image?: any,
 ): any => {
-  // const [centerCoords, setCenterCoords] = useState({x:0, y:0})
   if (!canvas || !image)
     return { wl: 0, wr: 0, ht: 0, hb: 0 };
-  // useEffect(() => {
   return getScrollPositions(canvas, image);
-  // setScrollPositions({ wl, wr, ht, hb });
-  // },[canvas, image])
-  // return 
-
-
-  // const cRect = cont.getBoundingClientRect();
-  // const iRect = img.getBoundingClientRect();
-
-  // const resultantBoundsWL = cRect.right - iRect.left;
-  // const resultantBoundsWR = iRect.right - cRect.left;
-  // const resultantBoundsHT = cRect.bottom - iRect.top;
-  // const resultantBoundsHB = iRect.bottom - cRect.top;
-
-  // const wlExcess = Math.max(resultantBoundsWL / cRect.width - 1, 0);
-  // const wrExcess = Math.max(resultantBoundsWR / cRect.width - 1, 0);
-  // const htExcess = Math.max(resultantBoundsHT / cRect.height - 1, 0);
-  // const hbExcess = Math.max(resultantBoundsHB / cRect.height - 1, 0);
-
-  // const wl = (wlExcess / (wlExcess + wrExcess + 1)) * 100;
-  // const wr = (wrExcess / (wlExcess + wrExcess + 1)) * 100;
-  // const ht = (htExcess / (htExcess + hbExcess + 1)) * 100;
-  // const hb = (hbExcess / (htExcess + hbExcess + 1)) * 100;
-
-  // const _pxScaleW = 100 / (100 - wl + wr);
-  // const _pxScaleH = 100 / (100 - hb + ht);
-  // const pxScaleW = Number.isFinite(_pxScaleW) ? _pxScaleW : 0;
-  // const pxScaleH = Number.isFinite(_pxScaleH) ? _pxScaleH : 0;
-
-  // return { wl, wr, ht, hb, pxScaleW, pxScaleH };
-
+  
 };
 
 export const useRotation = (
@@ -206,7 +167,6 @@ export const resetToCenter = (
   let y = (canvas.getHeight() - dimensions.height) / 2;
   image.set({ left: x, top: y });
   let newImgValues = getCenterCoords(image);
-  console.log(imgValues, newImgValues);
   const diffx = -1 * (imgValues.translateX - newImgValues.translateX);
   const diffy = -1 * (imgValues.translateY - newImgValues.translateY);
 
@@ -250,13 +210,15 @@ export const useZoom = (
   setScrollPositions: Dispatch<SetStateAction<any>>,
 ) => {
   useEffect(() => {
-    console.log('zoom', zoom);
     if (zoom > 20) zoom = 20;
     if (zoom < 0.01) zoom = 0.01;
     if (image) {
       let imgValues = getCenterCoords(image);
-      console.log('zoom,', imgValues, canvas.getWidth(), canvas.getHeight());
       canvas.zoomToPoint(new fabric.Point(imgValues.translateX, imgValues.translateY), zoom);
+      [...canvas.getObjects()].map((rect) => {
+
+        rect.set('strokeWidth', 2/zoom)
+      })
     }
     setScrollPositions(useScrollbars(canvas, image));
   }, [zoom])

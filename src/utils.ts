@@ -59,10 +59,6 @@ export const getScrollPositions = (canvas: any, image: any) => {
   const canWidth = canvas.getWidth();
   let zoom = canvas.getZoom();
   let { height: imageHeight, width: imageWidth } = getImageDimensions(image, canvas.getElement());
-  // const top = Math.max (image.top * zoom + (imageHeight / 2) * (zoom - 1), 0);
-  // const bottom = Math.max((canHeight - (image.top + imageHeight)*zoom) + (imageHeight / 2) * (zoom - 1), 0);
-  // const left = Math.max ((image.left) * zoom + (imageWidth / 2) * (zoom - 1), 0);
-  // const right = Math.max((canHeight - (image.left + imageWidth)*zoom) + (imageWidth / 2) * (zoom - 1), 0)
   const bottom = Math.max((image.top + imageHeight)*zoom - canHeight, 0);
   const top = Math.max((- image.top)*zoom, 0 )
   const right = Math.max((image.left + imageWidth)*zoom - canWidth, 0);
