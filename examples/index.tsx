@@ -11,7 +11,7 @@ import {
 } from '../dist';
 
 const initialBoxes: CropperBox[] = [
-  { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
+  { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0, style: (prevStyle) => { return { ...prevStyle, boxShadow: '0 0 0 2px #ff0'}}, labelStyle: { visibility: 'hidden' } },
   // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
   // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
   // { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
@@ -72,24 +72,14 @@ const App = () => {
     });
   };
 
-  const handleSelect = (event: CropperEvent, box: CropperBox, index: number, boxes: CropperBox[]) => {
-    let newBoxes;
-    if(selectedBoxes.indexOf(box.id) > -1) {
-      newBoxes = selectedBoxes.filter(itemId => itemId !== box.id);
-    } else {
-      newBoxes = [...selectedBoxes, box.id];
-    }
-    setSelectedBoxes(newBoxes);
+  const handleClick = (event: CropperEvent, box: CropperBox, index: number, boxes: CropperBox[]) => {
     console.log(event, box, index, boxes);
   }
 
-  const handleMouseEnter = (event: CropperEvent, box: CropperBox, index: number, boxes: CropperBox[]) => {
+  const handleMouseMove = (event: CropperEvent, box: CropperBox, index: number, boxes: CropperBox[]) => {
     console.log(event, box, index, boxes);
-  }
+  } 
 
-  const handleMouseLeave = (event: CropperEvent, box: CropperBox, index: number, boxes:CropperBox[]) => {
-    console.log(event, box, index, boxes);
-  }
 
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
@@ -175,10 +165,8 @@ const App = () => {
         }}
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}
-        onSelect={handleSelect}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        selected={selectedBoxes}
+        onBoxClick={handleClick}
+        onBoxMouseMove={handleMouseMove}
       />
       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />

@@ -259,6 +259,7 @@ export const getOffscreenImageMapFromBoxes = (
 
   const boxesForOfc = boxes
     .map((box) => {
+      const { style, labelStyle, ...prunedBox } = box;
       if (box.width === 0 || box.height === 0) return;
 
       const boxTopLeftEl = document
@@ -267,9 +268,8 @@ export const getOffscreenImageMapFromBoxes = (
       if (!boxTopLeftEl) return;
 
       const btlRect = boxTopLeftEl.getBoundingClientRect();
-
       return {
-        ...box,
+        ...prunedBox,
         btlRect,
         contRect,
       };

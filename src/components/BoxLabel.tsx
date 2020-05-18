@@ -18,7 +18,12 @@ export const BoxLabel: FC<HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => {
   return (
-    <div {...props} className={`${css['box-label']} ${props.className && css[props.className] || ''}`}>
+    <div
+      {...props}
+      className={`${css['box-label']} ${
+        (props.className && css[props.className]) || ''
+      }`}
+    >
       <div className={css.label}>{children}</div>
       <div className={css.cross} onClick={onClick}>
         {CrossIcon}
