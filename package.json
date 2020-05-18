@@ -80,5 +80,8 @@
     "offscreen-canvas": "^0.1.1",
     "shortid": "^2.2.15",
     "use-resize-observer": "^6.0.0"
+  },
+  "engines": {
+    "node": "10.19.0"
   }
 }
