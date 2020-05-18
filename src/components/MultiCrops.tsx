@@ -59,6 +59,8 @@ const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
   rotation = 0,
   zoom = 1,
+  onSelect,
+  selected,
   ...props
 }) => {
   const prevSrc = usePrevious(props.src);
@@ -517,6 +519,8 @@ const MultiCrops: FC<CropperProps> = ({
               box={box}
               onChange={onChange}
               onCrop={handleCrop}
+              onSelect={onSelect}
+              selected={selected.indexOf(box.id) > -1}
               style={{
                 pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
                 transform: `rotate(${box.rotation}deg)`,

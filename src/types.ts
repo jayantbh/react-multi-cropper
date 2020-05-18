@@ -39,7 +39,10 @@ export type CropperEventType =
   | 'delete'
   | 'manual-resize'
   | 'rotate'
-  | 'pan';
+  | 'pan'
+  | 'select'
+  | 'mouse-enter'
+  | 'mouse-leave';
 
 export type CropperCursorMode = 'draw' | 'pan';
 
@@ -73,6 +76,9 @@ export type CropperProps = {
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
+  onSelect?: UpdateFunction;
+  onMouseEnter?: UpdateFunction;
+  onMouseLeave?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
   onZoomGesture?: (newZoom: number) => any;
@@ -82,6 +88,7 @@ export type CropperProps = {
   modifiable?: boolean;
   disableKeyboard?: boolean;
   disableMouse?: boolean;
+  selected: string[];
 };
 
 export type RefSize = {

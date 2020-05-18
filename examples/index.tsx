@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops from '../dist';
+import MultiCrops, { CropperEvent } from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 import {
@@ -40,6 +40,8 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
+  const [selectedBoxes, setSelectedBoxes] = useState<Array<string>>([]);
+
   useEffect(() => {
     setCursorMode('draw');
     setFileRotationMap({
@@ -69,6 +71,25 @@ const App = () => {
       [src]: Math.max(0.1, Math.min(zoom, 2)),
     });
   };
+
+  const handleSelect = (event: CropperEvent, box: CropperBox, index: number, boxes: CropperBox[]) => {
+    let newBoxes;
+    if(selectedBoxes.indexOf(box.id) > -1) {
+      newBoxes = selectedBoxes.filter(itemId => itemId !== box.id);
+    } else {
+      newBoxes = [...selectedBoxes, box.id];
+    }
+    setSelectedBoxes(newBoxes);
+    console.log(event, box, index, boxes);
+  }
+
+  const handleMouseEnter = (event: CropperEvent, box: CropperBox, index: number, boxes: CropperBox[]) => {
+    console.log(event, box, index, boxes);
+  }
+
+  const handleMouseLeave = (event: CropperEvent, box: CropperBox, index: number, boxes:CropperBox[]) => {
+    console.log(event, box, index, boxes);
+  }
 
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
@@ -154,6 +175,10 @@ const App = () => {
         }}
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}
+        onSelect={handleSelect}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        selected={selectedBoxes}
       />
       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />

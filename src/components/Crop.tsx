@@ -11,26 +11,48 @@ import {
   UpdateFunction,
 } from '../types';
 
+import css from './Crop.module.scss';
+
 type Props = {
   index: number;
   box: CropperBox;
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
+  onSelect?: Function;
+  onMouseEnter?: Function;
+  onMouseLeave?: Function;
   onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
   modifiable?: CropperProps['modifiable'];
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
+  selected: boolean;
 };
 
-class Crop extends Component<Props> {
-  crop: HTMLDivElement | null = null;
+type State = {
+  drag: Boolean;
+  hover: Boolean;
+}
 
-  shouldComponentUpdate(nextProps: Props) {
+class Crop extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      drag: false,
+      hover: false
+    };
+  }
+
+  crop: HTMLDivElement | null = null;
+  
+  shouldComponentUpdate(nextProps: Props, nextState: State) {
     return (
       !oneLevelEquals(nextProps.box, this.props.box) ||
       !oneLevelEquals(nextProps.style, this.props.style) ||
-      nextProps.index !== this.props.index
+      nextProps.index !== this.props.index ||
+      nextProps.selected !== this.props.selected ||
+      nextState.hover !== this.state.hover ||
+      nextState.drag !== this.state.drag
     );
   }
 
@@ -46,9 +68,10 @@ class Crop extends Component<Props> {
       width,
       height,
     };
-
+    
     const nextBoxes = update(index, nextBox, boxes);
     onChange?.({ type: 'resize', event: e }, nextBox, index, nextBoxes);
+    this.setState({ drag: true })
   };
 
   handleDragMove = (e: DragEvent) => {
@@ -64,6 +87,7 @@ class Crop extends Component<Props> {
     const nextBox = { ...box, x: x + dx, y: y + dy };
     const nextBoxes = update(index, nextBox, boxes);
     onChange?.({ type: 'drag', event: e }, nextBox, index, nextBoxes);
+    this.setState({ drag: true })
   };
 
   handleDelete = (e: MouseEvent) => {
@@ -75,7 +99,25 @@ class Crop extends Component<Props> {
   handleCrop = (e: DragEvent | ResizeEvent) => {
     const type: CropperEventType = e.type === 'dragend' ? 'drag' : 'resize';
     this.props.onCrop(e, type);
+    this.setState({ drag: false })
   };
+
+  handleSelect = (e: MouseEvent) => {
+    const { onSelect, box, index, boxes } = this.props;
+    onSelect?.({ type: 'select', event: e }, box, index, boxes);
+  }
+
+  handleMouseEnter = (e: MouseEvent) => {
+    const { box, onMouseEnter, index, boxes } = this.props;
+    this.setState({ hover: true });
+    onMouseEnter?.({ type: 'mouse-enter', event: e }, box, index, boxes);
+  }
+
+  handleMouseLeave = (e: MouseEvent) => {
+    const { box, onMouseLeave, index, boxes } = this.props;
+    this.setState({ hover: false });
+    onMouseLeave?.({ type: 'mouse-leave', event: e }, box, index, boxes);
+  }
 
   componentDidMount(): void {
     if (!this.props.modifiable || !this.crop) return;
@@ -106,7 +148,9 @@ class Crop extends Component<Props> {
       style = {},
       modifiable = true,
       CustomLabel,
+      selected
     } = this.props;
+    const { drag, hover } = this.state;
     return (
       <div
         id={box.id}
@@ -114,15 +158,25 @@ class Crop extends Component<Props> {
           ...cropStyle(box, style),
           pointerEvents: modifiable ? 'auto' : 'none',
         }}
+        className={`${css['crop']} ${hover ? css['hover']: ''} ${selected ? css['active']: ''}`}
         ref={(c) => (this.crop = c)}
+        onClick={this.handleSelect}
       >
         <BoxLabel
+          className={`${(!drag && hover) || selected ? 'visible' : ''}`}
           onClick={this.handleDelete}
+          onMouseEnter={this.handleMouseEnter}
+          onMouseLeave={this.handleMouseLeave}
           style={{ pointerEvents: 'initial' }}
         >
           {CustomLabel ? <CustomLabel box={box} index={index} /> : null}
         </BoxLabel>
         {FourDivs}
+        <div
+          style={{ width: '100%', height: '100%', pointerEvents: 'auto'}}
+          onMouseEnter={this.handleMouseEnter}
+          onMouseLeave={this.handleMouseLeave}
+        />
       </div>
     );
   }
@@ -155,14 +209,10 @@ const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
   return {
     ...style,
     transformOrigin: `${-box.x}px ${-box.y}px`,
-    boxShadow: '0 0 0 2px #000',
-    background: '#FFFFFF33',
-    position: 'absolute',
     width,
     height,
     top: y,
-    left: x,
-    opacity: 0.8,
+    left: x
   };
 };
 
