@@ -1,6 +1,11 @@
 # React Multi Cropper
 A component for allowing multiple cropping regions on a single image.
 
+![build](https://badgen.net/github/status/jayantbh/react-multi-cropper)
+![version](https://badgen.net/npm/v/react-multi-cropper)
+![size](https://badgen.net/bundlephobia/minzip/react-multi-cropper)
+![downloads](https://badgen.net/npm/dt/react-multi-cropper)
+
 _WIP: Certain aspects are in development, and may be incomplete or buggy._  
 _It should be fine for most purposes._
 
