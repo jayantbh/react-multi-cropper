@@ -90,7 +90,7 @@ export type CropperProps = {
   modifiable?: boolean;
   disableKeyboard?: boolean;
   disableMouse?: boolean;
-  CustomLabel: FC<{ index: number }>;
+  CustomLabel?: FC<{ box: CropperBox; index: number }>;
 };
 
 export type RefSize = {

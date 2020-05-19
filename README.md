@@ -16,7 +16,7 @@ It's a fork of [this repo](https://github.com/beizhedenglong/react-multi-crops),
 - Better code design
 - More features
 
-![screenshot](https://snipboard.io/aWJHFU.jpg)
+![screenshot](http://i.snipboard.io/eBhQ3X.jpg)
 
 
 ## Installation
@@ -126,6 +126,9 @@ type CropperProps = {
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
+  onBoxMouseEnter?: UpdateFunction;
+  onBoxMouseLeave?: UpdateFunction;
+  onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
   onZoomGesture?: (newZoom: number) => any;
@@ -133,6 +136,9 @@ type CropperProps = {
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
   modifiable?: boolean;
+  disableKeyboard?: boolean;
+  disableMouse?: boolean;
+  CustomLabel?: FC<{ box: CropperBox; index: number }>;
 };
 ```
 
