@@ -28,6 +28,6 @@
     "importHelpers": true,
     "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["build", "dist", "example", "rollup.config.js"]
+  "include": ["src", "examples"],
+  "exclude": ["build", "dist", "rollup.config.js"]
 }
