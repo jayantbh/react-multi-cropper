@@ -43,7 +43,10 @@ export type CropperEventType =
   | 'rotate'
   | 'pan'
   | 'click'
-  | 'mouse-move';
+  | 'mouse-move'
+  | 'mouse-enter'
+  | 'mouse-leave'
+  };
 
 export type CropperCursorMode = 'draw' | 'pan';
 
@@ -77,7 +80,8 @@ export type CropperProps = {
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
-  onBoxMouseMove?: UpdateFunction;
+  onBoxMouseEnter?: UpdateFunction;
+  onBoxMouseLeave?: UpdateFunction;
   onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;

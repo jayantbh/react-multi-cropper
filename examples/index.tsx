@@ -92,7 +92,16 @@ const App = () => {
     console.log(event, box, index, boxes);
   };
 
-  const handleMouseMove = (
+  const handleMouseEnter = (
+    event: CropperEvent,
+    box: CropperBox,
+    index: number,
+    boxes: CropperBox[]
+  ) => {
+    console.log(event, box, index, boxes);
+  };
+
+  const handleMouseLeave = (
     event: CropperEvent,
     box: CropperBox,
     index: number,
@@ -186,7 +195,8 @@ const App = () => {
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}
         onBoxClick={handleClick}
-        onBoxMouseMove={handleMouseMove}
+        onBoxMouseEnter={handleMouseEnter}
+        onBoxMouseLeave={handleMouseLeave}
       />
       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />

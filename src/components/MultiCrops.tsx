@@ -60,7 +60,8 @@ const MultiCrops: FC<CropperProps> = ({
   rotation = 0,
   zoom = 1,
   onBoxClick,
-  onBoxMouseMove,
+  onBoxMouseEnter,
+  onBoxMouseLeave,
   ...props
 }) => {
   const prevSrc = usePrevious(props.src);
@@ -532,7 +533,8 @@ const MultiCrops: FC<CropperProps> = ({
                 onChange={onChange}
                 onCrop={handleCrop}
                 onBoxClick={onBoxClick}
-                onBoxMouseMove={onBoxMouseMove}
+                onBoxMouseEnter={onBoxMouseEnter}
+                onBoxMouseLeave={onBoxMouseLeave}
                 style={style}
               />
             );

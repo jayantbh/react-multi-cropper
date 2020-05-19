@@ -18,7 +18,8 @@ type Props = {
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
   onBoxClick?: UpdateFunction;
-  onBoxMouseMove?: UpdateFunction;
+  onBoxMouseEnter?: UpdateFunction;
+  onBoxMouseLeave?: UpdateFunction;
   onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
   modifiable?: CropperProps['modifiable'];
@@ -80,9 +81,14 @@ class Crop extends Component<Props> {
     this.props.onCrop(e, type);
   };
 
-  handleBoxMouseMove = (e: MouseEvent) => {
-    const { onBoxMouseMove, box, index, boxes } = this.props;
-    onBoxMouseMove?.({ type: 'mouse-move', event: e }, box, index, boxes);
+  handleBoxMouseEnter = (e: MouseEvent) => {
+    const { onBoxMouseEnter, box, index, boxes } = this.props;
+    onBoxMouseEnter?.({ type: 'mouse-enter', event: e }, box, index, boxes);
+  };
+
+  handleBoxMouseLeave = (e: MouseEvent) => {
+    const { onBoxMouseEnter, box, index, boxes } = this.props;
+    onBoxMouseEnter?.({ type: 'mouse-leave', event: e }, box, index, boxes);
   };
 
   handleBoxClick = (e: MouseEvent) => {
@@ -133,7 +139,8 @@ class Crop extends Component<Props> {
       >
         <div
           style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
-          onMouseMove={this.handleBoxMouseMove}
+          onMouseEnter={this.handleBoxMouseEnter}
+          onMouseLeave={this.handleBoxMouseLeave}
         >
           <BoxLabel
             onClick={this.handleDelete}
