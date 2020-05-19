@@ -16,6 +16,8 @@ export type CropperBox = {
   height: number;
   id: CropperBoxId;
   rotation: number;
+  style?: CSSProperties | Function;
+  labelStyle?: CSSProperties | Function;
 };
 
 export type CropperBoxDataMap = {
@@ -39,7 +41,10 @@ export type CropperEventType =
   | 'delete'
   | 'manual-resize'
   | 'rotate'
-  | 'pan';
+  | 'pan'
+  | 'click'
+  | 'mouse-enter'
+  | 'mouse-leave';
 
 export type CropperCursorMode = 'draw' | 'pan';
 
@@ -73,6 +78,9 @@ export type CropperProps = {
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
+  onBoxMouseEnter?: UpdateFunction;
+  onBoxMouseLeave?: UpdateFunction;
+  onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
   onZoomGesture?: (newZoom: number) => any;

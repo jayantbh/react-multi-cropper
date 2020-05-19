@@ -59,6 +59,9 @@ const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
   rotation = 0,
   zoom = 1,
+  onBoxClick,
+  onBoxMouseEnter,
+  onBoxMouseLeave,
   ...props
 }) => {
   const prevSrc = usePrevious(props.src);
@@ -509,20 +512,33 @@ const MultiCrops: FC<CropperProps> = ({
             left: `${centerCoords.x}px`,
           }}
         >
-          {props.boxes.map((box, index) => (
-            <Crop
-              {...props}
-              key={box.id || index}
-              index={index}
-              box={box}
-              onChange={onChange}
-              onCrop={handleCrop}
-              style={{
-                pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
-                transform: `rotate(${box.rotation}deg)`,
-              }}
-            />
-          ))}
+          {props.boxes.map((box, index) => {
+            const defaultStyle = {
+              pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
+              transform: `rotate(${box.rotation}deg)`,
+              position: 'absolute',
+              boxShadow: '0 0 0 2px #000',
+            };
+            const styleProp = box.style || {};
+            const style =
+              typeof styleProp === 'function'
+                ? styleProp(defaultStyle)
+                : { ...defaultStyle, ...box.style };
+            return (
+              <Crop
+                {...props}
+                key={box.id || index}
+                index={index}
+                box={box}
+                onChange={onChange}
+                onCrop={handleCrop}
+                onBoxClick={onBoxClick}
+                onBoxMouseEnter={onBoxMouseEnter}
+                onBoxMouseLeave={onBoxMouseLeave}
+                style={style}
+              />
+            );
+          })}
         </div>
         <Scrollbar
           type={'horizontal'}

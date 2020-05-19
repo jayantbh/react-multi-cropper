@@ -17,6 +17,9 @@ type Props = {
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
+  onBoxClick?: UpdateFunction;
+  onBoxMouseEnter?: UpdateFunction;
+  onBoxMouseLeave?: UpdateFunction;
   onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
   modifiable?: CropperProps['modifiable'];
@@ -49,6 +52,7 @@ class Crop extends Component<Props> {
 
     const nextBoxes = update(index, nextBox, boxes);
     onChange?.({ type: 'resize', event: e }, nextBox, index, nextBoxes);
+    this.setState({ drag: true });
   };
 
   handleDragMove = (e: DragEvent) => {
@@ -75,6 +79,21 @@ class Crop extends Component<Props> {
   handleCrop = (e: DragEvent | ResizeEvent) => {
     const type: CropperEventType = e.type === 'dragend' ? 'drag' : 'resize';
     this.props.onCrop(e, type);
+  };
+
+  handleBoxMouseEnter = (e: MouseEvent) => {
+    const { onBoxMouseEnter, box, index, boxes } = this.props;
+    onBoxMouseEnter?.({ type: 'mouse-enter', event: e }, box, index, boxes);
+  };
+
+  handleBoxMouseLeave = (e: MouseEvent) => {
+    const { onBoxMouseEnter, box, index, boxes } = this.props;
+    onBoxMouseEnter?.({ type: 'mouse-leave', event: e }, box, index, boxes);
+  };
+
+  handleBoxClick = (e: MouseEvent) => {
+    const { onBoxClick, box, index, boxes } = this.props;
+    onBoxClick?.({ type: 'click', event: e }, box, index, boxes);
   };
 
   componentDidMount(): void {
@@ -107,6 +126,7 @@ class Crop extends Component<Props> {
       modifiable = true,
       CustomLabel,
     } = this.props;
+    const { labelStyle = {} } = box;
     return (
       <div
         id={box.id}
@@ -115,14 +135,21 @@ class Crop extends Component<Props> {
           pointerEvents: modifiable ? 'auto' : 'none',
         }}
         ref={(c) => (this.crop = c)}
+        onClick={this.handleBoxClick}
       >
-        <BoxLabel
-          onClick={this.handleDelete}
-          style={{ pointerEvents: 'initial' }}
+        <div
+          style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
+          onMouseEnter={this.handleBoxMouseEnter}
+          onMouseLeave={this.handleBoxMouseLeave}
         >
-          {CustomLabel ? <CustomLabel box={box} index={index} /> : null}
-        </BoxLabel>
-        {FourDivs}
+          <BoxLabel
+            onClick={this.handleDelete}
+            style={{ pointerEvents: 'initial', ...labelStyle }}
+          >
+            {CustomLabel ? <CustomLabel box={box} index={index} /> : null}
+          </BoxLabel>
+          {FourDivs}
+        </div>
       </div>
     );
   }
@@ -155,14 +182,10 @@ const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
   return {
     ...style,
     transformOrigin: `${-box.x}px ${-box.y}px`,
-    boxShadow: '0 0 0 2px #000',
-    background: '#FFFFFF33',
-    position: 'absolute',
     width,
     height,
     top: y,
     left: x,
-    opacity: 0.8,
   };
 };
 

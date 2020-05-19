@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops from '../dist';
+import MultiCrops, { CropperEvent } from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 import {
@@ -11,7 +11,18 @@ import {
 } from '../dist';
 
 const initialBoxes: CropperBox[] = [
-  { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
+  {
+    x: -178,
+    y: -191,
+    width: 120,
+    height: 178,
+    id: 'SJxb6YpuG',
+    rotation: 0,
+    style: (prevStyle) => {
+      return { ...prevStyle, boxShadow: '0 0 0 2px #ff0' };
+    },
+    labelStyle: { visibility: 'hidden' },
+  },
   // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
   // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
   // { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
@@ -39,6 +50,8 @@ const App = () => {
   );
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
+
+  const [selectedBoxes, setSelectedBoxes] = useState<Array<string>>([]);
 
   useEffect(() => {
     setCursorMode('draw');
@@ -68,6 +81,33 @@ const App = () => {
       ...fileZoomMap,
       [src]: Math.max(0.1, Math.min(zoom, 2)),
     });
+  };
+
+  const handleClick = (
+    event: CropperEvent,
+    box: CropperBox,
+    index: number,
+    boxes: CropperBox[]
+  ) => {
+    console.log(event, box, index, boxes);
+  };
+
+  const handleMouseEnter = (
+    event: CropperEvent,
+    box: CropperBox,
+    index: number,
+    boxes: CropperBox[]
+  ) => {
+    console.log(event, box, index, boxes);
+  };
+
+  const handleMouseLeave = (
+    event: CropperEvent,
+    box: CropperBox,
+    index: number,
+    boxes: CropperBox[]
+  ) => {
+    console.log(event, box, index, boxes);
   };
 
   return (
@@ -154,6 +194,9 @@ const App = () => {
         }}
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}
+        onBoxClick={handleClick}
+        onBoxMouseEnter={handleMouseEnter}
+        onBoxMouseLeave={handleMouseLeave}
       />
       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
