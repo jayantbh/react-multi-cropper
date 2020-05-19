@@ -78,7 +78,7 @@ const App = () => {
       ...fileBoxesMap,
       [src]: _boxes.map((box) => ({
         ...box,
-        labelStyle: box.id == bx?.id ? {} : { display: 'none' },
+        labelStyle: box.id === bx?.id ? {} : { display: 'none' },
       })),
     });
   };
