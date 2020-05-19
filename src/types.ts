@@ -43,10 +43,8 @@ export type CropperEventType =
   | 'rotate'
   | 'pan'
   | 'click'
-  | 'mouse-move'
   | 'mouse-enter'
-  | 'mouse-leave'
-  };
+  | 'mouse-leave';
 
 export type CropperCursorMode = 'draw' | 'pan';
 
