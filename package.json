@@ -16,7 +16,7 @@
     "build": "rollup -c",
     "start": "rollup -c -w",
     "prepare": "yarn run build",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,scss}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,scss}\"  \"examples/**/*.{ts,tsx,js,scss}\"",
     "test": "yarn jest",
     "serve": "parcel ./examples/index.html -p 3000"
   },
