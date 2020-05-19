@@ -1,14 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops, { CropperEvent } from '../dist';
+import MultiCrops, { UpdateFunction } from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
-import {
-  CropperBox,
-  CropperBoxDataMap,
-  CropperCursorMode,
-  CropperProps,
-} from '../dist';
+import { CropperBox, CropperBoxDataMap, CropperCursorMode } from '../dist';
 
 const initialBoxes: CropperBox[] = [
   {
@@ -18,7 +13,7 @@ const initialBoxes: CropperBox[] = [
     height: 178,
     id: 'SJxb6YpuG',
     rotation: 0,
-    style: (prevStyle) => {
+    style: (prevStyle: CSSProperties) => {
       return { ...prevStyle, boxShadow: '0 0 0 2px #ff0' };
     },
     labelStyle: { visibility: 'hidden' },
@@ -51,8 +46,6 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const [selectedBoxes, setSelectedBoxes] = useState<Array<string>>([]);
-
   useEffect(() => {
     setCursorMode('draw');
     setFileRotationMap({
@@ -61,19 +54,15 @@ const App = () => {
     });
   }, [src]);
 
-  const updateBoxes: CropperProps['onChange'] = (e, bx, i, _boxes) => {
-    console.log(e.type, src, fileBoxesMap[src]?.length, _boxes.length);
-    setFileBoxesMap({
-      ...fileBoxesMap,
-      [src]: _boxes,
-    });
+  const updateBoxes: UpdateFunction = (_e, _bx, i, _boxes) => {
+    if (i && !fileBoxesMap[src]?.[i])
+      _boxes[i] = { ..._boxes[i], labelStyle: { display: 'none' } };
+
+    setFileBoxesMap({ ...fileBoxesMap, [src]: _boxes });
   };
 
   const setRotation = (rot: number) => {
-    setFileRotationMap({
-      ...fileRotationMap,
-      [src]: rot,
-    });
+    setFileRotationMap({ ...fileRotationMap, [src]: rot });
   };
 
   const setZoom = (zoom: number) => {
@@ -83,30 +72,22 @@ const App = () => {
     });
   };
 
-  const handleClick = (
-    event: CropperEvent,
-    box: CropperBox,
-    index: number,
-    boxes: CropperBox[]
-  ) => {
+  const handleClick: UpdateFunction = (_e, bx, _i, _boxes) => {
+    console.log('click');
+    setFileBoxesMap({
+      ...fileBoxesMap,
+      [src]: _boxes.map((box) => ({
+        ...box,
+        labelStyle: box.id == bx?.id ? {} : { display: 'none' },
+      })),
+    });
+  };
+
+  const handleMouseEnter: UpdateFunction = (event, box, index, boxes) => {
     console.log(event, box, index, boxes);
   };
 
-  const handleMouseEnter = (
-    event: CropperEvent,
-    box: CropperBox,
-    index: number,
-    boxes: CropperBox[]
-  ) => {
-    console.log(event, box, index, boxes);
-  };
-
-  const handleMouseLeave = (
-    event: CropperEvent,
-    box: CropperBox,
-    index: number,
-    boxes: CropperBox[]
-  ) => {
+  const handleMouseLeave: UpdateFunction = (event, box, index, boxes) => {
     console.log(event, box, index, boxes);
   };
 
@@ -168,7 +149,7 @@ const App = () => {
           height: '500px',
           width: '100%',
         }}
-        CustomLabel={({ index }) =>
+        CustomLabel={({ index }: { index: number }) =>
           index > 1 ? (
             <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
           ) : null
