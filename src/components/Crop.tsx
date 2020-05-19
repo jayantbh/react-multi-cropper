@@ -71,6 +71,8 @@ class Crop extends Component<Props> {
   };
 
   handleDelete = (e: MouseEvent) => {
+    e.stopPropagation();
+
     const { index, box, onDelete, boxes } = this.props;
     const nextBoxes = remove(index, 1, boxes);
     onDelete?.({ type: 'delete', event: e }, box, index, nextBoxes);

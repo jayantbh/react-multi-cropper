@@ -1,6 +1,7 @@
 import '../polyfills';
 
 import React, {
+  CSSProperties,
   FC,
   MouseEvent,
   SyntheticEvent,
@@ -370,6 +371,7 @@ const MultiCrops: FC<CropperProps> = ({
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
       const box = {
+        ...(boxes[drawingIndex.current] || {}),
         x: Math.min(pointA.current.x, pointB.x),
         y: Math.min(pointA.current.y, pointB.y),
         width: Math.abs(pointA.current.x - pointB.x),
@@ -390,7 +392,7 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
-    if (cursorMode === 'pan') {
+    if (cursorMode === 'pan' && (activePanCoords.x || activePanCoords.y)) {
       cancelAnimationFrame(panFrame.current);
       setIsPanning(false);
       setStaticPanCoords({
@@ -401,8 +403,8 @@ const MultiCrops: FC<CropperProps> = ({
       props.modifiable && handleCrop(e, 'pan');
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
+      if (props.boxes[drawingIndex.current]) handleCrop(e, 'draw-end');
 
-      handleCrop(e, 'draw-end');
       isDrawing.current = false;
     }
     pointA.current = {};
@@ -513,7 +515,7 @@ const MultiCrops: FC<CropperProps> = ({
           }}
         >
           {props.boxes.map((box, index) => {
-            const defaultStyle = {
+            const defaultStyle: CSSProperties = {
               pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
               transform: `rotate(${box.rotation}deg)`,
               position: 'absolute',
