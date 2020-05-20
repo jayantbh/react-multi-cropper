@@ -17,3 +17,5 @@ export {
   ImgOnLoadWithImageData,
   CropTriggerFunctionWithImageData,
 } from './types';
+
+export { getAbsoluteDetectedBoxes } from './utils';

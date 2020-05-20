@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops, { UpdateFunction } from '../dist';
+import MultiCrops, { getAbsoluteDetectedBoxes } from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 import { CropperBox, CropperBoxDataMap, CropperCursorMode } from '../dist';
@@ -12,7 +12,7 @@ const initialBoxes: CropperBox[] = [
     width: 120,
     height: 178,
     id: 'SJxb6YpuG',
-    rotation: 0,
+    rotation: 10,
     style: (prevStyle: CSSProperties) => {
       return { ...prevStyle, boxShadow: '0 0 0 2px #ff0' };
     },
@@ -36,7 +36,15 @@ const App = () => {
 
   const [fileBoxesMap, setFileBoxesMap] = useState<
     { [key in string]?: CropperBox[] }
-  >({ [src]: initialBoxes });
+  >({
+    [src]: [
+      ...initialBoxes,
+      ...getAbsoluteDetectedBoxes(initialBoxes[0], [
+        [10, 25, 50, 70],
+        [65, 25, 50, 70],
+      ]),
+    ],
+  });
   const [fileRotationMap, setFileRotationMap] = useState<
     { [key in string]?: number }
   >({});

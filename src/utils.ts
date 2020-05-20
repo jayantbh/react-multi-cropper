@@ -1,3 +1,6 @@
+import { CropperBox } from './types';
+import sid from 'shortid';
+
 export function update<T>(index: number, item: T, items: T[]): T[] {
   return [...items.slice(0, index), item, ...items.slice(index + 1)];
 }
@@ -26,4 +29,22 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
   ctx.putImageData(imageData, 0, 0);
 
   return canvas.toDataURL();
+};
+
+export const getAbsoluteDetectedBoxes = (
+  parent: CropperBox,
+  children: Array<Array<number>>
+): CropperBox[] => {
+  const { x, y, rotation } = parent;
+  return children.map((child) => {
+    const [top, left, width, height] = child;
+    return {
+      x: top + x,
+      y: left + y,
+      width,
+      height,
+      rotation,
+      id: sid.generate(),
+    };
+  });
 };
