@@ -37,13 +37,7 @@ const App = () => {
   const [fileBoxesMap, setFileBoxesMap] = useState<
     { [key in string]?: CropperBox[] }
   >({
-    [src]: [
-      ...initialBoxes,
-      ...getAbsoluteDetectedBoxes(initialBoxes[0], [
-        [10, 25, 50, 70],
-        [65, 25, 50, 70],
-      ]),
-    ],
+    [src]: initialBoxes,
   });
   const [fileRotationMap, setFileRotationMap] = useState<
     { [key in string]?: number }
@@ -118,6 +112,29 @@ const App = () => {
         }}
       >
         Reset
+      </button>
+      <button
+        onClick={() => {
+          const boxes = fileBoxesMap?.[src];
+          const lastBox = boxes?.[boxes?.length - 1];
+          setFileBoxesMap({
+            ...fileBoxesMap,
+            [src]: [
+              ...(boxes || []),
+              ...getAbsoluteDetectedBoxes(lastBox, [
+                [5, 5, lastBox.width / 2 - 5, lastBox.height / 2 - 5],
+                [
+                  Math.abs(lastBox.width / 2),
+                  Math.abs(lastBox.height / 2),
+                  lastBox.width / 2 - 5,
+                  lastBox.height / 2 - 5,
+                ],
+              ]),
+            ],
+          });
+        }}
+      >
+        Add Children
       </button>
       <span>
         <label htmlFor='zoom'>
