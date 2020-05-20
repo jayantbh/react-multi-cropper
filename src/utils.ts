@@ -33,7 +33,7 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
 
 export const getAbsoluteDetectedBoxes = (
   parent: CropperBox,
-  children: Array<Array<number>>
+  children: Array<[number, number, number, number]>
 ): CropperBox[] => {
   const { x, y, rotation } = parent;
   return children.map((child) => {
