@@ -329,10 +329,14 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const handleMouseDown = (e: MouseEvent) => {
-    const isTargetInCropper =
-      e.target === imageRef.current || e.target === containerRef.current;
-    if (!isTargetInCropper) return;
-
+    if (
+      imageRef.current &&
+      !e.nativeEvent.composedPath().includes(imageRef.current) &&
+      containerRef.current &&
+      !e.nativeEvent.composedPath().includes(containerRef.current)
+    ) {
+      return;
+    }
     if (cursorMode === 'pan') {
       pointA.current = getAbsoluteCursorPosition(e);
       setIsPanning(true);

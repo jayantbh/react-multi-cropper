@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops, { UpdateFunction } from '../dist';
+import MultiCrops, { getAbsoluteDetectedBoxes } from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 import { CropperBox, CropperBoxDataMap, CropperCursorMode } from '../dist';
@@ -12,7 +12,7 @@ const initialBoxes: CropperBox[] = [
     width: 120,
     height: 178,
     id: 'SJxb6YpuG',
-    rotation: 0,
+    rotation: 10,
     style: (prevStyle: CSSProperties) => {
       return { ...prevStyle, boxShadow: '0 0 0 2px #ff0' };
     },
@@ -36,7 +36,9 @@ const App = () => {
 
   const [fileBoxesMap, setFileBoxesMap] = useState<
     { [key in string]?: CropperBox[] }
-  >({ [src]: initialBoxes });
+  >({
+    [src]: initialBoxes,
+  });
   const [fileRotationMap, setFileRotationMap] = useState<
     { [key in string]?: number }
   >({});
@@ -110,6 +112,29 @@ const App = () => {
         }}
       >
         Reset
+      </button>
+      <button
+        onClick={() => {
+          const boxes = fileBoxesMap?.[src];
+          const lastBox = boxes?.[boxes?.length - 1];
+          setFileBoxesMap({
+            ...fileBoxesMap,
+            [src]: [
+              ...(boxes || []),
+              ...getAbsoluteDetectedBoxes(lastBox, [
+                [5, 5, lastBox.width / 2 - 5, lastBox.height / 2 - 5],
+                [
+                  Math.abs(lastBox.width / 2),
+                  Math.abs(lastBox.height / 2),
+                  lastBox.width / 2 - 5,
+                  lastBox.height / 2 - 5,
+                ],
+              ]),
+            ],
+          });
+        }}
+      >
+        Add Children
       </button>
       <span>
         <label htmlFor='zoom'>
