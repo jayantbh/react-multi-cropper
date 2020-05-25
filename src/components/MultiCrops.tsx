@@ -375,13 +375,13 @@ const MultiCrops: FC<CropperProps> = ({
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
       const box = {
+        id: id.current,
+        rotation: 0,
         ...(boxes[drawingIndex.current] || {}),
         x: Math.min(pointA.current.x, pointB.x),
         y: Math.min(pointA.current.y, pointB.y),
         width: Math.abs(pointA.current.x - pointB.x),
         height: Math.abs(pointA.current.y - pointB.y),
-        id: id.current,
-        rotation: 0,
       };
       const nextBoxes = [...boxes];
       nextBoxes[drawingIndex.current] = box;
