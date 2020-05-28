@@ -72,7 +72,7 @@ const App = () => {
   const setZoom = (zoom: number) => {
     setFileZoomMap({
       ...fileZoomMap,
-      [src]: Math.max(0.1, Math.min(zoom, 100)),
+      [src]: Math.max(0.1, Math.min(zoom, 10)),
     });
   };
 
@@ -146,7 +146,7 @@ const App = () => {
           id='zoom'
           type='range'
           min={0.1}
-          max={100}
+          max={10}
           step={0.01}
           value={fileZoomMap[src] || 1}
           onChange={(e) => setZoom(Number(e.currentTarget.value))}
