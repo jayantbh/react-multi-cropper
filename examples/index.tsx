@@ -48,6 +48,8 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
+  const [boxInView, setBoxInView] = useState<String>('');
+
   useEffect(() => {
     setCursorMode('draw');
     setFileRotationMap({
@@ -70,7 +72,7 @@ const App = () => {
   const setZoom = (zoom: number) => {
     setFileZoomMap({
       ...fileZoomMap,
-      [src]: Math.max(0.1, Math.min(zoom, 2)),
+      [src]: Math.max(0.1, Math.min(zoom, 10)),
     });
   };
 
@@ -144,7 +146,7 @@ const App = () => {
           id='zoom'
           type='range'
           min={0.1}
-          max={2.0}
+          max={10}
           step={0.01}
           value={fileZoomMap[src] || 1}
           onChange={(e) => setZoom(Number(e.currentTarget.value))}
@@ -164,6 +166,26 @@ const App = () => {
           value={fileRotationMap[src] || 0}
           onChange={(e) => setRotation(Number(e.currentTarget.value))}
         />
+      </span>
+      <span>
+        <select
+          defaultValue={''}
+          onChange={(e) => {
+            setBoxInView(e.target.value);
+          }}
+        >
+          <React.Fragment>
+            <option disabled value=''>
+              Select a box to view
+            </option>
+            >
+            {fileBoxesMap[src]?.map((box) => (
+              <option key={box.id} value={box.id}>
+                {box.id}
+              </option>
+            ))}
+          </React.Fragment>
+        </select>
       </span>
       <MultiCrops
         src={src}
@@ -203,6 +225,9 @@ const App = () => {
         onBoxClick={handleClick}
         onBoxMouseEnter={handleMouseEnter}
         onBoxMouseLeave={handleMouseLeave}
+        boxInView={boxInView}
+        boxViewZoomBuffer={0.1}
+        onSetRotation={setRotation}
       />
       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
