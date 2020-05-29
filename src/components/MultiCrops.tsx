@@ -171,7 +171,7 @@ const MultiCrops: FC<CropperProps> = ({
 
   useEffect(() => {
     if (boxInView) {
-      const box = props?.boxes?.find((b) => b.id === boxInView);
+      const box = props?.boxes?.find((b) => b.id === boxInView.id);
       const containerRefHeight = containerRef.current?.offsetHeight || 0;
       const containerRefWidth = containerRef.current?.offsetWidth || 0;
       if (containerRefHeight && containerRefWidth && box) {

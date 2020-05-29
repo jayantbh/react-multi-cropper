@@ -48,7 +48,7 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const [boxInView, setBoxInView] = useState<String>('');
+  const [boxInView, setBoxInView] = useState<Object>({});
 
   useEffect(() => {
     setCursorMode('draw');
@@ -93,6 +93,9 @@ const App = () => {
 
   const handleMouseLeave: UpdateFunction = (event, box, index, boxes) => {
     console.log(event, box, index, boxes);
+  };
+  const handleSelectClick = (id: string) => {
+    setBoxInView({ id: id });
   };
 
   return (
@@ -168,24 +171,26 @@ const App = () => {
         />
       </span>
       <span>
-        <select
-          defaultValue={''}
-          onChange={(e) => {
-            setBoxInView(e.target.value);
-          }}
-        >
+        <div>
+          <p style={{ display: 'inline-block' }}>
+            Click a button to view a box
+          </p>
           <React.Fragment>
-            <option disabled value=''>
-              Select a box to view
-            </option>
-            >
             {fileBoxesMap[src]?.map((box) => (
-              <option key={box.id} value={box.id}>
-                {box.id}
-              </option>
+              <div
+                style={{ display: 'inline-block', padding: '10px' }}
+                key={box.id}
+              >
+                <button
+                  value={box.id}
+                  onClick={() => handleSelectClick(box.id)}
+                >
+                  {box.id}
+                </button>
+              </div>
             ))}
           </React.Fragment>
-        </select>
+        </div>
       </span>
       <MultiCrops
         src={src}

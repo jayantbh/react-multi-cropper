@@ -91,7 +91,7 @@ export type CropperProps = {
   disableKeyboard?: boolean;
   disableMouse?: boolean;
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
-  boxInView: CropperBoxId;
+  boxInView: any;
   onSetRotation: Function;
   boxViewZoomBuffer: number;
 };
