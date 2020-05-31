@@ -99,6 +99,8 @@ const App = () => {
     setBoxInView({ id });
   };
 
+  const cropperRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
       <h1>Dragging, Drawing, Resizing rectangles on the image</h1>
@@ -112,6 +114,25 @@ const App = () => {
       </button>
       <button
         onClick={() => {
+          const el = cropperRef.current;
+          const img = cropperRef.current?.querySelector('img');
+          if (!el || !img) return;
+
+          const h = el.clientHeight / img.clientHeight;
+          const w = el.clientWidth / img.clientWidth;
+
+          const zoomRatio = Math.min(h, w);
+          const newBoxes =
+            fileBoxesMap[src]?.map((box) => ({
+              ...box,
+              x: box.x * zoomRatio,
+              y: box.y * zoomRatio,
+              height: box.height * zoomRatio,
+              width: box.width * zoomRatio,
+            })) || [];
+
+          setFileBoxesMap({ ...fileBoxesMap, [src]: newBoxes });
+
           setRotation(0);
           setZoom(1);
           resetCenter();
@@ -195,48 +216,50 @@ const App = () => {
           </>
         </div>
       </span>
-      <MultiCrops
-        src={src}
-        zoom={fileZoomMap[src] || 1}
-        onZoomGesture={setZoom}
-        modifiable={false}
-        containerStyles={{
-          height: '500px',
-          width: '100%',
-        }}
-        CustomLabel={({ index }: { index: number }) =>
-          index > 1 ? (
-            <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
-          ) : null
-        }
-        boxes={fileBoxesMap[src] || []}
-        onChange={updateBoxes}
-        onCrop={(e, map, currentImg) => {
-          console.log('Crop', e, map, currentImg?.boxId);
-          if (e.type === 'draw-end') {
-            if (!currentImg) return;
-            const { dataUrl, boxId } = currentImg;
-            setImageMap({ ...imageMap, [boxId]: dataUrl });
-          } else if (e.type === 'load') setImageMap(map);
-        }}
-        onDelete={(e, box, index, boxes) => {
-          console.log('Delete', box, index, boxes);
-          updateBoxes(e, box, index, boxes);
-        }}
-        onLoad={(map, reset) => {
-          console.log('Loaded: ', map);
-          setImageMap(map);
-          resetCenterRef.current = reset;
-        }}
-        cursorMode={cursorMode}
-        rotation={fileRotationMap[src] || 0}
-        onBoxClick={handleClick}
-        onBoxMouseEnter={handleMouseEnter}
-        onBoxMouseLeave={handleMouseLeave}
-        boxInView={boxInView}
-        boxViewZoomBuffer={0.1}
-        onSetRotation={setRotation}
-      />
+      <div ref={cropperRef}>
+        <MultiCrops
+          src={src}
+          zoom={fileZoomMap[src] || 1}
+          onZoomGesture={setZoom}
+          modifiable={false}
+          containerStyles={{
+            height: '500px',
+            width: '100%',
+          }}
+          CustomLabel={({ index }: { index: number }) =>
+            index > 1 ? (
+              <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
+            ) : null
+          }
+          boxes={fileBoxesMap[src] || []}
+          onChange={updateBoxes}
+          onCrop={(e, map, currentImg) => {
+            console.log('Crop', e, map, currentImg?.boxId);
+            if (e.type === 'draw-end') {
+              if (!currentImg) return;
+              const { dataUrl, boxId } = currentImg;
+              setImageMap({ ...imageMap, [boxId]: dataUrl });
+            } else if (e.type === 'load') setImageMap(map);
+          }}
+          onDelete={(e, box, index, boxes) => {
+            console.log('Delete', box, index, boxes);
+            updateBoxes(e, box, index, boxes);
+          }}
+          onLoad={(map, reset) => {
+            console.log('Loaded: ', map);
+            setImageMap(map);
+            resetCenterRef.current = reset;
+          }}
+          cursorMode={cursorMode}
+          rotation={fileRotationMap[src] || 0}
+          onBoxClick={handleClick}
+          onBoxMouseEnter={handleMouseEnter}
+          onBoxMouseLeave={handleMouseLeave}
+          boxInView={boxInView}
+          boxViewZoomBuffer={0.1}
+          onSetRotation={setRotation}
+        />
+      </div>
       {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
       )}
