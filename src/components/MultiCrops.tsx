@@ -180,9 +180,10 @@ const MultiCrops: FC<CropperProps> = ({
         const heightRatio = boxHeight / containerRefHeight;
         const widthRatio = boxWidth / containerRefWidth;
 
-        let newZoom =
-          1 / (heightRatio > widthRatio ? heightRatio : widthRatio) -
-          boxViewZoomBuffer;
+        let newZoom = Math.min(
+          1 / Math.max(heightRatio, widthRatio) - boxViewZoomBuffer,
+          zoom
+        );
         const newX = (newZoom * box?.x) / zoom;
         const newY = (newZoom * box?.y) / zoom;
         const newWidth = (newZoom * box?.width) / zoom;

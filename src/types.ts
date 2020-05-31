@@ -9,7 +9,7 @@ export type CartesianSize = Coordinates;
 
 export type CropperBoxId = string;
 
-export type CropperBox = {
+export type CropperBox<T = any> = {
   x: number;
   y: number;
   width: number;
@@ -18,6 +18,7 @@ export type CropperBox = {
   rotation: number;
   style?: CSSProperties | ((css: CSSProperties) => CSSProperties);
   labelStyle?: CSSProperties | ((css: CSSProperties) => CSSProperties);
+  meta?: T;
 };
 
 export type CropperBoxDataMap = {
@@ -91,9 +92,9 @@ export type CropperProps = {
   disableKeyboard?: boolean;
   disableMouse?: boolean;
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
-  boxInView: any;
-  onSetRotation: Function;
-  boxViewZoomBuffer: number;
+  boxInView?: any;
+  onSetRotation?: Function;
+  boxViewZoomBuffer?: number;
 };
 
 export type RefSize = {

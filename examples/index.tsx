@@ -85,6 +85,7 @@ const App = () => {
         labelStyle: box.id === bx?.id ? {} : { display: 'none' },
       })),
     });
+    setBoxInView({ id: bx.id });
   };
 
   const handleMouseEnter: UpdateFunction = (event, box, index, boxes) => {
@@ -94,7 +95,7 @@ const App = () => {
   const handleMouseLeave: UpdateFunction = (event, box, index, boxes) => {
     console.log(event, box, index, boxes);
   };
-  const handleSelectClick = (id: string) => {
+  const handleBoxButtonClick = (id: string) => {
     setBoxInView({ id: id });
   };
 
@@ -183,7 +184,7 @@ const App = () => {
               >
                 <button
                   value={box.id}
-                  onClick={() => handleSelectClick(box.id)}
+                  onClick={() => handleBoxButtonClick(box.id)}
                 >
                   {box.id}
                 </button>
