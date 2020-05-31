@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops, { getAbsoluteDetectedBoxes } from '../dist';
+import MultiCrops, { getAbsoluteDetectedBoxes, UpdateFunction } from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 import { CropperBox, CropperBoxDataMap, CropperCursorMode } from '../dist';
@@ -85,7 +85,7 @@ const App = () => {
         labelStyle: box.id === bx?.id ? {} : { display: 'none' },
       })),
     });
-    setBoxInView({ id: bx.id });
+    bx && setBoxInView({ id: bx.id });
   };
 
   const handleMouseEnter: UpdateFunction = (event, box, index, boxes) => {
@@ -123,6 +123,8 @@ const App = () => {
         onClick={() => {
           const boxes = fileBoxesMap?.[src];
           const lastBox = boxes?.[boxes?.length - 1];
+          if (!lastBox) return;
+
           setFileBoxesMap({
             ...fileBoxesMap,
             [src]: [
