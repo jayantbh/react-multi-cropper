@@ -48,7 +48,7 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const [boxInView, setBoxInView] = useState<Object>({});
+  const [boxInView, setBoxInView] = useState<{id?: string}>({});
 
   useEffect(() => {
     setCursorMode('draw');
@@ -96,7 +96,7 @@ const App = () => {
     console.log(event, box, index, boxes);
   };
   const handleBoxButtonClick = (id: string) => {
-    setBoxInView({ id: id });
+    setBoxInView({ id });
   };
 
   return (
@@ -176,7 +176,7 @@ const App = () => {
           <p style={{ display: 'inline-block' }}>
             Click a button to view a box
           </p>
-          <React.Fragment>
+          <>
             {fileBoxesMap[src]?.map((box) => (
               <div
                 style={{ display: 'inline-block', padding: '10px' }}
@@ -190,7 +190,7 @@ const App = () => {
                 </button>
               </div>
             ))}
-          </React.Fragment>
+          </>
         </div>
       </span>
       <MultiCrops
