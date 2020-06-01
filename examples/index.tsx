@@ -99,6 +99,14 @@ const App = () => {
     setBoxInView({ id });
   };
 
+  const reset = () => {
+    setRotation(0);
+    setZoom(1);
+    resetCenter();
+  };
+
+  useEffect(reset, [src]);
+
   const cropperRef = useRef<HTMLDivElement | null>(null);
 
   return (
@@ -112,34 +120,7 @@ const App = () => {
       >
         Toggle Mode [{cursorMode}]
       </button>
-      <button
-        onClick={() => {
-          const el = cropperRef.current;
-          const img = cropperRef.current?.querySelector('img');
-          if (!el || !img) return;
-
-          const h = el.clientHeight / img.clientHeight;
-          const w = el.clientWidth / img.clientWidth;
-
-          const zoomRatio = Math.min(h, w);
-          const newBoxes =
-            fileBoxesMap[src]?.map((box) => ({
-              ...box,
-              x: box.x * zoomRatio,
-              y: box.y * zoomRatio,
-              height: box.height * zoomRatio,
-              width: box.width * zoomRatio,
-            })) || [];
-
-          setFileBoxesMap({ ...fileBoxesMap, [src]: newBoxes });
-
-          setRotation(0);
-          setZoom(1);
-          resetCenter();
-        }}
-      >
-        Reset
-      </button>
+      <button onClick={reset}>Reset</button>
       <button
         onClick={() => {
           const boxes = fileBoxesMap?.[src];
