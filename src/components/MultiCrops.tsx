@@ -37,7 +37,6 @@ import {
   useCentering,
   useMounting,
   usePrevious,
-  usePropResize,
   usePropRotation,
   useScrollbars,
   useWorker,
@@ -48,8 +47,6 @@ const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 
 type Dimensions = {
-  imgRectHeight: number;
-  imgRectWidth: number;
   imgBaseHeight: number;
   imgBaseWidth: number;
 };
@@ -111,19 +108,21 @@ const MultiCrops: FC<CropperProps> = ({
     y: Number.isFinite(yScale) ? yScale * scalingFactor : scalingFactor,
   };
 
-  const [
-    { imgRectHeight, imgRectWidth, imgBaseHeight, imgBaseWidth },
-    setDimensions,
-  ] = useState<Dimensions>({
-    imgRectHeight: 0,
-    imgRectWidth: 0,
-    imgBaseHeight: 0,
-    imgBaseWidth: 0,
-  });
+  const [{ imgBaseHeight, imgBaseWidth }, setDimensions] = useState<Dimensions>(
+    {
+      imgBaseHeight: 0,
+      imgBaseWidth: 0,
+    }
+  );
 
-  const getUpdatedDimensions = (
-    doStateUpdate = true
-  ): undefined | Dimensions => {
+  const srcBaseZoomMap = useRef({});
+  const getUpdatedDimensions = ({
+    doStateUpdate = true,
+    eventType,
+  }: {
+    doStateUpdate?: boolean;
+    eventType: CropperEventType;
+  }): undefined | Dimensions => {
     if (!imageRef.current?.complete || srcChanged) return;
 
     const imageRefHeight = imageRef.current?.naturalHeight || 0;
@@ -138,16 +137,30 @@ const MultiCrops: FC<CropperProps> = ({
         : (containerRefHeight || 1) / (imageRefHeight || 1);
     const imgBaseHeight = (imageRefHeight || 0) * newZoomOffset;
     const imgBaseWidth = (imageRefWidth || 0) * newZoomOffset;
-    const { height = 0, width = 0 } =
-      imageRef.current?.getBoundingClientRect() || {};
 
     const fields: Dimensions = {
-      imgRectHeight: height,
-      imgRectWidth: width,
       imgBaseHeight,
       imgBaseWidth,
     };
 
+    const oldZoomOffset = srcBaseZoomMap.current[props.src] || newZoomOffset;
+
+    srcBaseZoomMap.current = {
+      ...srcBaseZoomMap.current,
+      [props.src]: newZoomOffset,
+    };
+
+    const ratio = newZoomOffset / oldZoomOffset;
+
+    const newBoxes = props.boxes.map((box) => ({
+      ...box,
+      x: box.x * ratio,
+      y: box.y * ratio,
+      height: box.height * ratio,
+      width: box.width * ratio,
+    }));
+
+    props.onChange?.({ type: eventType }, undefined, undefined, newBoxes);
     doStateUpdate && setDimensions(fields);
     return fields;
   };
@@ -158,16 +171,8 @@ const MultiCrops: FC<CropperProps> = ({
   );
 
   useEffect(() => {
-    getUpdatedDimensions();
-  }, [
-    props.src,
-    zoom,
-    srcChanged,
-    imageRef.current,
-    imageRef.current,
-    containerRef.current,
-    containerRef.current,
-  ]);
+    getUpdatedDimensions({ eventType: 'src-change' });
+  }, [props.src]);
 
   useEffect(() => {
     if (boxInView) {
@@ -256,15 +261,6 @@ const MultiCrops: FC<CropperProps> = ({
         );
   };
 
-  usePropResize(
-    imgRectWidth,
-    imgRectHeight,
-    props.onCrop,
-    drawCanvas,
-    getSelections,
-    props.modifiable
-  );
-
   usePropRotation(
     rotation,
     props.boxes,
@@ -320,7 +316,8 @@ const MultiCrops: FC<CropperProps> = ({
   });
 
   const onLoad = (e: SyntheticEvent<HTMLImageElement>) => {
-    getUpdatedDimensions();
+    console.log('loaded');
+    getUpdatedDimensions({ eventType: 'load' });
 
     onImageLoad(
       lastUpdatedBox,

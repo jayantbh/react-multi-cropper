@@ -401,29 +401,6 @@ export const useCentering = (
   return [centerCoords, setCenterCoords];
 };
 
-export const usePropResize = (
-  width: number,
-  height: number,
-  onCrop: CropperProps['onCrop'],
-  drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: (
-    boxes?: CropperProps['boxes'],
-    eventType?: CropperEventType
-  ) => ReturnType<typeof getImageMapFromBoxes>,
-  modifiable: CropperProps['modifiable'] = true
-) => {
-  if (!modifiable || !height || !width) return;
-  const propSizeTimeout = useRef<number | NodeJS.Timeout>(-1);
-
-  useEffect(() => {
-    clearTimeout(propSizeTimeout.current);
-    propSizeTimeout.current = setTimeout(() => {
-      drawCanvas();
-      onCrop?.({ type: 'manual-resize' }, getSelections(), undefined);
-    }, imageDebounceTime);
-  }, [width, height]);
-};
-
 export const onImageLoad = (
   lastUpdatedBox: MutableRefObject<RefSize | undefined>,
   onLoad: CropperProps['onLoad'],
@@ -435,7 +412,10 @@ export const onImageLoad = (
   cont: HTMLDivElement | null,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   setStaticPanCoords: Dispatch<SetStateAction<Coordinates>>,
-  getUpdatedDimensions: (doStateUpdate?: boolean) => any
+  getUpdatedDimensions: (args: {
+    doStateUpdate?: boolean;
+    eventType: CropperEventType;
+  }) => any
 ): ReactEventHandler<HTMLImageElement> => (e) => {
   const img = e.currentTarget;
   if (!img || !cont) return;
@@ -452,7 +432,7 @@ export const onImageLoad = (
   requestAnimationFrame(() => {
     drawCanvas();
     onLoad?.(getSelections(undefined, 'load'), () => {
-      getUpdatedDimensions();
+      getUpdatedDimensions({ doStateUpdate: true, eventType: 'load' });
       setCenterCoords({
         x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
         y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
