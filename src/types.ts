@@ -40,7 +40,7 @@ export type CropperEventType =
   | 'zoom'
   | 'drag'
   | 'delete'
-  | 'manual-resize'
+  | 'src-change'
   | 'rotate'
   | 'pan'
   | 'click'
