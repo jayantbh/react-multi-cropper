@@ -1340,7 +1340,7 @@
 
 "@rollup/plugin-typescript@^4.1.2":
   version "4.1.2"
-  resolved "https://registry.npmjs.com/@rollup%2fplugin-typescript/-/plugin-typescript-4.1.2.tgz#6f910430276ae3e53a47a12ad65820627e7b6ad9"
+  resolved "https://unpm.uberinternal.com/@rollup%2fplugin-typescript/-/plugin-typescript-4.1.2.tgz#6f910430276ae3e53a47a12ad65820627e7b6ad9"
   integrity sha1-b5EEMCdq4+U6R6Eq1lggYn57atk=
   dependencies:
     "@rollup/pluginutils" "^3.0.1"
@@ -1364,7 +1364,7 @@
 
 "@rollup/pluginutils@^3.0.1":
   version "3.0.10"
-  resolved "https://registry.npmjs.com/@rollup%2fpluginutils/-/pluginutils-3.0.10.tgz#a659b9025920378494cd8f8c59fbf9b3a50d5f12"
+  resolved "https://unpm.uberinternal.com/@rollup%2fpluginutils/-/pluginutils-3.0.10.tgz#a659b9025920378494cd8f8c59fbf9b3a50d5f12"
   integrity sha1-plm5AlkgN4SUzY+MWfv5s6UNXxI=
   dependencies:
     "@types/estree" "0.0.39"
@@ -7527,7 +7527,7 @@ resolve@^1.1.5, resolve@^1.4.0:
 
 resolve@^1.14.1:
   version "1.17.0"
-  resolved "https://registry.npmjs.com/resolve/-/resolve-1.17.0.tgz#b25941b54968231cc2d1bb76a79cb7f2c0bf8444"
+  resolved "https://unpm.uberinternal.com/resolve/-/resolve-1.17.0.tgz#b25941b54968231cc2d1bb76a79cb7f2c0bf8444"
   integrity sha1-sllBtUloIxzC0bt2p5y38sC/hEQ=
   dependencies:
     path-parse "^1.0.6"
