@@ -216,25 +216,25 @@ const MultiCrops: FC<CropperProps> = ({
   const drawCanvas = () =>
     !hasOCSupport
       ? performCanvasPaint(
-          imageRef.current,
-          containerRef.current,
-          canvasRef.current,
-          staticPanCoords,
-          activePanCoords,
-          rotation,
-          zoom,
-          imgScale
-        )
+        imageRef.current,
+        containerRef.current,
+        canvasRef.current,
+        staticPanCoords,
+        activePanCoords,
+        rotation,
+        zoom,
+        imgScale
+      )
       : performOffscreenCanvasPaint(
-          imageRef.current,
-          containerRef.current,
-          workerRef.current,
-          staticPanCoords,
-          activePanCoords,
-          rotation,
-          zoom,
-          imgScale
-        );
+        imageRef.current,
+        containerRef.current,
+        workerRef.current,
+        staticPanCoords,
+        activePanCoords,
+        rotation,
+        zoom,
+        imgScale
+      );
 
   const getSelections = (
     boxes: CropperProps['boxes'] = props.boxes,
@@ -242,18 +242,18 @@ const MultiCrops: FC<CropperProps> = ({
   ) => {
     return !hasOCSupport
       ? getImageMapFromBoxes(
-          boxes,
-          containerRef.current,
-          canvasRef.current,
-          imgScale
-        )
+        boxes,
+        containerRef.current,
+        canvasRef.current,
+        imgScale
+      )
       : getOffscreenImageMapFromBoxes(
-          boxes,
-          containerRef.current,
-          workerRef.current,
-          eventType,
-          imgScale
-        );
+        boxes,
+        containerRef.current,
+        workerRef.current,
+        eventType,
+        imgScale
+      );
   };
 
   usePropResize(
@@ -342,9 +342,9 @@ const MultiCrops: FC<CropperProps> = ({
       const boxId = lastUpdatedBox.current?.id;
       const currentImgParam: CurrentImgParam = boxId
         ? {
-            boxId,
-            dataUrl: selections[boxId],
-          }
+          boxId,
+          dataUrl: selections[boxId],
+        }
         : undefined;
 
       props.onCrop?.({ type, event: e }, selections, currentImgParam);
@@ -457,11 +457,12 @@ const MultiCrops: FC<CropperProps> = ({
     e.preventDefault();
     e.stopPropagation();
     const { deltaX, deltaY, shiftKey } = e;
-
+    let delta = (deltaX === 0 ? deltaY : deltaX);
+    if (Math.abs(delta) >= 40) delta /= 40;
     cancelAnimationFrame(wheelFrame.current);
     wheelFrame.current = requestAnimationFrame(() => {
       if (shiftKey) {
-        props.onZoomGesture?.(zoom + deltaY * 0.01);
+        props.onZoomGesture?.(zoom + delta * 0.01);
       } else {
         setStaticPanCoords({
           x: staticPanCoords.x - deltaX * pxScaleH,
@@ -505,8 +506,8 @@ const MultiCrops: FC<CropperProps> = ({
                 key === 'ArrowRight' || key === 'ArrowUp'
                   ? 0.05
                   : key === 'ArrowLeft' || key === 'ArrowDown'
-                  ? -0.05
-                  : 0;
+                    ? -0.05
+                    : 0;
               props.onZoomGesture?.(zoom + delta);
             } else {
               const deltaX =
