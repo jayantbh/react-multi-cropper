@@ -100,7 +100,7 @@ const App = () => {
     console.log(event, box, index, boxes);
   };
   const handleBoxButtonClick = (id: string) => {
-    setBoxInView({ id });
+    setBoxInView({ id, pan: false });
   };
 
   const cropperRef = useRef<HTMLDivElement | null>(null);
