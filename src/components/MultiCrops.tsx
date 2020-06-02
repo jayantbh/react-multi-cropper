@@ -196,8 +196,8 @@ const MultiCrops: FC<CropperProps> = ({
         const newY = (newZoom * box?.y) / zoom;
         const newWidth = (newZoom * box?.width) / zoom;
         const newHeight = (newZoom * box?.height) / zoom;
-        const xPan = -1 * (newX + newWidth / 2);
-        const yPan = -1 * (newY + newHeight / 2);
+        const xPan = -(newX + newWidth / 2);
+        const yPan = -(newY + newHeight / 2);
 
         if (!isInView(containerRect, boxRect)) {
           setStaticPanCoords({ x: xPan, y: yPan });
