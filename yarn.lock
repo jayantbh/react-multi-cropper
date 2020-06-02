@@ -1338,14 +1338,6 @@
     is-module "^1.0.0"
     resolve "^1.14.2"
 
-"@rollup/plugin-typescript@^4.1.2":
-  version "4.1.2"
-  resolved "https://registry.npmjs.com/@rollup%2fplugin-typescript/-/plugin-typescript-4.1.2.tgz#6f910430276ae3e53a47a12ad65820627e7b6ad9"
-  integrity sha1-b5EEMCdq4+U6R6Eq1lggYn57atk=
-  dependencies:
-    "@rollup/pluginutils" "^3.0.1"
-    resolve "^1.14.1"
-
 "@rollup/plugin-url@^4.0.2":
   version "4.0.2"
   resolved "https://registry.npmjs.com/@rollup%2fplugin-url/-/plugin-url-4.0.2.tgz#af9e6ce8b26153843567bfb04e48843e72fc2dc4"
@@ -1361,15 +1353,6 @@
   integrity sha1-TpTRKNlLkGmeUX7wRUIpYNGMj94=
   dependencies:
     estree-walker "^1.0.1"
-
-"@rollup/pluginutils@^3.0.1":
-  version "3.0.10"
-  resolved "https://registry.npmjs.com/@rollup%2fpluginutils/-/pluginutils-3.0.10.tgz#a659b9025920378494cd8f8c59fbf9b3a50d5f12"
-  integrity sha1-plm5AlkgN4SUzY+MWfv5s6UNXxI=
-  dependencies:
-    "@types/estree" "0.0.39"
-    estree-walker "^1.0.1"
-    picomatch "^2.2.2"
 
 "@sinonjs/commons@^1.7.0":
   version "1.7.1"
@@ -6577,7 +6560,7 @@ physical-cpu-count@^2.0.0:
   version "2.0.0"
   resolved "http://registry.npm.taobao.org/physical-cpu-count/download/physical-cpu-count-2.0.0.tgz#18de2f97e4bf7a9551ad7511942b5496f7aba660"
 
-picomatch@^2.0.4, picomatch@^2.0.5, picomatch@^2.2.2:
+picomatch@^2.0.4, picomatch@^2.0.5:
   version "2.2.2"
   resolved "https://registry.npmjs.com/picomatch/-/picomatch-2.2.2.tgz#21f333e9b6b8eaff02468f5146ea406d345f4dad"
   integrity sha1-IfMz6ba46v8CRo9RRupAbTRfTa0=
@@ -7524,13 +7507,6 @@ resolve@^1.1.5, resolve@^1.4.0:
   resolved "http://registry.npm.taobao.org/resolve/download/resolve-1.5.0.tgz#1f09acce796c9a762579f31b2c1cc4c3cddf9f36"
   dependencies:
     path-parse "^1.0.5"
-
-resolve@^1.14.1:
-  version "1.17.0"
-  resolved "https://registry.npmjs.com/resolve/-/resolve-1.17.0.tgz#b25941b54968231cc2d1bb76a79cb7f2c0bf8444"
-  integrity sha1-sllBtUloIxzC0bt2p5y38sC/hEQ=
-  dependencies:
-    path-parse "^1.0.6"
 
 restore-cursor@^2.0.0:
   version "2.0.0"

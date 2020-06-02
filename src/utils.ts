@@ -48,3 +48,20 @@ export const getAbsoluteDetectedBoxes = (
     };
   });
 };
+
+export const isInView = (
+  containerRect: ClientRect | undefined,
+  boxRect: ClientRect | undefined
+): boolean => {
+  if (containerRect && boxRect) {
+    if (
+      boxRect.top > containerRect.top &&
+      boxRect.left > containerRect.left &&
+      boxRect.bottom < containerRect.bottom &&
+      boxRect.right < containerRect.right
+    ) {
+      return true;
+    }
+  }
+  return false;
+};

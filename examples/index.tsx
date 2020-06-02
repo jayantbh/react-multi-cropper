@@ -1,9 +1,14 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import MultiCrops, { getAbsoluteDetectedBoxes, UpdateFunction } from '../dist';
+import MultiCrops, {
+  getAbsoluteDetectedBoxes,
+  CropperBox,
+  CropperBoxDataMap,
+  CropperCursorMode,
+  UpdateFunction,
+} from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
-import { CropperBox, CropperBoxDataMap, CropperCursorMode } from '../dist';
 
 const initialBoxes: CropperBox[] = [
   {
@@ -48,7 +53,11 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const [boxInView, setBoxInView] = useState<{ id?: string }>({});
+  const [boxInView, setBoxInView] = useState<{
+    id?: string;
+    rotate?: boolean;
+    panInView?: boolean;
+  }>({});
 
   useEffect(() => {
     setCursorMode('draw');
@@ -96,7 +105,7 @@ const App = () => {
     console.log(event, box, index, boxes);
   };
   const handleBoxButtonClick = (id: string) => {
-    setBoxInView({ id });
+    setBoxInView({ id, panInView: false, rotate: false });
   };
 
   const cropperRef = useRef<HTMLDivElement | null>(null);

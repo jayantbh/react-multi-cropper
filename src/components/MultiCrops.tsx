@@ -44,6 +44,8 @@ import {
   useZoom,
 } from './MultiCrops.helpers';
 
+import { isInView } from '../utils';
+
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 
@@ -172,8 +174,14 @@ const MultiCrops: FC<CropperProps> = ({
   useEffect(() => {
     if (boxInView) {
       const box = props?.boxes?.find((b) => b.id === boxInView.id);
+      const { rotate = true, panInView = true } = boxInView;
+      const boxRect = document
+        .getElementById(box?.id || '')
+        ?.getBoundingClientRect();
+      const containerRect = containerRef.current?.getBoundingClientRect();
       const containerRefHeight = containerRef.current?.offsetHeight || 0;
       const containerRefWidth = containerRef.current?.offsetWidth || 0;
+
       if (containerRefHeight && containerRefWidth && box) {
         const boxHeight = box?.height / zoom;
         const boxWidth = box?.width / zoom;
@@ -188,12 +196,17 @@ const MultiCrops: FC<CropperProps> = ({
         const newY = (newZoom * box?.y) / zoom;
         const newWidth = (newZoom * box?.width) / zoom;
         const newHeight = (newZoom * box?.height) / zoom;
-        const xPan = -1 * (newX + newWidth / 2);
-        const yPan = -1 * (newY + newHeight / 2);
+        const xPan = -(newX + newWidth / 2);
+        const yPan = -(newY + newHeight / 2);
 
-        props.onZoomGesture?.(newZoom);
-        onSetRotation?.((rotation + 360 - box?.rotation) % 360);
-        setStaticPanCoords({ x: xPan, y: yPan });
+        if (!isInView(containerRect, boxRect)) {
+          setStaticPanCoords({ x: xPan, y: yPan });
+          props.onZoomGesture?.(newZoom);
+          onSetRotation?.((rotation + 360 - box?.rotation) % 360);
+        } else {
+          panInView && setStaticPanCoords({ x: xPan, y: yPan });
+          rotate && onSetRotation?.((rotation + 360 - box?.rotation) % 360);
+        }
       }
     }
   }, [boxInView]);
