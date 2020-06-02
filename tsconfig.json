@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
+    "outDir": "build",
     "module": "esnext",
     "target": "es5",
     "lib": [
@@ -29,6 +28,6 @@
     "importHelpers": true,
     "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["build", "dist", "examples", "rollup.config.js"]
+  "include": ["src", "examples"],
+  "exclude": ["build", "dist", "rollup.config.js"]
 }

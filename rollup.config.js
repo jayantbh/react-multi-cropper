@@ -1,5 +1,4 @@
-// import typescript from 'rollup-plugin-typescript2';
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 import commonjs from '@rollup/plugin-commonjs';
 import external from 'rollup-plugin-peer-deps-external';
 import postcss from 'rollup-plugin-postcss';
@@ -9,6 +8,8 @@ import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 import fileAsBlob from 'rollup-plugin-file-as-blob';
+
+import pkg from './package.json';
 
 process.env.SASS_PATH = 'src';
 
@@ -34,7 +35,10 @@ const plugins = [
 
 const pluginsTsExt = [
   ...plugins,
-  typescript(),
+  typescript({
+    rollupCommonJSResolveHack: true,
+    clean: true,
+  }),
 ];
 
 const commonExternal = [
@@ -67,7 +71,7 @@ export default [
     input: 'src/index.ts',
     output: [
       {
-        dir: 'dist',
+        file: pkg.browser,
         format: 'cjs',
         ...commonConfig,
         sourcemap: true
