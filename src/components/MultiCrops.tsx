@@ -44,6 +44,8 @@ import {
   useZoom,
 } from './MultiCrops.helpers';
 
+import { isInView } from './../utils';
+
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 
@@ -172,11 +174,19 @@ const MultiCrops: FC<CropperProps> = ({
   useEffect(() => {
     if (boxInView) {
       const box = props?.boxes?.find((b) => b.id === boxInView.id);
+      const { rotate = true, pan = true, zoom: shouldZoom = false } = boxInView;
+      const boxRect = document
+        .getElementById(box?.id || '')
+        ?.getBoundingClientRect();
+      const containerRect = containerRef.current?.getBoundingClientRect();
       const containerRefHeight = containerRef.current?.offsetHeight || 0;
       const containerRefWidth = containerRef.current?.offsetWidth || 0;
+
       if (containerRefHeight && containerRefWidth && box) {
-        const boxHeight = box?.height / zoom;
-        const boxWidth = box?.width / zoom;
+        const boundRectWidth = boxRect?.width || 0;
+        const boundRectHeight = boxRect?.height || 0;
+        const boxHeight = boundRectHeight / zoom;
+        const boxWidth = boundRectWidth / zoom;
         const heightRatio = boxHeight / containerRefHeight;
         const widthRatio = boxWidth / containerRefWidth;
 
@@ -184,16 +194,22 @@ const MultiCrops: FC<CropperProps> = ({
           1 / Math.max(heightRatio, widthRatio) - boxViewZoomBuffer,
           zoom
         );
-        const newX = (newZoom * box?.x) / zoom;
-        const newY = (newZoom * box?.y) / zoom;
-        const newWidth = (newZoom * box?.width) / zoom;
-        const newHeight = (newZoom * box?.height) / zoom;
+        const newX = (newZoom * (boxRect?.top || 0)) / zoom; // need correct value wrt container center instead of boxRect?.top
+        const newY = (newZoom * (boxRect?.left || 0)) / zoom; // need correct value wrt container center instead of boxRect?.left
+        const newWidth = (newZoom * boundRectWidth) / zoom;
+        const newHeight = (newZoom * boundRectHeight) / zoom;
         const xPan = -1 * (newX + newWidth / 2);
         const yPan = -1 * (newY + newHeight / 2);
 
-        props.onZoomGesture?.(newZoom);
-        onSetRotation?.((rotation + 360 - box?.rotation) % 360);
-        setStaticPanCoords({ x: xPan, y: yPan });
+        if (!isInView(containerRect, boxRect)) {
+          setStaticPanCoords({ x: xPan, y: yPan });
+          props.onZoomGesture?.(newZoom);
+          onSetRotation?.((rotation + 360 - box?.rotation) % 360);
+        } else {
+          pan && setStaticPanCoords({ x: xPan, y: yPan });
+          shouldZoom && props.onZoomGesture?.(newZoom);
+          rotate && onSetRotation?.((rotation + 360 - box?.rotation) % 360);
+        }
       }
     }
   }, [boxInView]);

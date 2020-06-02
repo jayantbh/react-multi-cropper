@@ -48,7 +48,11 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const [boxInView, setBoxInView] = useState<{ id?: string }>({});
+  const [boxInView, setBoxInView] = useState<{
+    id?: string;
+    rotate?: boolean;
+    pan?: boolean;
+  }>({});
 
   useEffect(() => {
     setCursorMode('draw');
@@ -96,7 +100,7 @@ const App = () => {
     console.log(event, box, index, boxes);
   };
   const handleBoxButtonClick = (id: string) => {
-    setBoxInView({ id });
+    setBoxInView({ id, rotate: false, pan: false });
   };
 
   const cropperRef = useRef<HTMLDivElement | null>(null);
