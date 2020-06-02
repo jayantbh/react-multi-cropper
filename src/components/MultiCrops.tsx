@@ -154,15 +154,19 @@ const MultiCrops: FC<CropperProps> = ({
 
     const ratio = newZoomOffset / oldZoomOffset;
 
-    const newBoxes = props.boxes.map((box) => ({
-      ...box,
-      x: box.x * ratio,
-      y: box.y * ratio,
-      height: box.height * ratio,
-      width: box.width * ratio,
-    }));
+    console.log(ratio, newZoomOffset, oldZoomOffset);
 
-    props.onChange?.({ type: eventType }, undefined, undefined, newBoxes);
+    if (ratio !== 1) {
+      const newBoxes = props.boxes.map((box) => ({
+        ...box,
+        x: box.x * ratio,
+        y: box.y * ratio,
+        height: box.height * ratio,
+        width: box.width * ratio,
+      }));
+
+      props.onChange?.({ type: eventType }, undefined, undefined, newBoxes);
+    }
     doStateUpdate && setDimensions(fields);
     return fields;
   };
