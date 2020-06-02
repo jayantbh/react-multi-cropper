@@ -457,11 +457,12 @@ const MultiCrops: FC<CropperProps> = ({
     e.preventDefault();
     e.stopPropagation();
     const { deltaX, deltaY, shiftKey } = e;
-
+    let delta = deltaX === 0 ? deltaY : deltaX;
+    if (Math.abs(delta) >= 40) delta /= 40;
     cancelAnimationFrame(wheelFrame.current);
     wheelFrame.current = requestAnimationFrame(() => {
       if (shiftKey) {
-        props.onZoomGesture?.(zoom + deltaY * 0.01);
+        props.onZoomGesture?.(zoom + delta * 0.01);
       } else {
         setStaticPanCoords({
           x: staticPanCoords.x - deltaX * pxScaleH,
