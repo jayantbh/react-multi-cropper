@@ -44,7 +44,7 @@ import {
   useZoom,
 } from './MultiCrops.helpers';
 
-import { isInView } from './../utils';
+import { isInView } from '../utils';
 
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
