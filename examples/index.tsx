@@ -48,7 +48,11 @@ const App = () => {
 
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
 
-  const [boxInView, setBoxInView] = useState<{ id?: string }>({});
+  const [boxInView, setBoxInView] = useState<{
+    id?: string;
+    rotate?: boolean;
+    pan?: boolean;
+  }>({});
 
   useEffect(() => {
     setCursorMode('draw');
