@@ -174,7 +174,7 @@ const MultiCrops: FC<CropperProps> = ({
   useEffect(() => {
     if (boxInView) {
       const box = props?.boxes?.find((b) => b.id === boxInView.id);
-      const { rotate = true, pan = true, zoom: shouldZoom = false } = boxInView;
+      const { rotate = true, panInView = true } = boxInView;
       const boxRect = document
         .getElementById(box?.id || '')
         ?.getBoundingClientRect();
@@ -204,8 +204,7 @@ const MultiCrops: FC<CropperProps> = ({
           props.onZoomGesture?.(newZoom);
           onSetRotation?.((rotation + 360 - box?.rotation) % 360);
         } else {
-          pan && setStaticPanCoords({ x: xPan, y: yPan });
-          shouldZoom && props.onZoomGesture?.(newZoom);
+          panInView && setStaticPanCoords({ x: xPan, y: yPan });
           rotate && onSetRotation?.((rotation + 360 - box?.rotation) % 360);
         }
       }

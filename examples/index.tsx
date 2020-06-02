@@ -56,7 +56,7 @@ const App = () => {
   const [boxInView, setBoxInView] = useState<{
     id?: string;
     rotate?: boolean;
-    pan?: boolean;
+    panInView?: boolean;
   }>({});
 
   useEffect(() => {
@@ -105,7 +105,7 @@ const App = () => {
     console.log(event, box, index, boxes);
   };
   const handleBoxButtonClick = (id: string) => {
-    setBoxInView({ id, pan: false });
+    setBoxInView({ id, panInView: false, rotate: false });
   };
 
   const cropperRef = useRef<HTMLDivElement | null>(null);
