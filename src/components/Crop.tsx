@@ -2,7 +2,7 @@ import React, { Component, CSSProperties, FC, MouseEvent } from 'react';
 import interact from 'interactjs';
 import type { ResizeEvent, Rect, DragEvent } from '@interactjs/types/types';
 import { BoxLabel } from './BoxLabel';
-import { update, remove, oneLevelEquals } from '../utils';
+import { update, remove } from '../utils';
 import {
   CropperBox,
   CropperEvent,
@@ -28,14 +28,6 @@ type Props = {
 
 class Crop extends Component<Props> {
   crop: HTMLDivElement | null = null;
-
-  shouldComponentUpdate(nextProps: Props) {
-    return (
-      !oneLevelEquals(nextProps.box, this.props.box) ||
-      !oneLevelEquals(nextProps.style, this.props.style) ||
-      nextProps.index !== this.props.index
-    );
-  }
 
   handleResizeMove = (e: ResizeEvent) => {
     const { index, box, boxes, onChange } = this.props;
