@@ -154,8 +154,6 @@ const MultiCrops: FC<CropperProps> = ({
 
     const ratio = newZoomOffset / oldZoomOffset;
 
-    console.log(ratio, newZoomOffset, oldZoomOffset);
-
     if (ratio !== 1) {
       const newBoxes = props.boxes.map((box) => ({
         ...box,
@@ -333,7 +331,6 @@ const MultiCrops: FC<CropperProps> = ({
   });
 
   const onLoad = (e: SyntheticEvent<HTMLImageElement>) => {
-    console.log('loaded');
     getUpdatedDimensions({ eventType: 'load' });
 
     onImageLoad(
@@ -505,7 +502,6 @@ const MultiCrops: FC<CropperProps> = ({
         onScroll={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Hello');
         }}
         onKeyDown={(e) => {
           if (props.disableKeyboard) return;
