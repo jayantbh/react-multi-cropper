@@ -1,4 +1,10 @@
-import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import React, {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import ReactDOM from 'react-dom';
 import MultiCrops, {
   getAbsoluteDetectedBoxes,
@@ -116,6 +122,18 @@ const App = () => {
 
   useEffect(reset, [src]);
 
+  const handleCrop = useCallback(
+    (e, map, currentImg) => {
+      console.log('Crop', e, map, currentImg?.boxId);
+      if (e.type === 'draw-end') {
+        if (!currentImg) return;
+        const { dataUrl, boxId } = currentImg;
+        setImageMap((im) => ({ ...im, [boxId]: dataUrl }));
+      } else if (e.type === 'load') setImageMap(map);
+    },
+    [src]
+  );
+
   const cropperRef = useRef<HTMLDivElement | null>(null);
 
   return (
@@ -223,14 +241,7 @@ const App = () => {
           }
           boxes={fileBoxesMap[src] || []}
           onChange={updateBoxes}
-          onCrop={(e, map, currentImg) => {
-            console.log('Crop', e, map, currentImg?.boxId);
-            if (e.type === 'draw-end') {
-              if (!currentImg) return;
-              const { dataUrl, boxId } = currentImg;
-              setImageMap({ ...imageMap, [boxId]: dataUrl });
-            } else if (e.type === 'load') setImageMap(map);
-          }}
+          onCrop={handleCrop}
           onDelete={(e, box, index, boxes) => {
             console.log('Delete', box, index, boxes);
             updateBoxes(e, box, index, boxes);

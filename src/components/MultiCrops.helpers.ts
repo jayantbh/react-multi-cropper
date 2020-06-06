@@ -490,6 +490,8 @@ export const useWorker = (
   onCrop: CropperProps['onCrop'],
   lastUpdatedBox: MutableRefObject<CropperBox | undefined>
 ) => {
+  const cropHandlerRef = useRef(onCrop);
+  cropHandlerRef.current = onCrop;
   useEffect(() => {
     if (!canvas || !hasOCSupport || workerRef.current) return;
     workerRef.current = createWorker(canvas, CanvasWorkerModule, (e) => {
@@ -502,14 +504,14 @@ export const useWorker = (
             }
           : undefined;
 
-        onCrop?.(
+        cropHandlerRef.current?.(
           { type: e.data.eventType },
           e.data.imageMap as CropperBoxDataMap,
           currentImgParam
         );
       }
     });
-  }, [hasOCSupport, lastUpdatedBox.current]);
+  }, [hasOCSupport, lastUpdatedBox.current, onCrop]);
 };
 
 export function usePrevious<T>(value: T): T {
