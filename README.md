@@ -157,3 +157,4 @@ type CropperProps = {
 - The `modifiable: true` functionality is quite buggy. Usage with this prop as `true` is not recommended yet.
 - Mouse/Touchpad wheel to pan/zoom is supported. But touchpad zoom gesture is not. Example for wheel zoom is present in the examples/index.tsx.
 - Arrow Keys based pan/zoom is supported.
+- It would be advisable to memoize the functions passed to the component.
