@@ -11,6 +11,7 @@ import {
 } from '../types';
 import { imageDataToDataUrl } from '../utils';
 import {
+  DependencyList,
   Dispatch,
   MouseEvent,
   MutableRefObject,
@@ -24,15 +25,6 @@ import createWorker from 'offscreen-canvas/create-worker';
 
 // @ts-ignore -- file generated on `yarn start`
 import CanvasWorkerModule from '../worker.bundle';
-
-const imageDebounceTime = 150;
-
-const setTimeout =
-  typeof window !== 'undefined' ? window.setTimeout : global.setTimeout;
-const clearTimeout = (t: number | NodeJS.Timeout) =>
-  typeof window !== 'undefined'
-    ? window.clearTimeout(t as number)
-    : global.clearTimeout(t as NodeJS.Timeout);
 
 export const getImgBoundingRect = (
   img: HTMLImageElement,
@@ -207,7 +199,7 @@ export const getImageMapFromBoxes = (
   const contRect = cont.getBoundingClientRect();
 
   return boxes.reduce<CropperBoxDataMap>((map, box) => {
-    if (box.width === 0 || box.height === 0) return map;
+    if (box.width === 0 || box.height === 0 || box.noImage) return map;
 
     const { height, width } = canvas;
 
@@ -260,7 +252,7 @@ export const getOffscreenImageMapFromBoxes = (
   const boxesForOfc = boxes
     .map((box) => {
       const { style, labelStyle, ...prunedBox } = box;
-      if (box.width === 0 || box.height === 0) return;
+      if (box.width === 0 || box.height === 0 || box.noImage) return;
 
       const boxTopLeftEl = document
         .getElementById(box.id)
@@ -290,17 +282,10 @@ export const getOffscreenImageMapFromBoxes = (
 export const useZoom = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
-  autoSizeTimeout: MutableRefObject<number | NodeJS.Timeout>,
   setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   src: CropperProps['src'],
   boxes: CropperProps['boxes'],
   onChange: CropperProps['onChange'],
-  onCrop: CropperProps['onCrop'],
-  drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: (
-    boxes: CropperProps['boxes']
-  ) => ReturnType<typeof getImageMapFromBoxes>,
-  modifiable: CropperProps['modifiable'] = true,
   rotation: number,
   imgBaseWidth: number,
   imgBaseHeight: number,
@@ -350,13 +335,6 @@ export const useZoom = (
       y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
     });
     onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
-
-    if (!modifiable) return;
-    drawCanvas();
-    clearTimeout(autoSizeTimeout.current);
-    autoSizeTimeout.current = setTimeout(() => {
-      onCrop?.({ type: 'zoom' }, getSelections(newBoxes), undefined);
-    }, imageDebounceTime);
   }, [zoom]);
 };
 
@@ -446,16 +424,10 @@ export const usePropRotation = (
   rotation: number,
   boxes: CropperProps['boxes'],
   onChange: CropperProps['onChange'],
-  onCrop: CropperProps['onCrop'],
-  drawCanvas: () => ReturnType<typeof performCanvasPaint>,
-  getSelections: (
-    boxes: CropperProps['boxes']
-  ) => ReturnType<typeof getImageMapFromBoxes>,
-  srcChanged: boolean,
-  modifiable: CropperProps['modifiable'] = true
+  srcChanged: boolean
 ) => {
   const prevRotation = useRef(rotation);
-  const rotationTimeout = useRef<number | NodeJS.Timeout>(-1);
+  const rotationFrame = useRef(-1);
 
   useEffect(() => {
     if (srcChanged) {
@@ -463,23 +435,18 @@ export const usePropRotation = (
       return;
     }
 
-    const rotationDiff = rotation - prevRotation.current;
-    const newBoxes = boxes.map((box) => ({
-      ...box,
-      rotation: box.rotation + rotationDiff,
-    }));
+    cancelAnimationFrame(rotationFrame.current);
+    rotationFrame.current = requestAnimationFrame(() => {
+      const rotationDiff = rotation - prevRotation.current;
+      const newBoxes = boxes.map((box) => ({
+        ...box,
+        rotation: box.rotation + rotationDiff,
+      }));
 
-    prevRotation.current = rotation;
+      prevRotation.current = rotation;
 
-    onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
-
-    if (!modifiable) return;
-
-    clearTimeout(rotationTimeout.current);
-    rotationTimeout.current = setTimeout(() => {
-      drawCanvas();
-      onCrop?.({ type: 'rotate' }, getSelections(newBoxes), undefined);
-    }, imageDebounceTime);
+      onChange?.({ type: 'rotate' }, undefined, undefined, newBoxes);
+    });
   }, [rotation]);
 };
 
@@ -557,7 +524,8 @@ export const useScrollbars = (
 
 export const useMounting = (
   cont: MutableRefObject<HTMLDivElement | null>,
-  listener: EventListener
+  listener: EventListener,
+  deps: DependencyList
 ) => {
   useEffect(() => {
     if (!cont.current) return;
@@ -567,5 +535,5 @@ export const useMounting = (
       if (!cont.current) return;
       cont.current.removeEventListener('wheel', listener);
     };
-  });
+  }, deps);
 };

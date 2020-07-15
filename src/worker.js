@@ -88,7 +88,8 @@ const getImageMap = async (e) => {
 
   const imageBoxPromises = boxes.map((box) =>
     (async () => {
-      if (box.width === 0 || box.height === 0 || !canvas) return box;
+      if (box.width === 0 || box.height === 0 || !canvas || box.noImage)
+        return box;
 
       const { contRect, btlRect } = box;
       const { height, width } = canvas;

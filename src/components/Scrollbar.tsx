@@ -22,7 +22,7 @@ const Scrollbar: FC<
     <div
       className={css['scroll-wrapper']}
       style={{
-        pointerEvents: isScrolling ? 'initial' : 'none',
+        pointerEvents: isHidden ? 'none' : isScrolling ? 'initial' : 'none',
         cursor: isVertical ? 'ns-resize' : 'ew-resize',
         opacity: isHidden ? 0 : 1,
       }}

@@ -36,6 +36,11 @@ const initialBoxes: CropperBox[] = [
   // { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
 ];
 
+const containerStyles = {
+  height: '500px',
+  width: '100%',
+};
+
 const App = () => {
   const resetCenterRef = useRef(() => {});
   const resetCenter = resetCenterRef.current;
@@ -73,43 +78,62 @@ const App = () => {
     });
   }, [src]);
 
-  const updateBoxes: UpdateFunction = (_e, _bx, i, _boxes) => {
-    if (i && !fileBoxesMap[src]?.[i])
-      _boxes[i] = { ..._boxes[i], labelStyle: { display: 'none' } };
+  const updateBoxes: UpdateFunction = useCallback(
+    (_e, _bx, i, _boxes) => {
+      if (i && !fileBoxesMap[src]?.[i])
+        _boxes[i] = { ..._boxes[i], labelStyle: { display: 'none' } };
 
-    setFileBoxesMap({ ...fileBoxesMap, [src]: _boxes });
-  };
+      setFileBoxesMap((boxMap) => ({ ...boxMap, [src]: _boxes }));
+    },
+    [src]
+  );
 
-  const setRotation = (rot: number) => {
-    setFileRotationMap({ ...fileRotationMap, [src]: rot });
-  };
+  const setRotation = useCallback(
+    (rot: number) => {
+      setFileRotationMap((rotMap) => ({ ...rotMap, [src]: rot }));
+    },
+    [src]
+  );
 
-  const setZoom = (zoom: number) => {
-    setFileZoomMap({
-      ...fileZoomMap,
-      [src]: Math.max(0.1, Math.min(zoom, 10)),
-    });
-  };
+  const setZoom = useCallback(
+    (zoom: number) => {
+      setFileZoomMap((zoomMap) => ({
+        ...zoomMap,
+        [src]: Math.max(0.1, Math.min(zoom, 10)),
+      }));
+    },
+    [src, setFileZoomMap]
+  );
 
-  const handleClick: UpdateFunction = (_e, bx, _i, _boxes) => {
-    console.log('click');
-    setFileBoxesMap({
-      ...fileBoxesMap,
-      [src]: _boxes.map((box) => ({
-        ...box,
-        labelStyle: box.id === bx?.id ? {} : { display: 'none' },
-      })),
-    });
-    bx && setBoxInView({ id: bx.id });
-  };
+  const handleClick: UpdateFunction = useCallback(
+    (_e, bx, _i, _boxes) => {
+      console.log('click');
+      setFileBoxesMap((boxMap) => ({
+        ...boxMap,
+        [src]: _boxes.map((box) => ({
+          ...box,
+          labelStyle: box.id === bx?.id ? {} : { display: 'none' },
+        })),
+      }));
+      bx && setBoxInView({ id: bx.id });
+    },
+    [src, setBoxInView, setFileBoxesMap]
+  );
 
-  const handleMouseEnter: UpdateFunction = (event, box, index, boxes) => {
-    console.log(event, box, index, boxes);
-  };
+  const handleMouseEnter: UpdateFunction = useCallback(
+    (event, box, index, boxes) => {
+      console.log(event, box, index, boxes);
+    },
+    []
+  );
 
-  const handleMouseLeave: UpdateFunction = (event, box, index, boxes) => {
-    console.log(event, box, index, boxes);
-  };
+  const handleMouseLeave: UpdateFunction = useCallback(
+    (event, box, index, boxes) => {
+      console.log(event, box, index, boxes);
+    },
+    []
+  );
+
   const handleBoxButtonClick = (id: string) => {
     setBoxInView({ id, panInView: false, rotate: false });
   };
@@ -132,6 +156,28 @@ const App = () => {
       } else if (e.type === 'load') setImageMap(map);
     },
     [src]
+  );
+
+  const handleLoad = useCallback(
+    (map, reset) => {
+      console.log('Loaded: ', map);
+      setImageMap(map);
+      resetCenterRef.current = reset;
+    },
+    [setImageMap]
+  );
+
+  const handleDelete = useCallback((e, box, index, boxes) => {
+    console.log('Delete', box, index, boxes);
+    updateBoxes(e, box, index, boxes);
+  }, []);
+
+  const CustomLabel = useCallback(
+    ({ index, box }) =>
+      index > 1 && !box.meta?.word ? (
+        <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
+      ) : null,
+    []
   );
 
   const cropperRef = useRef<HTMLDivElement | null>(null);
@@ -203,7 +249,7 @@ const App = () => {
         />
       </span>
       <span>
-        <div>
+        <div style={{ maxHeight: '200px', overflow: 'auto' }}>
           <p style={{ display: 'inline-block' }}>
             Click a button to view a box
           </p>
@@ -229,28 +275,13 @@ const App = () => {
           src={src}
           zoom={fileZoomMap[src] || 1}
           onZoomGesture={setZoom}
-          modifiable={false}
-          containerStyles={{
-            height: '500px',
-            width: '100%',
-          }}
-          CustomLabel={({ index }: { index: number }) =>
-            index > 1 ? (
-              <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
-            ) : null
-          }
+          containerStyles={containerStyles}
+          CustomLabel={CustomLabel}
           boxes={fileBoxesMap[src] || []}
           onChange={updateBoxes}
           onCrop={handleCrop}
-          onDelete={(e, box, index, boxes) => {
-            console.log('Delete', box, index, boxes);
-            updateBoxes(e, box, index, boxes);
-          }}
-          onLoad={(map, reset) => {
-            console.log('Loaded: ', map);
-            setImageMap(map);
-            resetCenterRef.current = reset;
-          }}
+          onDelete={handleDelete}
+          onLoad={handleLoad}
           cursorMode={cursorMode}
           rotation={fileRotationMap[src] || 0}
           onBoxClick={handleClick}

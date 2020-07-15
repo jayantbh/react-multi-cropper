@@ -1,5 +1,4 @@
 import { CSSProperties, FC, MouseEvent } from 'react';
-import { DragEvent, ResizeEvent } from '@interactjs/types/types';
 import createWorker from 'offscreen-canvas/create-worker';
 
 export type DataUrl = string;
@@ -18,6 +17,7 @@ export type CropperBox<T = any> = {
   rotation: number;
   style?: CSSProperties | ((css: CSSProperties) => CSSProperties);
   labelStyle?: CSSProperties | ((css: CSSProperties) => CSSProperties);
+  noImage?: boolean;
   meta?: T;
 };
 
@@ -51,7 +51,7 @@ export type CropperCursorMode = 'draw' | 'pan';
 
 export type CropperEvent = {
   type: CropperEventType;
-  event?: ResizeEvent | MouseEvent<HTMLImageElement | Element> | DragEvent;
+  event?: MouseEvent<HTMLImageElement | Element> | DragEvent;
 };
 
 export type CropTriggerFunctionWithImageData = (
@@ -88,7 +88,6 @@ export type CropperProps = {
   containerClassName?: string;
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
-  modifiable?: boolean;
   disableKeyboard?: boolean;
   disableMouse?: boolean;
   CustomLabel?: FC<{ box: CropperBox; index: number }>;

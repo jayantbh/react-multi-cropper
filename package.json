@@ -33,7 +33,6 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-transform-runtime": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
-    "@interactjs/types": "^1.9.7",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-json": "^4.0.2",
     "@rollup/plugin-node-resolve": "^7.1.0",
@@ -76,7 +75,6 @@
     "react-dom": "^16.2.0"
   },
   "dependencies": {
-    "interactjs": "1.9.4",
     "offscreen-canvas": "^0.1.1",
     "shortid": "^2.2.15",
     "use-resize-observer": "^6.0.0"

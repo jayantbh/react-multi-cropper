@@ -1,78 +1,27 @@
 import React, { Component, CSSProperties, FC, MouseEvent } from 'react';
-import interact from 'interactjs';
-import type { ResizeEvent, Rect, DragEvent } from '@interactjs/types/types';
 import { BoxLabel } from './BoxLabel';
-import { update, remove } from '../utils';
-import {
-  CropperBox,
-  CropperEvent,
-  CropperEventType,
-  CropperProps,
-  UpdateFunction,
-} from '../types';
+import { remove } from '../utils';
+import { CropperBox, UpdateFunction } from '../types';
 
 type Props = {
   index: number;
   box: CropperBox;
   boxes: CropperBox[];
-  onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
   onBoxClick?: UpdateFunction;
   onBoxMouseEnter?: UpdateFunction;
   onBoxMouseLeave?: UpdateFunction;
-  onCrop: (e: CropperEvent['event'], type: CropperEvent['type']) => any;
   style?: CSSProperties;
-  modifiable?: CropperProps['modifiable'];
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
 };
 
 class Crop extends Component<Props> {
-  crop: HTMLDivElement | null = null;
-
-  handleResizeMove = (e: ResizeEvent) => {
-    const { index, box, boxes, onChange } = this.props;
-    const { width, height } = e.rect;
-    const { left, top } = e.deltaRect as Rect;
-
-    const nextBox = {
-      ...box,
-      x: box.x + left,
-      y: box.y + top,
-      width,
-      height,
-    };
-
-    const nextBoxes = update(index, nextBox, boxes);
-    onChange?.({ type: 'resize', event: e }, nextBox, index, nextBoxes);
-    this.setState({ drag: true });
-  };
-
-  handleDragMove = (e: DragEvent) => {
-    e.stopPropagation();
-    const {
-      index,
-      box,
-      box: { x, y },
-      boxes,
-      onChange,
-    } = this.props;
-    const { dx, dy } = e;
-    const nextBox = { ...box, x: x + dx, y: y + dy };
-    const nextBoxes = update(index, nextBox, boxes);
-    onChange?.({ type: 'drag', event: e }, nextBox, index, nextBoxes);
-  };
-
   handleDelete = (e: MouseEvent) => {
     e.stopPropagation();
 
     const { index, box, onDelete, boxes } = this.props;
     const nextBoxes = remove(index, 1, boxes);
     onDelete?.({ type: 'delete', event: e }, box, index, nextBoxes);
-  };
-
-  handleCrop = (e: DragEvent | ResizeEvent) => {
-    const type: CropperEventType = e.type === 'dragend' ? 'drag' : 'resize';
-    this.props.onCrop(e, type);
   };
 
   handleBoxMouseEnter = (e: MouseEvent) => {
@@ -90,49 +39,20 @@ class Crop extends Component<Props> {
     onBoxClick?.({ type: 'click', event: e }, box, index, boxes);
   };
 
-  componentDidMount(): void {
-    if (!this.props.modifiable || !this.crop) return;
-    // @ts-ignore
-    interact(this.crop)
-      .draggable({})
-      .resizable({
-        edges: {
-          left: true,
-          right: true,
-          bottom: true,
-          top: true,
-        },
-      })
-      .on('dragmove', this.handleDragMove)
-      .on('resizemove', this.handleResizeMove)
-      .on(['resizeend', 'dragend'], this.handleCrop);
-  }
-
-  componentWillUnmount(): void {
-    this.crop && interact(this.crop).unset();
-  }
-
   render() {
-    const {
-      box,
-      index,
-      style = {},
-      modifiable = true,
-      CustomLabel,
-    } = this.props;
+    const { box, index, style = {}, CustomLabel } = this.props;
     const { labelStyle = {} } = box;
     return (
       <div
         id={box.id}
         style={{
           ...cropStyle(box, style),
-          pointerEvents: modifiable ? 'auto' : 'none',
+          pointerEvents: 'none',
         }}
-        ref={(c) => (this.crop = c)}
         onClick={this.handleBoxClick}
       >
         <div
-          style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
+          style={labelWrapperStyles}
           onMouseEnter={this.handleBoxMouseEnter}
           onMouseLeave={this.handleBoxMouseLeave}
         >
@@ -181,6 +101,12 @@ const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
     top: y,
     left: x,
   };
+};
+
+const labelWrapperStyles: CSSProperties = {
+  width: '100%',
+  height: '100%',
+  pointerEvents: 'auto',
 };
 
 export default Crop;

@@ -135,7 +135,6 @@ type CropperProps = {
   containerClassName?: string;
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
-  modifiable?: boolean;
   disableKeyboard?: boolean;
   disableMouse?: boolean;
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
@@ -151,10 +150,11 @@ type CropperProps = {
   3. To get a resetCenter handler to reset the panned position of the image.
 - You need to pass a function the `onChange` prop if you want the default functionality to work out of the box.
   - It is however optional, in case you want the box drawing to be controlled externally.
-- The function supplied to `onCrop` will be called when a drawing/dragging/resizing operation was completed. This will be needed if you want to receive the image payload after a cropping action was done.
-  - The first argument is an `Interactable` event that tells you all you need to know about the event that was triggered to cause this function to fire.
+- The function supplied to `onCrop` will be called when a drawing operation was completed. This will be needed if you want to receive the image payload after a cropping action was done.
+  - The first argument is a `CropperEvent` event that tells you all you need to know about the event that was triggered to cause this function to fire.
   - The second argument is a dictionary of box.id's and their respective base64 encoded image contents.
-- The `modifiable: true` functionality is quite buggy. Usage with this prop as `true` is not recommended yet.
+- Remove the ability to change a box after drawing it. The existing functionality was not stable enough to leave it, and leaving it in caused more issues than were manageable.
 - Mouse/Touchpad wheel to pan/zoom is supported. But touchpad zoom gesture is not. Example for wheel zoom is present in the examples/index.tsx.
 - Arrow Keys based pan/zoom is supported.
 - It would be advisable to memoize the functions passed to the component.
+- If you want to pass a box for reasons other than getting the imageData out of it, add the `noImage: true` key-val to it.

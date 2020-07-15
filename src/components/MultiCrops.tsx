@@ -3,9 +3,11 @@ import '../polyfills';
 import React, {
   CSSProperties,
   FC,
+  memo,
   MouseEvent,
   SyntheticEvent,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -43,7 +45,7 @@ import {
   useZoom,
 } from './MultiCrops.helpers';
 
-import { isInView } from '../utils';
+import { deepEquals, isInView } from '../utils';
 
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
@@ -85,7 +87,6 @@ const MultiCrops: FC<CropperProps> = ({
   const panFrame = useRef(-1);
   const wheelFrame = useRef(-1);
   const keyFrame = useRef(-1);
-  const autoSizeTimeout = useRef(-1);
 
   const [isPanning, setIsPanning] = useState(false);
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
@@ -276,29 +277,15 @@ const MultiCrops: FC<CropperProps> = ({
         );
   };
 
-  usePropRotation(
-    rotation,
-    props.boxes,
-    props.onChange,
-    props.onCrop,
-    drawCanvas,
-    getSelections,
-    srcChanged,
-    props.modifiable
-  );
+  usePropRotation(rotation, props.boxes, props.onChange, srcChanged);
 
   useZoom(
     imageRef.current,
     containerRef.current,
-    autoSizeTimeout,
     setCenterCoords,
     props.src,
     props.boxes,
     props.onChange,
-    props.onCrop,
-    drawCanvas,
-    getSelections,
-    props.modifiable,
     rotation,
     imgBaseWidth,
     imgBaseHeight,
@@ -447,41 +434,52 @@ const MultiCrops: FC<CropperProps> = ({
         y: staticPanCoords.y + activePanCoords.y,
       });
       setActivePanCoords({ x: 0, y: 0 });
-      props.modifiable && handleCrop(e, 'pan');
     } else if (cursorMode === 'draw') {
       if (!isDrawing.current) return;
       if (props.boxes[drawingIndex.current]) handleCrop(e, 'draw-end');
-
-      isDrawing.current = false;
     }
+    isDrawing.current = false;
     pointA.current = {};
   };
 
-  const onChange: CropperProps['onChange'] = (e, box, index, boxes) => {
-    lastUpdatedBox.current = box;
-    props.onChange?.(e, box, index, boxes);
-  };
+  useMounting(
+    containerRef,
+    (e: WheelEvent) => {
+      if (props.disableMouse) return;
 
-  useMounting(containerRef, (e: WheelEvent) => {
-    if (props.disableMouse) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const { deltaX, deltaY, shiftKey } = e;
+      let delta = deltaY || deltaX;
+      if (Math.abs(delta) >= 40) delta /= 40;
+      cancelAnimationFrame(wheelFrame.current);
+      wheelFrame.current = requestAnimationFrame(() => {
+        if (shiftKey) {
+          props.onZoomGesture?.(zoom + delta * 0.01);
+        } else {
+          setStaticPanCoords((coords) => ({
+            x: coords.x - deltaX * pxScaleH,
+            y: coords.y - deltaY * pxScaleW,
+          }));
+        }
+      });
+    },
+    [props.onZoomGesture, zoom]
+  );
 
-    e.preventDefault();
-    e.stopPropagation();
-    const { deltaX, deltaY, shiftKey } = e;
-    let delta = deltaY || deltaX;
-    if (Math.abs(delta) >= 40) delta /= 40;
-    cancelAnimationFrame(wheelFrame.current);
-    wheelFrame.current = requestAnimationFrame(() => {
-      if (shiftKey) {
-        props.onZoomGesture?.(zoom + delta * 0.01);
-      } else {
-        setStaticPanCoords({
-          x: staticPanCoords.x - deltaX * pxScaleH,
-          y: staticPanCoords.y - deltaY * pxScaleW,
-        });
-      }
-    });
-  });
+  const boxesOnImage = useMemo(() => {
+    return props.boxes.map((box, index) => (
+      <CropContainer
+        index={index}
+        box={box}
+        boxes={props.boxes}
+        cursorMode={cursorMode}
+        onBoxClick={onBoxClick}
+        onBoxMouseEnter={onBoxMouseEnter}
+        onBoxMouseLeave={onBoxMouseLeave}
+      />
+    ));
+  }, [props.boxes, cursorMode, onBoxClick, onBoxMouseEnter, onBoxMouseLeave]);
 
   return (
     <>
@@ -561,33 +559,7 @@ const MultiCrops: FC<CropperProps> = ({
             left: `${centerCoords.x}px`,
           }}
         >
-          {props.boxes.map((box, index) => {
-            const defaultStyle: CSSProperties = {
-              pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
-              transform: `rotate(${box.rotation}deg)`,
-              position: 'absolute',
-              boxShadow: '0 0 0 2px #000',
-            };
-            const styleProp = box.style || {};
-            const style =
-              typeof styleProp === 'function'
-                ? styleProp(defaultStyle)
-                : { ...defaultStyle, ...box.style };
-            return (
-              <Crop
-                {...props}
-                key={box.id || index}
-                index={index}
-                box={box}
-                onChange={onChange}
-                onCrop={handleCrop}
-                onBoxClick={onBoxClick}
-                onBoxMouseEnter={onBoxMouseEnter}
-                onBoxMouseLeave={onBoxMouseLeave}
-                style={style}
-              />
-            );
-          })}
+          {boxesOnImage}
         </div>
         <Scrollbar
           type={'horizontal'}
@@ -622,5 +594,64 @@ const MultiCrops: FC<CropperProps> = ({
     </>
   );
 };
+
+type CropContainerProps = Pick<
+  CropperProps,
+  | 'cursorMode'
+  | 'onBoxClick'
+  | 'onBoxMouseLeave'
+  | 'onBoxMouseEnter'
+  | 'onDelete'
+  | 'boxes'
+> & {
+  box: CropperBox;
+  index: number;
+};
+const CropContainer: FC<CropContainerProps> = memo(
+  (props) => {
+    const {
+      cursorMode,
+      box,
+      onBoxClick,
+      onBoxMouseEnter,
+      onBoxMouseLeave,
+      index,
+    } = props;
+
+    const style: CSSProperties = useMemo(() => {
+      const defaults: CSSProperties = {
+        pointerEvents: cursorMode === 'pan' ? 'none' : 'auto',
+        transform: `rotate(${box.rotation}deg)`,
+        position: 'absolute',
+        boxShadow: '0 0 0 2px #000',
+      };
+
+      const styleProp = box.style || {};
+      return typeof styleProp === 'function'
+        ? styleProp(defaults)
+        : { ...defaults, ...box.style };
+    }, [cursorMode, box.rotation, box.style]);
+
+    return (
+      <Crop
+        {...props}
+        key={box.id || index}
+        index={index}
+        box={box}
+        onBoxClick={onBoxClick}
+        onBoxMouseEnter={onBoxMouseEnter}
+        onBoxMouseLeave={onBoxMouseLeave}
+        style={style}
+      />
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      deepEquals(prevProps.box, nextProps.box) &&
+      prevProps.index === nextProps.index &&
+      prevProps.cursorMode === nextProps.cursorMode
+    );
+  }
+);
 
 export default MultiCrops;
