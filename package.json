@@ -78,5 +78,8 @@
     "offscreen-canvas": "^0.1.1",
     "shortid": "^2.2.15",
     "use-resize-observer": "^6.0.0"
+  },
+  "resolutions": {
+    "mmmagic": "0.5.3"
   }
 }
