@@ -11,11 +11,24 @@ export function remove<T>(index: number, count: number, items: T[]): T[] {
   return _items;
 }
 
+const isObj = (o: any) => o?.constructor === Object;
+
 export const oneLevelEquals = (o1: object = {}, o2: object = {}) => {
   const keys = Object.keys(o1);
   return (
     keys.length === Object.keys(o2).length &&
     Object.keys(o1).every((key) => o1[key] === o2[key])
+  );
+};
+
+export const deepEquals = (o1: object = {}, o2: object = {}): boolean => {
+  const keys = Object.keys(o1);
+  return (
+    keys.length === Object.keys(o2).length &&
+    Object.keys(o1).every((key) => {
+      if (isObj(o1[key]) && isObj(o2[key])) return deepEquals(o1[key], o2[key]);
+      return o1[key] === o2[key];
+    })
   );
 };
 

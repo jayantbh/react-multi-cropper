@@ -1,4 +1,4 @@
-import { oneLevelEquals, remove, update } from '../utils';
+import { deepEquals, oneLevelEquals, remove, update } from '../utils';
 
 describe('update util', () => {
   it('should update an item in the middle', function () {
@@ -76,5 +76,48 @@ describe('one level deep equals util', () => {
     const b = { obj, a: '1', b: (2).toString(), fn: 'fn' };
 
     expect(oneLevelEquals(a, b)).toBeFalsy();
+  });
+
+  it('should fail for nested objects', function () {
+    const obj = { lol: 'haha' };
+    const a = { obj, a: 1, x: { y: 1 } };
+    const b = { obj, a: 1, x: { y: 1 } };
+
+    expect(oneLevelEquals(a, b)).toBeFalsy();
+  });
+});
+
+describe('multi level deep equals util', () => {
+  it('should check for primitives equality', function () {
+    const a = { a: 1, b: 2 };
+    const b = { b: 2, a: 1 };
+
+    expect(deepEquals(a, b)).toBeTruthy();
+  });
+
+  it('should check for complex types equality', function () {
+    const fn = () => {};
+    const obj = { lol: 'haha' };
+    const a = { obj, a: 1, b: 2, fn };
+    const b = { b: 2, fn, a: 1, obj };
+
+    expect(deepEquals(a, b)).toBeTruthy();
+  });
+
+  it('should fail for mismatches', function () {
+    const fn = () => {};
+    const obj = { lol: 'haha' };
+    const a = { obj, a: 1, b: 2, fn };
+    const b = { obj, a: '1', b: (2).toString(), fn: 'fn' };
+
+    expect(deepEquals(a, b)).toBeFalsy();
+  });
+
+  it('should pass for nested objects', function () {
+    const obj = { lol: 'haha' };
+    const a = { obj, a: 1, x: { y: 1 } };
+    const b = { obj, a: 1, x: { y: 1 } };
+
+    expect(deepEquals(a, b)).toBeTruthy();
   });
 });
