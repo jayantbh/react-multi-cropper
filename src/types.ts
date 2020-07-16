@@ -87,6 +87,7 @@ export type CropperProps = {
   onZoomGesture?: (newZoom: number) => any;
   containerClassName?: string;
   containerStyles?: CSSProperties;
+  imageStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
   disableKeyboard?: boolean;
   disableMouse?: boolean;

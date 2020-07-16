@@ -290,6 +290,7 @@ const App = () => {
           boxInView={boxInView}
           boxViewZoomBuffer={0.1}
           onSetRotation={setRotation}
+          imageStyles={{ filter: 'hue-rotate(69deg)' }}
         />
       </div>
       {(fileBoxesMap[src] || []).map(

@@ -67,6 +67,7 @@ const MultiCrops: FC<CropperProps> = ({
   boxInView = undefined,
   boxViewZoomBuffer = 0.5,
   onSetRotation,
+  imageStyles = {},
   ...props
 }) => {
   const prevSrc = usePrevious(props.src);
@@ -543,12 +544,15 @@ const MultiCrops: FC<CropperProps> = ({
           draggable={false}
           className={css.img}
           style={{
+            ...imageStyles,
             transform: `
               translate(
               ${staticPanCoords.x + activePanCoords.x}px,
               ${staticPanCoords.y + activePanCoords.y}px)
               rotate(${rotation}deg)
-              scale(${zoom})
+              scale(${zoom})${
+              imageStyles?.transform ? ' ' + imageStyles?.transform : ''
+            }
             `,
           }}
         />

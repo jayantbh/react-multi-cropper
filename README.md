@@ -134,14 +134,18 @@ type CropperProps = {
   onZoomGesture?: (newZoom: number) => any;
   containerClassName?: string;
   containerStyles?: CSSProperties;
+  imageStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
   disableKeyboard?: boolean;
   disableMouse?: boolean;
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
+  boxInView?: { id?: string; rotate?: boolean; panInView?: boolean };
+  onSetRotation?: Function;
+  boxViewZoomBuffer?: number;
 };
 ```
 
-**All the above types are exported from the module.**
+**All the above types have been exported from the module.**
 
 ### Notes:
 - The `onLoad` prop is **optional**, but useful for two things.
