@@ -480,6 +480,7 @@ const MultiCrops: FC<CropperProps> = ({
         onBoxClick={onBoxClick}
         onBoxMouseEnter={onBoxMouseEnter}
         onBoxMouseLeave={onBoxMouseLeave}
+        onDelete={props.onDelete}
       />
     ));
   }, [props.boxes, cursorMode, onBoxClick, onBoxMouseEnter, onBoxMouseLeave]);

@@ -167,10 +167,13 @@ const App = () => {
     [setImageMap]
   );
 
-  const handleDelete = useCallback((e, box, index, boxes) => {
-    console.log('Delete', box, index, boxes);
-    updateBoxes(e, box, index, boxes);
-  }, []);
+  const handleDelete = useCallback(
+    (e, box, index, boxes) => {
+      console.log('Delete', box, index, boxes);
+      updateBoxes(e, box, index, boxes);
+    },
+    [updateBoxes]
+  );
 
   const CustomLabel = useCallback(
     ({ index, box }) =>
