@@ -17,6 +17,7 @@ import {
   MutableRefObject,
   ReactEventHandler,
   SetStateAction,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -209,9 +210,9 @@ export const getImageMapFromBoxes = (
     tempCanvas.height = height * 3;
     tempCanvas.width = width * 3;
 
-    const boxTopLeftEl = document
-      .getElementById(box.id)
-      ?.querySelector('.rmc__crop__corner-element__top-left');
+    const boxTopLeftEl = document.getElementById(
+      `rmc__crop__corner-element__top-left__${box.id}`
+    );
     if (!boxTopLeftEl || !ctx) return map;
 
     const btlRect = boxTopLeftEl.getBoundingClientRect();
@@ -254,9 +255,9 @@ export const getOffscreenImageMapFromBoxes = (
       const { style, labelStyle, ...prunedBox } = box;
       if (box.width === 0 || box.height === 0 || box.noImage) return;
 
-      const boxTopLeftEl = document
-        .getElementById(box.id)
-        ?.querySelector('.rmc__crop__corner-element__top-left');
+      const boxTopLeftEl = document.getElementById(
+        `rmc__crop__corner-element__top-left__${box.id}`
+      );
       if (!boxTopLeftEl) return;
 
       const btlRect = boxTopLeftEl.getBoundingClientRect();
@@ -282,7 +283,6 @@ export const getOffscreenImageMapFromBoxes = (
 export const useZoom = (
   img: HTMLImageElement | null,
   cont: HTMLDivElement | null,
-  setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
   src: CropperProps['src'],
   boxes: CropperProps['boxes'],
   onChange: CropperProps['onChange'],
@@ -291,51 +291,64 @@ export const useZoom = (
   imgBaseHeight: number,
   zoom: number
 ) => {
-  const prevRotation = usePrevious(rotation);
-  const prevSrc = usePrevious(src);
-  const prevSize = usePrevious({
+  const prevZoom = usePrevious(zoom);
+
+  const rotationFrameRef = useRef(-1);
+  const prevRotationRef = useRef(rotation);
+  const prevSrcRef = useRef(src);
+  const prevSizeRef = useRef({
     width: Math.round(imgBaseWidth * zoom),
     height: Math.round(imgBaseHeight * zoom),
   });
 
   useEffect(() => {
-    const width = Math.round(imgBaseWidth * zoom);
-    const height = Math.round(imgBaseHeight * zoom);
-    const rotationDiff = rotation - prevRotation;
+    const prevRotation = prevRotationRef.current;
+    const prevSrc = prevSrcRef.current;
+    const prevSize = prevSizeRef.current;
 
-    if (width === 0 || height === 0) return;
+    cancelAnimationFrame(rotationFrameRef.current);
+    rotationFrameRef.current = requestAnimationFrame(() => {
+      if (zoom !== prevZoom) {
+        const width = Math.round(imgBaseWidth * zoom);
+        const height = Math.round(imgBaseHeight * zoom);
+        const rotationDiff = rotation - prevRotation;
 
-    const imageDidNotChange =
-      prevSize.width === width && prevSize.height === height;
+        if (width === 0 || height === 0) return;
 
-    if (
-      !cont ||
-      !img ||
-      img.getAttribute('src') !== src ||
-      imageDidNotChange ||
-      src !== prevSrc
-    )
-      return;
-    const hRatio = height / prevSize.height;
-    const wRatio = width / prevSize.width;
+        const imageDidNotChange =
+          prevSize.width === width && prevSize.height === height;
 
-    const newBoxes = boxes.map((box) => ({
-      ...box,
-      x: box.x * wRatio,
-      y: box.y * hRatio,
-      height: box.height * hRatio,
-      width: box.width * wRatio,
-      rotation: box.rotation + rotationDiff,
-    }));
+        if (
+          !cont ||
+          !img ||
+          img.getAttribute('src') !== src ||
+          imageDidNotChange ||
+          src !== prevSrc
+        )
+          return;
+        const hRatio = height / prevSize.height;
+        const wRatio = width / prevSize.width;
 
-    const imgRect = img.getBoundingClientRect();
-    const contRect = cont.getBoundingClientRect();
-    setCenterCoords({
-      x: (imgRect.left + imgRect.right - contRect.left * 2) / 2,
-      y: (imgRect.top + imgRect.bottom - contRect.top * 2) / 2,
+        const newBoxes = boxes.map((box) => ({
+          ...box,
+          x: box.x * wRatio,
+          y: box.y * hRatio,
+          height: box.height * hRatio,
+          width: box.width * wRatio,
+          rotation: box.rotation + rotationDiff,
+        }));
+
+        onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
+      }
+
+      prevRotationRef.current = rotation;
+      prevSrcRef.current = src;
+      prevSizeRef.current = {
+        width: Math.round(imgBaseWidth * zoom),
+        height: Math.round(imgBaseHeight * zoom),
+      };
     });
-    onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
-  }, [zoom]);
+  }, [zoom, rotation, imgBaseHeight, imgBaseWidth, boxes]);
 };
 
 export const getCursorPosition = (
@@ -379,6 +392,35 @@ export const useCentering = (
   return [centerCoords, setCenterCoords];
 };
 
+export const useCenteringCallback = (
+  img: HTMLImageElement | null,
+  cont: HTMLDivElement | null,
+  staticPanCoords: Coordinates,
+  activePanCoords: Coordinates
+): [Coordinates, (coords?: Coordinates) => void] => {
+  const [centerCoords, setCenterCoords] = useState<Coordinates>({ x: 0, y: 0 });
+
+  const refreshCenter = useCallback(
+    (coords?: Coordinates) => {
+      if (!img || !cont) return;
+
+      if (coords) {
+        setCenterCoords(coords);
+      } else {
+        const imgRect = img.getBoundingClientRect();
+        const conRect = cont.getBoundingClientRect();
+        const x = (imgRect.right + imgRect.left) / 2 - conRect.left;
+        const y = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
+
+        setCenterCoords({ x, y });
+      }
+    },
+    [img, cont, staticPanCoords, activePanCoords]
+  );
+
+  return [centerCoords, refreshCenter];
+};
+
 export const onImageLoad = (
   lastUpdatedBox: MutableRefObject<RefSize | undefined>,
   onLoad: CropperProps['onLoad'],
@@ -388,7 +430,7 @@ export const onImageLoad = (
     eventType?: CropperEventType
   ) => ReturnType<typeof getImageMapFromBoxes>,
   cont: HTMLDivElement | null,
-  setCenterCoords: Dispatch<SetStateAction<Coordinates>>,
+  setCenterCoords: (c?: Coordinates) => void,
   setStaticPanCoords: Dispatch<SetStateAction<Coordinates>>,
   getUpdatedDimensions: (args: {
     doStateUpdate?: boolean;
@@ -522,7 +564,7 @@ export const useScrollbars = (
   return { wl, wr, ht, hb, pxScaleW, pxScaleH };
 };
 
-export const useMounting = (
+export const useWheelEvent = (
   cont: MutableRefObject<HTMLDivElement | null>,
   listener: EventListener,
   deps: DependencyList

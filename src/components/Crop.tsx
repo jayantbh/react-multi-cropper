@@ -1,12 +1,23 @@
-import React, { Component, CSSProperties, FC, MouseEvent } from 'react';
+import React, {
+  CSSProperties,
+  FC,
+  memo,
+  MouseEvent,
+  useCallback,
+  useMemo,
+} from 'react';
 import { BoxLabel } from './BoxLabel';
-import { remove } from '../utils';
-import { CropperBox, UpdateFunction } from '../types';
+import { CropperBox, CropperEvent } from '../types';
+
+type UpdateFunction = (
+  event: CropperEvent,
+  box: CropperBox | undefined,
+  index: number | undefined
+) => any;
 
 type Props = {
   index: number;
   box: CropperBox;
-  boxes: CropperBox[];
   onDelete?: UpdateFunction;
   onBoxClick?: UpdateFunction;
   onBoxMouseEnter?: UpdateFunction;
@@ -15,82 +26,93 @@ type Props = {
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
 };
 
-class Crop extends Component<Props> {
-  handleDelete = (e: MouseEvent) => {
-    e.stopPropagation();
+const Crop = memo(
+  ({
+    index,
+    box,
+    onDelete,
+    onBoxClick,
+    onBoxMouseEnter,
+    onBoxMouseLeave,
+    CustomLabel,
+    style,
+  }: Props) => {
+    const handleDelete = useCallback(
+      (e: MouseEvent) => {
+        e.stopPropagation();
 
-    const { index, box, onDelete, boxes } = this.props;
-    const nextBoxes = remove(index, 1, boxes);
-    onDelete?.({ type: 'delete', event: e }, box, index, nextBoxes);
-  };
+        onDelete?.({ type: 'delete', event: e }, box, index);
+      },
+      [index, box, onDelete]
+    );
 
-  handleBoxMouseEnter = (e: MouseEvent) => {
-    const { onBoxMouseEnter, box, index, boxes } = this.props;
-    onBoxMouseEnter?.({ type: 'mouse-enter', event: e }, box, index, boxes);
-  };
+    const handleBoxMouseEnter = useCallback(
+      (e: MouseEvent) => {
+        onBoxMouseEnter?.({ type: 'mouse-enter', event: e }, box, index);
+      },
+      [onBoxMouseEnter, box, index]
+    );
 
-  handleBoxMouseLeave = (e: MouseEvent) => {
-    const { onBoxMouseEnter, box, index, boxes } = this.props;
-    onBoxMouseEnter?.({ type: 'mouse-leave', event: e }, box, index, boxes);
-  };
+    const handleBoxMouseLeave = useCallback(
+      (e: MouseEvent) => {
+        onBoxMouseLeave?.({ type: 'mouse-leave', event: e }, box, index);
+      },
+      [onBoxMouseLeave, box, index]
+    );
 
-  handleBoxClick = (e: MouseEvent) => {
-    const { onBoxClick, box, index, boxes } = this.props;
-    onBoxClick?.({ type: 'click', event: e }, box, index, boxes);
-  };
+    const handleBoxClick = useCallback(
+      (e: MouseEvent) => {
+        onBoxClick?.({ type: 'click', event: e }, box, index);
+      },
+      [onBoxClick, box, index]
+    );
 
-  render() {
-    const { box, index, style = {}, CustomLabel } = this.props;
-    const { labelStyle = {} } = box;
+    const labelStyle: CSSProperties = useMemo(
+      () => ({ pointerEvents: 'initial', ...(box.labelStyle || {}) }),
+      [box.labelStyle]
+    );
+
+    const containerStyles: CSSProperties = useMemo(
+      () => ({
+        ...cropStyle(box, style),
+        pointerEvents: 'none',
+      }),
+      [box, style]
+    );
+
     return (
-      <div
-        id={box.id}
-        style={{
-          ...cropStyle(box, style),
-          pointerEvents: 'none',
-        }}
-        onClick={this.handleBoxClick}
-      >
+      <div id={box.id} style={containerStyles} onClick={handleBoxClick}>
         <div
           style={labelWrapperStyles}
-          onMouseEnter={this.handleBoxMouseEnter}
-          onMouseLeave={this.handleBoxMouseLeave}
+          onMouseEnter={handleBoxMouseEnter}
+          onMouseLeave={handleBoxMouseLeave}
         >
-          <BoxLabel
-            onClick={this.handleDelete}
-            style={{ pointerEvents: 'initial', ...labelStyle }}
-          >
+          <BoxLabel onClick={handleDelete} style={labelStyle}>
             {CustomLabel ? <CustomLabel box={box} index={index} /> : null}
           </BoxLabel>
-          {FourDivs}
+          <CornerPoints id={box.id} />
         </div>
       </div>
     );
   }
-}
-
-const FourDivs = (
-  <>
-    <div
-      className='rmc__crop__corner-element rmc__crop__corner-element__top-left'
-      style={{ position: 'absolute', top: 0, left: 0 }}
-    />
-    <div
-      className='rmc__crop__corner-element rmc__crop__corner-element__top-right'
-      style={{ position: 'absolute', top: 0, right: 0 }}
-    />
-    <div
-      className='rmc__crop__corner-element rmc__crop__corner-element__bottom-right'
-      style={{ position: 'absolute', bottom: 0, right: 0 }}
-    />
-    <div
-      className='rmc__crop__corner-element rmc__crop__corner-element__bottom-left'
-      style={{ position: 'absolute', bottom: 0, left: 0 }}
-    />
-  </>
 );
 
-const cropStyle = (box: CropperBox, style: CSSProperties): CSSProperties => {
+const cornerPointsStyle: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+};
+const CornerPoints = memo(({ id }: { id: string }) => (
+  <div
+    id={`rmc__crop__corner-element__top-left__${id}`}
+    style={cornerPointsStyle}
+  />
+));
+
+const cropStyle = (
+  box: CropperBox,
+  style: CSSProperties = {}
+): CSSProperties => {
   const { x, y, width, height } = box;
 
   return {

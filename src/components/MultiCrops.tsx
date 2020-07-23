@@ -36,8 +36,9 @@ import {
   onImageLoad,
   performCanvasPaint,
   performOffscreenCanvasPaint,
-  useCentering,
-  useMounting,
+  useCenteringCallback,
+  // useCentering,
+  useWheelEvent,
   usePrevious,
   usePropRotation,
   useScrollbars,
@@ -181,41 +182,40 @@ const MultiCrops: FC<CropperProps> = ({
   }, [props.src]);
 
   useEffect(() => {
-    if (boxInView) {
-      const box = props?.boxes?.find((b) => b.id === boxInView.id);
-      const { rotate = true, panInView = true } = boxInView;
-      const boxRect = document
-        .getElementById(box?.id || '')
-        ?.getBoundingClientRect();
-      const containerRect = containerRef.current?.getBoundingClientRect();
-      const containerRefHeight = containerRef.current?.offsetHeight || 0;
-      const containerRefWidth = containerRef.current?.offsetWidth || 0;
+    if (!boxInView) return;
 
-      if (containerRefHeight && containerRefWidth && box) {
-        const boxHeight = box?.height / zoom;
-        const boxWidth = box?.width / zoom;
-        const heightRatio = boxHeight / containerRefHeight;
-        const widthRatio = boxWidth / containerRefWidth;
+    const box = props?.boxes?.find((b) => b.id === boxInView.id);
+    const { rotate = true, panInView = true } = boxInView;
+    const boxRect = document
+      .getElementById(box?.id || '')
+      ?.getBoundingClientRect();
+    const containerRect = containerRef.current?.getBoundingClientRect();
+    const containerRefHeight = containerRef.current?.offsetHeight || 0;
+    const containerRefWidth = containerRef.current?.offsetWidth || 0;
+    if (containerRefHeight && containerRefWidth && box) {
+      const boxHeight = box?.height / zoom;
+      const boxWidth = box?.width / zoom;
+      const heightRatio = boxHeight / containerRefHeight;
+      const widthRatio = boxWidth / containerRefWidth;
 
-        let newZoom = Math.min(
-          1 / Math.max(heightRatio, widthRatio) - boxViewZoomBuffer,
-          zoom
-        );
-        const newX = (newZoom * box?.x) / zoom;
-        const newY = (newZoom * box?.y) / zoom;
-        const newWidth = (newZoom * box?.width) / zoom;
-        const newHeight = (newZoom * box?.height) / zoom;
-        const xPan = -(newX + newWidth / 2);
-        const yPan = -(newY + newHeight / 2);
+      let newZoom = Math.min(
+        1 / Math.max(heightRatio, widthRatio) - boxViewZoomBuffer,
+        zoom
+      );
+      const newX = (newZoom * box?.x) / zoom;
+      const newY = (newZoom * box?.y) / zoom;
+      const newWidth = (newZoom * box?.width) / zoom;
+      const newHeight = (newZoom * box?.height) / zoom;
+      const xPan = -(newX + newWidth / 2);
+      const yPan = -(newY + newHeight / 2);
 
-        if (!isInView(containerRect, boxRect)) {
-          setStaticPanCoords({ x: xPan, y: yPan });
-          props.onZoomGesture?.(newZoom);
-          onSetRotation?.((rotation + 360 - box?.rotation) % 360);
-        } else {
-          panInView && setStaticPanCoords({ x: xPan, y: yPan });
-          rotate && onSetRotation?.((rotation + 360 - box?.rotation) % 360);
-        }
+      if (!isInView(containerRect, boxRect)) {
+        setStaticPanCoords({ x: xPan, y: yPan });
+        props.onZoomGesture?.(newZoom);
+        onSetRotation?.((rotation + 360 - box?.rotation) % 360);
+      } else {
+        panInView && setStaticPanCoords({ x: xPan, y: yPan });
+        rotate && onSetRotation?.((rotation + 360 - box?.rotation) % 360);
       }
     }
   }, [boxInView]);
@@ -228,7 +228,7 @@ const MultiCrops: FC<CropperProps> = ({
     lastUpdatedBox
   );
 
-  const [centerCoords, setCenterCoords] = useCentering(
+  const [centerCoords, setCenterCoords] = useCenteringCallback(
     imageRef.current,
     containerRef.current,
     staticPanCoords,
@@ -283,7 +283,6 @@ const MultiCrops: FC<CropperProps> = ({
   useZoom(
     imageRef.current,
     containerRef.current,
-    setCenterCoords,
     props.src,
     props.boxes,
     props.onChange,
@@ -445,7 +444,7 @@ const MultiCrops: FC<CropperProps> = ({
     pointA.current = {};
   };
 
-  useMounting(
+  useWheelEvent(
     containerRef,
     (e: WheelEvent) => {
       if (props.disableMouse) return;
@@ -454,7 +453,10 @@ const MultiCrops: FC<CropperProps> = ({
       e.stopPropagation();
       const { deltaX, deltaY, shiftKey } = e;
       let delta = deltaY || deltaX;
+
+      // Mouse-wheel workaround (non touchpad)
       if (Math.abs(delta) >= 40) delta /= 40;
+
       cancelAnimationFrame(wheelFrame.current);
       wheelFrame.current = requestAnimationFrame(() => {
         if (shiftKey) {
@@ -464,10 +466,12 @@ const MultiCrops: FC<CropperProps> = ({
             x: coords.x - deltaX * pxScaleH,
             y: coords.y - deltaY * pxScaleW,
           }));
+
+          setCenterCoords();
         }
       });
     },
-    [props.onZoomGesture, zoom]
+    [props.onZoomGesture, zoom, setCenterCoords]
   );
 
   const boxesOnImage = useMemo(() => {
@@ -476,7 +480,6 @@ const MultiCrops: FC<CropperProps> = ({
         key={box.id}
         index={index}
         box={box}
-        boxes={props.boxes}
         cursorMode={cursorMode}
         onBoxClick={onBoxClick}
         onBoxMouseEnter={onBoxMouseEnter}
@@ -509,9 +512,17 @@ const MultiCrops: FC<CropperProps> = ({
         onKeyDown={(e) => {
           if (props.disableKeyboard) return;
 
+          const { key, shiftKey } = e;
+
+          const arrowPressed =
+            key === 'ArrowRight' ||
+            key === 'ArrowLeft' ||
+            key === 'ArrowUp' ||
+            key === 'ArrowDown';
+          if (!arrowPressed) return;
+
           e.preventDefault();
           e.stopPropagation();
-          const { key, shiftKey } = e;
           cancelAnimationFrame(keyFrame.current);
           keyFrame.current = requestAnimationFrame(() => {
             if (shiftKey) {
@@ -532,6 +543,8 @@ const MultiCrops: FC<CropperProps> = ({
                 x: staticPanCoords.x + deltaX * pxScaleH,
                 y: staticPanCoords.y + deltaY * pxScaleW,
               });
+
+              setCenterCoords();
             }
           });
         }}
@@ -610,7 +623,6 @@ type CropContainerProps = Pick<
   | 'onBoxMouseLeave'
   | 'onBoxMouseEnter'
   | 'onDelete'
-  | 'boxes'
 > & {
   box: CropperBox;
   index: number;
@@ -662,4 +674,16 @@ const CropContainer: FC<CropContainerProps> = memo(
   }
 );
 
-export default MultiCrops;
+// import wdyr from '@welldone-software/why-did-you-render';
+
+// wdyr(React, {
+//   trackAllPureComponents: true,
+//   // onlyLogs: true,
+//   titleColor: 'green',
+//   diffNameColor: 'darkturquoise',
+// });
+
+// @ts-ignore
+// MultiCrops.whyDidYouRender = true;
+
+export default memo(MultiCrops);

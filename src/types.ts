@@ -64,7 +64,7 @@ export type UpdateFunction = (
   event: CropperEvent,
   box: CropperBox | undefined,
   index: number | undefined,
-  boxes: CropperBox[]
+  boxes?: CropperBox[]
 ) => any;
 
 export type ImgOnLoadWithImageData = (

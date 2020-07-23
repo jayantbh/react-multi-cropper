@@ -13,6 +13,7 @@ import MultiCrops, {
   CropperCursorMode,
   UpdateFunction,
 } from '../dist';
+
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 
@@ -40,6 +41,8 @@ const containerStyles = {
   height: '500px',
   width: '100%',
 };
+
+const imageStyles = { filter: 'hue-rotate(69deg)' };
 
 const App = () => {
   const resetCenterRef = useRef(() => {});
@@ -81,7 +84,9 @@ const App = () => {
   const updateBoxes: UpdateFunction = useCallback(
     (_e, _bx, i, _boxes) => {
       if (i && !fileBoxesMap[src]?.[i])
-        _boxes[i] = { ..._boxes[i], labelStyle: { display: 'none' } };
+        if (_boxes) {
+          _boxes[i] = { ..._boxes[i], labelStyle: { display: 'none' } };
+        }
 
       setFileBoxesMap((boxMap) => ({ ...boxMap, [src]: _boxes }));
     },
@@ -108,13 +113,14 @@ const App = () => {
   const handleClick: UpdateFunction = useCallback(
     (_e, bx, _i, _boxes) => {
       console.log('click');
-      setFileBoxesMap((boxMap) => ({
-        ...boxMap,
-        [src]: _boxes.map((box) => ({
-          ...box,
-          labelStyle: box.id === bx?.id ? {} : { display: 'none' },
-        })),
-      }));
+      _boxes &&
+        setFileBoxesMap((boxMap) => ({
+          ...boxMap,
+          [src]: _boxes.map((box) => ({
+            ...box,
+            labelStyle: box.id === bx?.id ? {} : { display: 'none' },
+          })),
+        }));
       bx && setBoxInView({ id: bx.id });
     },
     [src, setBoxInView, setFileBoxesMap]
@@ -293,7 +299,7 @@ const App = () => {
           boxInView={boxInView}
           boxViewZoomBuffer={0.1}
           onSetRotation={setRotation}
-          imageStyles={{ filter: 'hue-rotate(69deg)' }}
+          imageStyles={imageStyles}
         />
       </div>
       {(fileBoxesMap[src] || []).map(
@@ -302,5 +308,8 @@ const App = () => {
     </div>
   );
 };
+
+// MultiCrops.whyDidYouRender = true;
+// App.whyDidYouRender = true;
 
 ReactDOM.render(<App />, document.getElementById('root'));
