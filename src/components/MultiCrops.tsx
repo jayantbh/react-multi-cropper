@@ -473,6 +473,7 @@ const MultiCrops: FC<CropperProps> = ({
   const boxesOnImage = useMemo(() => {
     return props.boxes.map((box, index) => (
       <CropContainer
+        key={box.id}
         index={index}
         box={box}
         boxes={props.boxes}
