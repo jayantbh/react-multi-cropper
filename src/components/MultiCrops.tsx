@@ -674,16 +674,4 @@ const CropContainer: FC<CropContainerProps> = memo(
   }
 );
 
-// import wdyr from '@welldone-software/why-did-you-render';
-
-// wdyr(React, {
-//   trackAllPureComponents: true,
-//   // onlyLogs: true,
-//   titleColor: 'green',
-//   diffNameColor: 'darkturquoise',
-// });
-
-// @ts-ignore
-// MultiCrops.whyDidYouRender = true;
-
 export default memo(MultiCrops);

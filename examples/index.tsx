@@ -317,7 +317,4 @@ const App = () => {
   );
 };
 
-// MultiCrops.whyDidYouRender = true;
-// App.whyDidYouRender = true;
-
 ReactDOM.render(<App />, document.getElementById('root'));
