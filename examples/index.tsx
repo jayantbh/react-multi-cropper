@@ -199,6 +199,13 @@ const App = () => {
 
   const cropperRef = useRef<HTMLDivElement | null>(null);
 
+  const [disableMouse, setDisableMouse] = useState({
+    all: false,
+    draw: false,
+    pan: false,
+    zoom: false,
+  });
+
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
       <div className={'section pt-4'}>
@@ -283,8 +290,71 @@ const App = () => {
             </div>
           </div>
         </div>
+        <div className={'container'}>
+          <div>
+            <div>Disable mouse input for:</div>
+            <div className={'field is-grouped'}>
+              <label className='checkbox control'>
+                <input
+                  type='checkbox'
+                  checked={disableMouse.all}
+                  onChange={(e) => {
+                    const { checked } = e.currentTarget;
+                    setDisableMouse((opts) => ({
+                      ...opts,
+                      all: checked,
+                    }));
+                  }}
+                />{' '}
+                all
+              </label>
+              <label className='checkbox control'>
+                <input
+                  type='checkbox'
+                  checked={disableMouse.draw}
+                  onChange={(e) => {
+                    const { checked } = e.currentTarget;
+                    setDisableMouse((opts) => ({
+                      ...opts,
+                      draw: checked,
+                    }));
+                  }}
+                />{' '}
+                draw
+              </label>
+              <label className='checkbox control'>
+                <input
+                  type='checkbox'
+                  checked={disableMouse.pan}
+                  onChange={(e) => {
+                    const { checked } = e.currentTarget;
+                    setDisableMouse((opts) => ({
+                      ...opts,
+                      pan: checked,
+                    }));
+                  }}
+                />{' '}
+                pan
+              </label>
+              <label className='checkbox control'>
+                <input
+                  type='checkbox'
+                  checked={disableMouse.zoom}
+                  onChange={(e) => {
+                    const { checked } = e.currentTarget;
+                    setDisableMouse((opts) => ({
+                      ...opts,
+                      zoom: checked,
+                    }));
+                  }}
+                />{' '}
+                zoom
+              </label>
+            </div>
+          </div>
+        </div>
         <div
-          className={'container pb-4'}
+          className={'container pb-4 mt-4'}
           style={{ maxHeight: '200px', overflow: 'auto' }}
         >
           <p style={{ display: 'inline-block' }}>
@@ -324,6 +394,7 @@ const App = () => {
           boxViewZoomBuffer={0.1}
           onSetRotation={setRotation}
           imageStyles={imageStyles}
+          disableMouse={disableMouse}
         />
       </div>
       {(fileBoxesMap[src] || []).map(

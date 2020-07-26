@@ -6,6 +6,7 @@ import React, {
   memo,
   MouseEvent,
   SyntheticEvent,
+  UIEventHandler,
   useEffect,
   useMemo,
   useRef,
@@ -359,6 +360,8 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const handleMouseDown = (e: MouseEvent) => {
+    if (props.disableMouse?.all) return;
+
     if (
       imageRef.current &&
       !e.nativeEvent.composedPath().includes(imageRef.current) &&
@@ -367,7 +370,7 @@ const MultiCrops: FC<CropperProps> = ({
     ) {
       return;
     }
-    if (cursorMode === 'pan') {
+    if (cursorMode === 'pan' && !props.disableMouse?.pan) {
       pointA.current = getAbsoluteCursorPosition(e);
       setIsPanning(true);
       setStaticPanCoords({
@@ -375,7 +378,7 @@ const MultiCrops: FC<CropperProps> = ({
         y: staticPanCoords.y + activePanCoords.y,
       });
       setActivePanCoords({ x: 0, y: 0 });
-    } else if (cursorMode === 'draw') {
+    } else if (cursorMode === 'draw' && !props.disableMouse?.draw) {
       pointA.current = getCursorPosition(e, containerRef.current, centerCoords);
       drawingIndex.current = props.boxes.length;
       id.current = sid.generate();
@@ -384,9 +387,10 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    const { onChange, boxes } = props;
+    const { onChange, boxes, disableMouse } = props;
+    if (disableMouse?.all) return;
 
-    if (cursorMode === 'pan' && isPanning) {
+    if (cursorMode === 'pan' && isPanning && !disableMouse?.pan) {
       const pointB = getAbsoluteCursorPosition(e);
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
@@ -400,7 +404,7 @@ const MultiCrops: FC<CropperProps> = ({
           y: yDiff,
         })
       );
-    } else if (cursorMode === 'draw') {
+    } else if (cursorMode === 'draw' && !disableMouse?.draw) {
       const pointB = getCursorPosition(e, containerRef.current, centerCoords);
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
@@ -428,7 +432,12 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
-    if (cursorMode === 'pan' && (activePanCoords.x || activePanCoords.y)) {
+    if (props.disableMouse?.all) return;
+    if (
+      cursorMode === 'pan' &&
+      (activePanCoords.x || activePanCoords.y) &&
+      !props.disableMouse?.pan
+    ) {
       cancelAnimationFrame(panFrame.current);
       setIsPanning(false);
       setStaticPanCoords({
@@ -436,7 +445,7 @@ const MultiCrops: FC<CropperProps> = ({
         y: staticPanCoords.y + activePanCoords.y,
       });
       setActivePanCoords({ x: 0, y: 0 });
-    } else if (cursorMode === 'draw') {
+    } else if (cursorMode === 'draw' && !props.disableMouse?.draw) {
       if (!isDrawing.current) return;
       if (props.boxes[drawingIndex.current]) handleCrop(e, 'draw-end');
     }
@@ -447,7 +456,7 @@ const MultiCrops: FC<CropperProps> = ({
   useWheelEvent(
     containerRef,
     (e: WheelEvent) => {
-      if (props.disableMouse) return;
+      if (props.disableMouse?.all) return;
 
       e.preventDefault();
       e.stopPropagation();
@@ -459,9 +468,9 @@ const MultiCrops: FC<CropperProps> = ({
 
       cancelAnimationFrame(wheelFrame.current);
       wheelFrame.current = requestAnimationFrame(() => {
-        if (shiftKey) {
+        if (shiftKey && !props.disableMouse?.zoom) {
           props.onZoomGesture?.(zoom + delta * 0.01);
-        } else {
+        } else if (!props.disableMouse?.pan) {
           setStaticPanCoords((coords) => ({
             x: coords.x - deltaX * pxScaleH,
             y: coords.y - deltaY * pxScaleW,
@@ -471,7 +480,7 @@ const MultiCrops: FC<CropperProps> = ({
         }
       });
     },
-    [props.onZoomGesture, zoom, setCenterCoords]
+    [props.onZoomGesture, zoom, setCenterCoords, props.disableMouse]
   );
 
   const boxesOnImage = useMemo(() => {
@@ -505,10 +514,7 @@ const MultiCrops: FC<CropperProps> = ({
         onMouseUp={handleMouseUp}
         ref={containerRef}
         draggable={false}
-        onScroll={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        onScroll={handleContainerScroll}
         onKeyDown={(e) => {
           if (props.disableKeyboard) return;
 
@@ -614,6 +620,11 @@ const MultiCrops: FC<CropperProps> = ({
       <canvas ref={canvasRef} className={css.canvas} />
     </>
   );
+};
+
+const handleContainerScroll: UIEventHandler = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
 };
 
 type CropContainerProps = Pick<

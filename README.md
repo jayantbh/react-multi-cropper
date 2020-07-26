@@ -137,7 +137,12 @@ type CropperProps = {
   imageStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
   disableKeyboard?: boolean;
-  disableMouse?: boolean;
+  disableMouse?: {
+    all?: boolean;
+    zoom?: boolean;
+    pan?: boolean;
+    draw?: boolean;
+  };
   CustomLabel?: FC<{ box: CropperBox; index: number }>;
   boxInView?: { id?: string; rotate?: boolean; panInView?: boolean };
   onSetRotation?: Function;
