@@ -17,6 +17,13 @@ import MultiCrops, {
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
 
+const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  <button
+    {...props}
+    className={`button is-primary is-light is-outlined is-rounded ${props.className}`}
+  />
+);
+
 const initialBoxes: CropperBox[] = [
   {
     x: -178,
@@ -194,92 +201,108 @@ const App = () => {
 
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
-      <h1>Dragging, Drawing, Resizing rectangles on the image</h1>
-      <button onClick={() => setImages([...images.slice(1), src])}>
-        Toggle Image
-      </button>
-      <button
-        onClick={() => setCursorMode(cursorMode === 'draw' ? 'pan' : 'draw')}
-      >
-        Toggle Mode [{cursorMode}]
-      </button>
-      <button onClick={reset}>Reset</button>
-      <button
-        onClick={() => {
-          const boxes = fileBoxesMap?.[src];
-          const lastBox = boxes?.[boxes?.length - 1];
-          if (!lastBox) return;
-
-          setFileBoxesMap({
-            ...fileBoxesMap,
-            [src]: [
-              ...(boxes || []),
-              ...getAbsoluteDetectedBoxes(lastBox, [
-                [5, 5, lastBox.width / 2 - 5, lastBox.height / 2 - 5],
-                [
-                  Math.abs(lastBox.width / 2),
-                  Math.abs(lastBox.height / 2),
-                  lastBox.width / 2 - 5,
-                  lastBox.height / 2 - 5,
-                ],
-              ]),
-            ],
-          });
-        }}
-      >
-        Add Children
-      </button>
-      <span>
-        <label htmlFor='zoom'>
-          Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
-        </label>
-        <input
-          id='zoom'
-          type='range'
-          min={0.1}
-          max={10}
-          step={0.01}
-          value={fileZoomMap[src] || 1}
-          onChange={(e) => setZoom(Number(e.currentTarget.value))}
-        />
-      </span>
-      <span>
-        <label htmlFor='rotation'>
-          Rotation: ({(fileRotationMap[src] || 0).toString().padStart(3, '0')}{' '}
-          deg)
-        </label>
-        <input
-          id='rotation'
-          type='range'
-          min={0}
-          max={360}
-          step={1}
-          value={fileRotationMap[src] || 0}
-          onChange={(e) => setRotation(Number(e.currentTarget.value))}
-        />
-      </span>
-      <span>
-        <div style={{ maxHeight: '200px', overflow: 'auto' }}>
-          <p style={{ display: 'inline-block' }}>
-            Click a button to view a box
-          </p>
-          <>
-            {fileBoxesMap[src]?.map((box) => (
-              <div
-                style={{ display: 'inline-block', padding: '10px' }}
-                key={box.id}
-              >
-                <button
-                  value={box.id}
-                  onClick={() => handleBoxButtonClick(box.id)}
-                >
-                  {box.id}
-                </button>
-              </div>
-            ))}
-          </>
+      <div className={'section pt-4'}>
+        <div className={'container'}>
+          <h1 className={'title'} style={{ marginLeft: '-0.03em' }}>
+            React Multi Crops
+          </h1>
+          <h2 className={'subtitle'}>
+            Dragging, Drawing, Resizing rectangles on the image
+          </h2>
         </div>
-      </span>
+        <div className={'container buttons mt-4'}>
+          <Button onClick={() => setImages([...images.slice(1), src])}>
+            Toggle Image
+          </Button>
+          <Button
+            onClick={() =>
+              setCursorMode(cursorMode === 'draw' ? 'pan' : 'draw')
+            }
+          >
+            Toggle Mode [{cursorMode}]
+          </Button>
+          <Button onClick={reset}>Reset</Button>
+          <Button
+            onClick={() => {
+              const boxes = fileBoxesMap?.[src];
+              const lastBox = boxes?.[boxes?.length - 1];
+              if (!lastBox) return;
+
+              setFileBoxesMap({
+                ...fileBoxesMap,
+                [src]: [
+                  ...(boxes || []),
+                  ...getAbsoluteDetectedBoxes(lastBox, [
+                    [5, 5, lastBox.width / 2 - 5, lastBox.height / 2 - 5],
+                    [
+                      Math.abs(lastBox.width / 2),
+                      Math.abs(lastBox.height / 2),
+                      lastBox.width / 2 - 5,
+                      lastBox.height / 2 - 5,
+                    ],
+                  ]),
+                ],
+              });
+            }}
+          >
+            Add Children
+          </Button>
+        </div>
+        <div className={'container'}>
+          <div className={'is-inline-flex'}>
+            <div>
+              <label htmlFor='zoom' className={'is-block'}>
+                Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
+              </label>
+              <input
+                id='zoom'
+                type='range'
+                className={'slider mt-2'}
+                min={0.1}
+                max={10}
+                step={0.01}
+                value={fileZoomMap[src] || 1}
+                onChange={(e) => setZoom(Number(e.currentTarget.value))}
+              />
+            </div>
+            <div className={'ml-4'}>
+              <label htmlFor='rotation' className={'is-block'}>
+                Rotation: (
+                {(fileRotationMap[src] || 0).toString().padStart(3, '0')} deg)
+              </label>
+              <input
+                id='rotation'
+                type='range'
+                className={'slider mt-2'}
+                min={0}
+                max={360}
+                step={1}
+                value={fileRotationMap[src] || 0}
+                onChange={(e) => setRotation(Number(e.currentTarget.value))}
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          className={'container pb-4'}
+          style={{ maxHeight: '200px', overflow: 'auto' }}
+        >
+          <p style={{ display: 'inline-block' }}>
+            Click a Button to view a box
+          </p>
+          <div className={'buttons'}>
+            {fileBoxesMap[src]?.map((box) => (
+              <Button
+                key={box.id}
+                value={box.id}
+                onClick={() => handleBoxButtonClick(box.id)}
+              >
+                {box.id}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
       <div ref={cropperRef}>
         <MultiCrops
           src={src}
