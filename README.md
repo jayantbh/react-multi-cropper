@@ -16,7 +16,7 @@ It's a fork of [this repo](https://github.com/beizhedenglong/react-multi-crops),
 - Better code design
 - More features
 
-![screenshot](http://i.snipboard.io/eBhQ3X.jpg)
+![screenshot](https://i.snipboard.io/XHaY6L.jpg)
 
 
 ## Installation
