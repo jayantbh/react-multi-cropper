@@ -25,9 +25,10 @@ const initialBoxes: CropperBox[] = [
     height: 178,
     id: 'SJxb6YpuG',
     rotation: 10,
-    style: (prevStyle: CSSProperties) => {
-      return { ...prevStyle, boxShadow: '0 0 0 2px #ff0' };
-    },
+    style: (prevStyle: CSSProperties) => ({
+      ...prevStyle,
+      boxShadow: '0 0 0 2px #ff0',
+    }),
     labelStyle: { visibility: 'hidden' },
   },
   // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
@@ -303,7 +304,14 @@ const App = () => {
         />
       </div>
       {(fileBoxesMap[src] || []).map(
-        (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
+        (box, i) =>
+          !!imageMap[box.id] && (
+            <img
+              src={imageMap[box.id]}
+              key={i}
+              alt={'boxes image, index ' + i}
+            />
+          )
       )}
     </div>
   );
