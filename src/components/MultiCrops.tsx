@@ -182,8 +182,24 @@ const MultiCrops: FC<CropperProps> = ({
     getUpdatedDimensions({ eventType: 'src-change' });
   }, [props.src]);
 
+  useWorker(
+    workerRef,
+    canvasRef.current,
+    hasOCSupport,
+    props.onCrop,
+    lastUpdatedBox
+  );
+
+  const [centerCoords, setCenterCoords] = useCenteringCallback(
+    imageRef.current,
+    containerRef.current,
+    staticPanCoords,
+    activePanCoords
+  );
+
+  const prevBoxInView = usePrevious(boxInView);
   useEffect(() => {
-    if (!boxInView) return;
+    if (!boxInView || boxInView === prevBoxInView) return;
 
     const box = props?.boxes?.find((b) => b.id === boxInView.id);
     const { rotate = true, panInView = true } = boxInView;
@@ -218,23 +234,20 @@ const MultiCrops: FC<CropperProps> = ({
         panInView && setStaticPanCoords({ x: xPan, y: yPan });
         rotate && onSetRotation?.((rotation + 360 - box?.rotation) % 360);
       }
+      requestAnimationFrame(() => setCenterCoords());
     }
-  }, [boxInView]);
-
-  useWorker(
-    workerRef,
-    canvasRef.current,
-    hasOCSupport,
-    props.onCrop,
-    lastUpdatedBox
-  );
-
-  const [centerCoords, setCenterCoords] = useCenteringCallback(
-    imageRef.current,
-    containerRef.current,
-    staticPanCoords,
-    activePanCoords
-  );
+  }, [
+    boxInView,
+    centerCoords,
+    setCenterCoords,
+    prevBoxInView,
+    onSetRotation,
+    props.onZoomGesture,
+    rotation,
+    props.boxes,
+    zoom,
+    boxViewZoomBuffer,
+  ]);
 
   const drawCanvas = () =>
     !hasOCSupport
