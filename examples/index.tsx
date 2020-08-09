@@ -119,16 +119,15 @@ const App = () => {
   );
 
   const handleClick: UpdateFunction = useCallback(
-    (_e, bx, _i, _boxes) => {
+    (_e, bx, _i) => {
       console.log('click');
-      _boxes &&
-        setFileBoxesMap((boxMap) => ({
-          ...boxMap,
-          [src]: _boxes.map((box) => ({
-            ...box,
-            labelStyle: box.id === bx?.id ? {} : { display: 'none' },
-          })),
-        }));
+      setFileBoxesMap((boxMap) => ({
+        ...boxMap,
+        [src]: boxMap[src]?.map((box) => ({
+          ...box,
+          labelStyle: box.id === bx?.id ? {} : { display: 'none' },
+        })),
+      }));
       bx && setBoxInView({ id: bx.id });
     },
     [src, setBoxInView, setFileBoxesMap]
