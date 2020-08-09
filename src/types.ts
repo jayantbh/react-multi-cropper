@@ -84,7 +84,7 @@ export type CropperProps = {
   onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
-  onZoomGesture?: (newZoom: number) => any;
+  onZoomGesture?: (newZoom: number, prevZoom: number) => any;
   containerClassName?: string;
   containerStyles?: CSSProperties;
   imageStyles?: CSSProperties;

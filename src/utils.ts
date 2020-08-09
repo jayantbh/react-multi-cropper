@@ -1,4 +1,4 @@
-import { CropperBox } from './types';
+import { CropperBox, CropperProps } from './types';
 import sid from 'shortid';
 
 export function update<T>(index: number, item: T, items: T[]): T[] {
@@ -77,4 +77,16 @@ export const isInView = (
     }
   }
   return false;
+};
+
+export const scaleBoxes = (boxes: CropperProps['boxes'], scale: number) => {
+  if (scale === 1) return boxes;
+
+  return boxes.map((box) => ({
+    ...box,
+    x: box.x * scale,
+    y: box.y * scale,
+    height: box.height * scale,
+    width: box.width * scale,
+  }));
 };

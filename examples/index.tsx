@@ -12,6 +12,7 @@ import MultiCrops, {
   CropperBoxDataMap,
   CropperCursorMode,
   UpdateFunction,
+  scaleBoxes,
 } from '../dist';
 
 import img1 from './imgs/sample1.jpg';
@@ -109,13 +110,18 @@ const App = () => {
   );
 
   const setZoom = useCallback(
-    (zoom: number) => {
+    (nextZoom: number, prevZoom: number) => {
+      const zoom = Math.max(0.1, Math.min(nextZoom, 10));
       setFileZoomMap((zoomMap) => ({
         ...zoomMap,
-        [src]: Math.max(0.1, Math.min(zoom, 10)),
+        [src]: zoom,
+      }));
+      setFileBoxesMap((boxesMap) => ({
+        ...boxesMap,
+        [src]: scaleBoxes(boxesMap[src] || [], zoom / prevZoom),
       }));
     },
-    [src, setFileZoomMap]
+    [src, setFileZoomMap, setFileBoxesMap]
   );
 
   const handleClick: UpdateFunction = useCallback(
@@ -153,7 +159,7 @@ const App = () => {
 
   const reset = () => {
     setRotation(0);
-    setZoom(1);
+    setZoom(1, fileZoomMap[src] || 1);
     resetCenter();
   };
 
@@ -268,7 +274,9 @@ const App = () => {
                 max={10}
                 step={0.01}
                 value={fileZoomMap[src] || 1}
-                onChange={(e) => setZoom(Number(e.currentTarget.value))}
+                onChange={(e) =>
+                  setZoom(Number(e.currentTarget.value), fileZoomMap[src] || 1)
+                }
               />
             </div>
             <div className={'ml-4'}>

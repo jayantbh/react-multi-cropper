@@ -280,77 +280,6 @@ export const getOffscreenImageMapFromBoxes = (
   return {};
 };
 
-export const useZoom = (
-  img: HTMLImageElement | null,
-  cont: HTMLDivElement | null,
-  src: CropperProps['src'],
-  boxes: CropperProps['boxes'],
-  onChange: CropperProps['onChange'],
-  rotation: number,
-  imgBaseWidth: number,
-  imgBaseHeight: number,
-  zoom: number
-) => {
-  const prevZoom = usePrevious(zoom);
-
-  const rotationFrameRef = useRef(-1);
-  const prevRotationRef = useRef(rotation);
-  const prevSrcRef = useRef(src);
-  const prevSizeRef = useRef({
-    width: Math.round(imgBaseWidth * zoom),
-    height: Math.round(imgBaseHeight * zoom),
-  });
-
-  useEffect(() => {
-    const prevRotation = prevRotationRef.current;
-    const prevSrc = prevSrcRef.current;
-    const prevSize = prevSizeRef.current;
-
-    cancelAnimationFrame(rotationFrameRef.current);
-    rotationFrameRef.current = requestAnimationFrame(() => {
-      if (zoom !== prevZoom) {
-        const width = Math.round(imgBaseWidth * zoom);
-        const height = Math.round(imgBaseHeight * zoom);
-        const rotationDiff = rotation - prevRotation;
-
-        if (width === 0 || height === 0) return;
-
-        const imageDidNotChange =
-          prevSize.width === width && prevSize.height === height;
-
-        if (
-          !cont ||
-          !img ||
-          img.getAttribute('src') !== src ||
-          imageDidNotChange ||
-          src !== prevSrc
-        )
-          return;
-        const hRatio = height / prevSize.height;
-        const wRatio = width / prevSize.width;
-
-        const newBoxes = boxes.map((box) => ({
-          ...box,
-          x: box.x * wRatio,
-          y: box.y * hRatio,
-          height: box.height * hRatio,
-          width: box.width * wRatio,
-          rotation: box.rotation + rotationDiff,
-        }));
-
-        onChange?.({ type: 'zoom' }, undefined, undefined, newBoxes);
-      }
-
-      prevRotationRef.current = rotation;
-      prevSrcRef.current = src;
-      prevSizeRef.current = {
-        width: Math.round(imgBaseWidth * zoom),
-        height: Math.round(imgBaseHeight * zoom),
-      };
-    });
-  }, [zoom, rotation, imgBaseHeight, imgBaseWidth, boxes]);
-};
-
 export const getCursorPosition = (
   e: MouseEvent,
   cont: HTMLDivElement | null,
@@ -369,28 +298,6 @@ export const getAbsoluteCursorPosition = (e: MouseEvent) => ({
   x: e.clientX,
   y: e.clientY,
 });
-
-export const useCentering = (
-  img: HTMLImageElement | null,
-  cont: HTMLDivElement | null,
-  staticPanCoords: Coordinates,
-  activePanCoords: Coordinates
-): [Coordinates, Dispatch<SetStateAction<Coordinates>>] => {
-  const [centerCoords, setCenterCoords] = useState<Coordinates>({ x: 0, y: 0 });
-
-  useEffect(() => {
-    if (!img || !cont) return;
-
-    const imgRect = img.getBoundingClientRect();
-    const conRect = cont.getBoundingClientRect();
-    const x = (imgRect.right + imgRect.left) / 2 - conRect.left;
-    const y = (imgRect.bottom + imgRect.top) / 2 - conRect.top;
-
-    setCenterCoords({ x, y });
-  }, [img, cont, staticPanCoords, activePanCoords]);
-
-  return [centerCoords, setCenterCoords];
-};
 
 export const useCenteringCallback = (
   img: HTMLImageElement | null,

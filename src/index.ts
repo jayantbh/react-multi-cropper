@@ -18,4 +18,4 @@ export {
   CropTriggerFunctionWithImageData,
 } from './types';
 
-export { getAbsoluteDetectedBoxes } from './utils';
+export { getAbsoluteDetectedBoxes, scaleBoxes } from './utils';

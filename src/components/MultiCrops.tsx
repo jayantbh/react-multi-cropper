@@ -38,13 +38,11 @@ import {
   performCanvasPaint,
   performOffscreenCanvasPaint,
   useCenteringCallback,
-  // useCentering,
   useWheelEvent,
   usePrevious,
   usePropRotation,
   useScrollbars,
   useWorker,
-  useZoom,
 } from './MultiCrops.helpers';
 
 import { deepEquals, isInView } from '../utils';
@@ -228,7 +226,7 @@ const MultiCrops: FC<CropperProps> = ({
 
       if (!isInView(containerRect, boxRect)) {
         setStaticPanCoords({ x: xPan, y: yPan });
-        props.onZoomGesture?.(newZoom);
+        props.onZoomGesture?.(newZoom, zoom);
         onSetRotation?.((rotation + 360 - box?.rotation) % 360);
       } else {
         panInView && setStaticPanCoords({ x: xPan, y: yPan });
@@ -293,18 +291,6 @@ const MultiCrops: FC<CropperProps> = ({
   };
 
   usePropRotation(rotation, props.boxes, props.onChange, srcChanged);
-
-  useZoom(
-    imageRef.current,
-    containerRef.current,
-    props.src,
-    props.boxes,
-    props.onChange,
-    rotation,
-    imgBaseWidth,
-    imgBaseHeight,
-    zoom
-  );
 
   useResizeObserver({
     ref: containerRef,
@@ -482,7 +468,7 @@ const MultiCrops: FC<CropperProps> = ({
       cancelAnimationFrame(wheelFrame.current);
       wheelFrame.current = requestAnimationFrame(() => {
         if (shiftKey && !props.disableMouse?.zoom) {
-          props.onZoomGesture?.(zoom + delta * 0.01);
+          props.onZoomGesture?.(zoom + delta * 0.01, zoom);
         } else if (!props.disableMouse?.pan) {
           setStaticPanCoords((coords) => ({
             x: coords.x - deltaX * pxScaleH,
@@ -551,7 +537,7 @@ const MultiCrops: FC<CropperProps> = ({
                   : key === 'ArrowLeft' || key === 'ArrowDown'
                   ? -0.05
                   : 0;
-              props.onZoomGesture?.(zoom + delta);
+              props.onZoomGesture?.(zoom + delta, zoom);
             } else {
               const deltaX =
                 key === 'ArrowRight' ? 10 : key === 'ArrowLeft' ? -10 : 0;
