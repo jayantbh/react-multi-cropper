@@ -98,7 +98,9 @@ const MultiCrops: FC<CropperProps> = ({
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
   const [selectionBox, setSelectionBox] = useState<CropperBox | undefined>();
   const selectionRef = useRef(selectionBox);
-  selectionRef.current = selectionBox || selectionRef.current;
+  selectionRef.current = isSelecting
+    ? selectionBox || selectionRef.current
+    : undefined;
 
   const hasOCSupport = !!canvasRef.current?.transferControlToOffscreen;
 
