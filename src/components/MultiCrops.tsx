@@ -96,7 +96,9 @@ const MultiCrops: FC<CropperProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
-  const [selectionBox, setSelectionBox] = useState<CropperBox | void>();
+  const [selectionBox, setSelectionBox] = useState<CropperBox | undefined>();
+  const selectionRef = useRef(selectionBox);
+  selectionRef.current = selectionBox || selectionRef.current;
 
   const hasOCSupport = !!canvasRef.current?.transferControlToOffscreen;
 
@@ -475,7 +477,7 @@ const MultiCrops: FC<CropperProps> = ({
     } else if (cursorMode === 'draw' && !props.disableMouse?.draw) {
       if (!isDrawing.current) return;
       if (isSelecting && selectionBox) {
-        setSelectionBox();
+        setSelectionBox(undefined);
         const s = selectionBox;
         const selectedBoxes = props.boxes.filter((b) => isColliding(s, b));
         type GroupedBoxes = { [key in string]: CropperBox };
@@ -487,7 +489,8 @@ const MultiCrops: FC<CropperProps> = ({
           {}
         );
         handleCrop(e, 'select', groupedBoxes);
-      } else if (props.boxes[drawingIndex.current]) handleCrop(e, 'draw-end');
+      } else if (!isSelecting && props.boxes[drawingIndex.current])
+        handleCrop(e, 'draw-end');
     }
     isDrawing.current = false;
     pointA.current = {};
@@ -530,10 +533,16 @@ const MultiCrops: FC<CropperProps> = ({
         index={index}
         box={box}
         cursorMode={cursorMode}
-        onBoxClick={onBoxClick}
+        onBoxClick={(e, ...args) => {
+          !selectionRef.current && onBoxClick?.(e, ...args);
+          selectionRef.current = undefined;
+        }}
         onBoxMouseEnter={!isSelecting ? onBoxMouseEnter : undefined}
         onBoxMouseLeave={!isSelecting ? onBoxMouseLeave : undefined}
-        onDelete={props.onDelete}
+        onDelete={(e, ...args) => {
+          !selectionRef.current && props.onDelete?.(e, ...args);
+          selectionRef.current = undefined;
+        }}
       />
     ));
   }, [
