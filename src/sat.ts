@@ -127,33 +127,8 @@ export class Polygon {
     }
   }
 
-  collidesWith(polygon: Polygon, response?: Response) {
-    return testPolygonCollision(this, polygon, response);
-  }
-}
-
-class Response {
-  public a: null | Polygon;
-  public b: null | Polygon;
-  public overlap: number;
-  public overlapN: Vector;
-  public overlapV: Vector;
-  public aInB: boolean;
-  public bInA: boolean;
-
-  constructor() {
-    this.a = null;
-    this.b = null;
-    this.overlapN = new Vector(); // Unit vector in the direction of overlap
-    this.overlapV = new Vector(); // Subtract this from a's position to extract it from b
-    this.clear();
-  }
-
-  clear() {
-    this.aInB = true; // Is a fully inside b?
-    this.bInA = true; // Is b fully inside a?
-    this.overlap = Number.MAX_VALUE; // Amount of overlap (magnitude of overlapV). Can be 0 (if a and b are touching)
-    return this;
+  collidesWith(polygon: Polygon) {
+    return testPolygonCollision(this, polygon);
   }
 }
 
@@ -176,34 +151,33 @@ const flattenPointsOn = function (
   result[1] = max;
 };
 
-/**
- * Pool of Vectors used in calculations.
- *
- * @type {Array}
- */
-let T_VECTORS: Vector[] = [];
-for (let i = 0; i < 10; i++) {
-  T_VECTORS.push(new Vector());
-}
-
-/**
- * Pool of Arrays used in calculations.
- *
- * @type {Array}
- */
-let T_ARRAYS: number[][] = [];
-for (let i = 0; i < 5; i++) {
-  T_ARRAYS.push([]);
-}
-
 export const isSeparatingAxis = function (
   aPos: Vector,
   bPos: Vector,
   aPoints: Vector[],
   bPoints: Vector[],
-  axis: Vector,
-  response?: Response
+  axis: Vector
 ): boolean {
+  /**
+   * Pool of Vectors used in calculations.
+   *
+   * @type {Array}
+   */
+  let T_VECTORS: Vector[] = [];
+  for (let i = 0; i < 10; i++) {
+    T_VECTORS.push(new Vector());
+  }
+
+  /**
+   * Pool of Arrays used in calculations.
+   *
+   * @type {Array}
+   */
+  let T_ARRAYS: number[][] = [];
+  for (let i = 0; i < 5; i++) {
+    T_ARRAYS.push([]);
+  }
+
   let rangeA = T_ARRAYS.pop();
   let rangeB = T_ARRAYS.pop();
 
@@ -229,59 +203,13 @@ export const isSeparatingAxis = function (
     return true;
   }
 
-  // If we're calculating a response, calculate the overlap.
-  if (response) {
-    let overlap;
-    // A starts further left than B
-    if (rangeA[0] < rangeB[0]) {
-      response.aInB = false;
-      // A ends before B does. We have to pull A out of B
-      if (rangeA[1] < rangeB[1]) {
-        overlap = rangeA[1] - rangeB[0];
-        response.bInA = false;
-        // B is fully inside A.  Pick the shortest way out.
-      } else {
-        let option1 = rangeA[1] - rangeB[0];
-        let option2 = rangeB[1] - rangeA[0];
-        overlap = option1 < option2 ? option1 : -option2;
-      }
-      // B starts further left than A
-    } else {
-      response.bInA = false;
-      // B ends before A ends. We have to push A out of B
-      if (rangeA[1] > rangeB[1]) {
-        overlap = rangeA[0] - rangeB[1];
-        response.aInB = false;
-        // A is fully inside B.  Pick the shortest way out.
-      } else {
-        let option1 = rangeA[1] - rangeB[0];
-        let option2 = rangeB[1] - rangeA[0];
-        overlap = option1 < option2 ? option1 : -option2;
-      }
-    }
-
-    // If this is the smallest amount of overlap we've seen so far, set it as the minimum overlap.
-    let absOverlap = Math.abs(overlap);
-    if (absOverlap < response.overlap) {
-      response.overlap = absOverlap;
-      response.overlapN.copy(axis);
-      if (overlap < 0) {
-        response.overlapN.reverse();
-      }
-    }
-  }
-
   T_VECTORS.push(offsetV);
   T_ARRAYS.push(rangeA);
   T_ARRAYS.push(rangeB);
   return false;
 };
 
-export const testPolygonCollision = function (
-  a: Polygon,
-  b: Polygon,
-  response?: Response
-) {
+export const testPolygonCollision = function (a: Polygon, b: Polygon) {
   let aPoints = a.points;
   let aLen = aPoints.length;
   let bPoints = b.points;
@@ -289,41 +217,15 @@ export const testPolygonCollision = function (
 
   // If any of the edge normals of A is a separating axis, no intersection.
   while (aLen--) {
-    if (
-      isSeparatingAxis(
-        a.pos,
-        b.pos,
-        aPoints,
-        bPoints,
-        a.normals[aLen],
-        response
-      )
-    )
+    if (isSeparatingAxis(a.pos, b.pos, aPoints, bPoints, a.normals[aLen]))
       return false;
   }
 
   // If any of the edge normals of B is a separating axis, no intersection.
   while (bLen--) {
-    if (
-      isSeparatingAxis(
-        a.pos,
-        b.pos,
-        aPoints,
-        bPoints,
-        b.normals[bLen],
-        response
-      )
-    )
+    if (isSeparatingAxis(a.pos, b.pos, aPoints, bPoints, b.normals[bLen]))
       return false;
   }
 
-  // Since none of the edge normals of A or B are a separating axis, there is an intersection
-  // and we've already calculated the smallest overlap (in isSeparatingAxis).  Calculate the
-  // final overlap vector.
-  if (response) {
-    response.a = a;
-    response.b = b;
-    response.overlapV.copy(response.overlapN).scale(response.overlap);
-  }
   return true;
 };
