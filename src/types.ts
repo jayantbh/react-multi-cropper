@@ -36,6 +36,7 @@ export type CropperEventType =
   | 'load'
   | 'draw'
   | 'draw-end'
+  | 'select'
   | 'resize'
   | 'zoom'
   | 'drag'
@@ -57,7 +58,8 @@ export type CropperEvent = {
 export type CropTriggerFunctionWithImageData = (
   e: CropperEvent,
   dataMap: CropperBoxDataMap,
-  currentImg?: CurrentImgParam
+  currentImg?: CurrentImgParam,
+  boxes?: { [key in string]: CropperBox }
 ) => any;
 
 export type UpdateFunction = (
@@ -100,6 +102,7 @@ export type CropperProps = {
   boxInView?: { id?: string; rotate?: boolean; panInView?: boolean };
   onSetRotation?: Function;
   boxViewZoomBuffer?: number;
+  isSelecting?: boolean;
 };
 
 export type RefSize = {
@@ -108,3 +111,5 @@ export type RefSize = {
 };
 
 export type CanvasWorker = ReturnType<typeof createWorker> | null;
+
+export type Tuple = [number, number];

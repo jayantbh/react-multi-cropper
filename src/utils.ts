@@ -1,5 +1,6 @@
-import { CropperBox, CropperProps } from './types';
+import { CropperBox, CropperProps, Tuple } from './types';
 import sid from 'shortid';
+import { Polygon, Vector } from './sat';
 
 export function update<T>(index: number, item: T, items: T[]): T[] {
   return [...items.slice(0, index), item, ...items.slice(index + 1)];
@@ -89,4 +90,40 @@ export const scaleBoxes = (boxes: CropperProps['boxes'], scale: number) => {
     height: box.height * scale,
     width: box.width * scale,
   }));
+};
+
+export const radians = (deg: number) => (deg * Math.PI) / 180;
+
+export const rotatedXY = ([x, y]: Tuple, deg: number) => [
+  y * Math.sin(radians(-deg)) + x * Math.cos(radians(-deg)), // x
+  y * Math.cos(radians(-deg)) - x * Math.sin(radians(-deg)), // y
+];
+
+type BoxCorners = [Tuple, Tuple, Tuple, Tuple];
+export const boxCorners = (box: CropperBox): BoxCorners => [
+  [box.x, box.y],
+  [box.x + box.width, box.y],
+  [box.x, box.y + box.height],
+  [box.x + box.width, box.y + box.height],
+];
+
+export const rotatedBoxCorners = (corners: BoxCorners, degrees: number) =>
+  [
+    rotatedXY(corners[0], degrees),
+    rotatedXY(corners[1], degrees),
+    rotatedXY(corners[2], degrees),
+    rotatedXY(corners[3], degrees),
+  ] as BoxCorners;
+
+export const boxToPolygon = (box: CropperBox): Polygon => {
+  const corners = boxCorners(box);
+  const rotatedCorners = rotatedBoxCorners(corners, box.rotation);
+  const vectors = rotatedCorners.map(
+    (corner) => new Vector(corner[0], corner[1])
+  );
+  return new Polygon(vectors);
+};
+
+export const isColliding = (box1: CropperBox, box2: CropperBox): boolean => {
+  return boxToPolygon(box1).collidesWith(boxToPolygon(box2));
 };

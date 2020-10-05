@@ -45,7 +45,7 @@ import {
   useWorker,
 } from './MultiCrops.helpers';
 
-import { deepEquals, isInView } from '../utils';
+import { deepEquals, isColliding, isInView } from '../utils';
 
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
@@ -56,6 +56,9 @@ type Dimensions = {
 };
 
 const scrollbarSpacing = 6;
+
+const selectionBoxLabel = { display: 'none' };
+const selectionBoxStyle = { boxShadow: '0 0 0 2px #D44333' };
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -68,6 +71,7 @@ const MultiCrops: FC<CropperProps> = ({
   boxViewZoomBuffer = 0.5,
   onSetRotation,
   imageStyles = {},
+  isSelecting,
   ...props
 }) => {
   const prevSrc = usePrevious(props.src);
@@ -92,6 +96,7 @@ const MultiCrops: FC<CropperProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   const [staticPanCoords, setStaticPanCoords] = useState({ x: 0, y: 0 });
   const [activePanCoords, setActivePanCoords] = useState({ x: 0, y: 0 });
+  const [selectionBox, setSelectionBox] = useState<CropperBox | void>();
 
   const hasOCSupport = !!canvasRef.current?.transferControlToOffscreen;
 
@@ -332,7 +337,11 @@ const MultiCrops: FC<CropperProps> = ({
     )(e);
   };
 
-  const handleCrop = (e: CropperEvent['event'], type: CropperEvent['type']) => {
+  const handleCrop = (
+    e: CropperEvent['event'],
+    type: CropperEvent['type'],
+    _boxes?: { [key in string]: CropperBox }
+  ) => {
     drawCanvas();
     const selections = getSelections();
 
@@ -346,6 +355,8 @@ const MultiCrops: FC<CropperProps> = ({
         : undefined;
 
       props.onCrop?.({ type, event: e }, selections, currentImgParam);
+    } else if (type === 'select') {
+      props.onCrop?.({ type, event: e }, {}, undefined, _boxes);
     } else {
       props.onChange?.(
         { type, event: e },
@@ -408,6 +419,23 @@ const MultiCrops: FC<CropperProps> = ({
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
 
+      if (isSelecting) {
+        const lastBox: Partial<CropperBox> = selectionBox || {};
+        setSelectionBox({
+          ...lastBox,
+          id: 'rmc--selection-box',
+          rotation: lastBox.rotation || 0,
+          x: Math.min(pointA.current.x, pointB.x),
+          y: Math.min(pointA.current.y, pointB.y),
+          width: Math.abs(pointA.current.x - pointB.x),
+          height: Math.abs(pointA.current.y - pointB.y),
+          labelStyle: selectionBoxLabel,
+          style: selectionBoxStyle,
+          noImage: true,
+        });
+        return;
+      }
+
       const lastBox: Partial<CropperBox> = boxes[drawingIndex.current] || {};
       const box = {
         ...lastBox,
@@ -446,7 +474,20 @@ const MultiCrops: FC<CropperProps> = ({
       setActivePanCoords({ x: 0, y: 0 });
     } else if (cursorMode === 'draw' && !props.disableMouse?.draw) {
       if (!isDrawing.current) return;
-      if (props.boxes[drawingIndex.current]) handleCrop(e, 'draw-end');
+      if (isSelecting && selectionBox) {
+        setSelectionBox();
+        const s = selectionBox;
+        const selectedBoxes = props.boxes.filter((b) => isColliding(s, b));
+        type GroupedBoxes = { [key in string]: CropperBox };
+        const groupedBoxes = selectedBoxes.reduce<GroupedBoxes>(
+          (acc, box) => ({
+            ...acc,
+            [box.id]: box,
+          }),
+          {}
+        );
+        handleCrop(e, 'select', groupedBoxes);
+      } else if (props.boxes[drawingIndex.current]) handleCrop(e, 'draw-end');
     }
     isDrawing.current = false;
     pointA.current = {};
@@ -489,13 +530,20 @@ const MultiCrops: FC<CropperProps> = ({
         index={index}
         box={box}
         cursorMode={cursorMode}
-        onBoxClick={onBoxClick}
-        onBoxMouseEnter={onBoxMouseEnter}
-        onBoxMouseLeave={onBoxMouseLeave}
-        onDelete={props.onDelete}
+        onBoxClick={!isSelecting ? onBoxClick : undefined}
+        onBoxMouseEnter={!isSelecting ? onBoxMouseEnter : undefined}
+        onBoxMouseLeave={!isSelecting ? onBoxMouseLeave : undefined}
+        onDelete={!isSelecting ? props.onDelete : undefined}
       />
     ));
-  }, [props.boxes, cursorMode, onBoxClick, onBoxMouseEnter, onBoxMouseLeave]);
+  }, [
+    props.boxes,
+    cursorMode,
+    onBoxClick,
+    onBoxMouseEnter,
+    onBoxMouseLeave,
+    isSelecting,
+  ]);
 
   return (
     <>
@@ -585,6 +633,14 @@ const MultiCrops: FC<CropperProps> = ({
             left: `${centerCoords.x}px`,
           }}
         >
+          {selectionBox ? (
+            <CropContainer
+              key={selectionBox.id}
+              index={-1}
+              box={selectionBox}
+              cursorMode={cursorMode}
+            />
+          ) : null}
           {boxesOnImage}
         </div>
         <Scrollbar

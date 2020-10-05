@@ -25,26 +25,27 @@ const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   />
 );
 
-const initialBoxes: CropperBox[] = [
-  {
-    x: -178,
-    y: -191,
+const initialBoxes: CropperBox[] = Array(40)
+  .fill({})
+  .map((_, i) => ({
+    x: -178 + i * 10,
+    y: -191 + i * 10,
     width: 120,
     height: 178,
-    id: 'SJxb6YpuG',
+    id: 'SJxb6YpuG' + i,
     rotation: 10,
     style: (prevStyle: CSSProperties) => ({
       ...prevStyle,
       boxShadow: '0 0 0 2px #ff0',
     }),
     labelStyle: { visibility: 'hidden' },
-  },
-  // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
-  // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
-  // { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
-  // { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
-  // { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
-];
+    noImage: true,
+  }));
+// { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
+// { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
+// { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
+// { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
+// { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
 
 const containerStyles = {
   height: '500px',
@@ -57,6 +58,7 @@ const App = () => {
   const resetCenterRef = useRef(() => {});
   const resetCenter = resetCenterRef.current;
 
+  const [isSelecting, setIsSelecting] = useState(false);
   const [images, setImages] = useState([img1, img2]);
   const src = images[0];
 
@@ -166,13 +168,31 @@ const App = () => {
   useEffect(reset, [src]);
 
   const handleCrop = useCallback(
-    (e, map, currentImg) => {
+    (e, map, currentImg, selectedBoxes = []) => {
       console.log('Crop', e, map, currentImg?.boxId);
       if (e.type === 'draw-end') {
         if (!currentImg) return;
         const { dataUrl, boxId } = currentImg;
         setImageMap((im) => ({ ...im, [boxId]: dataUrl }));
       } else if (e.type === 'load') setImageMap(map);
+      else if (e.type === 'select') {
+        setFileBoxesMap((boxMap) => ({
+          ...boxMap,
+          [src]: boxMap[src]?.map((box) => {
+            const isSelected = !!selectedBoxes[box.id];
+            return {
+              ...box,
+              style: {
+                ...(typeof box.style === 'function'
+                  ? box.style({})
+                  : box.style),
+                boxShadow: `0 0 0 2px ${isSelected ? '#0a9' : '#ff0'}`,
+              },
+            };
+          }),
+        }));
+        return;
+      }
     },
     [src]
   );
@@ -295,6 +315,19 @@ const App = () => {
                 onChange={(e) => setRotation(Number(e.currentTarget.value))}
               />
             </div>
+            <div className={'ml-4'}>
+              <label className='checkbox control'>
+                <input
+                  type='checkbox'
+                  checked={isSelecting}
+                  onChange={(e) => {
+                    const { checked } = e.currentTarget;
+                    setIsSelecting(checked);
+                  }}
+                />{' '}
+                Select, instead of draw boxes
+              </label>
+            </div>
           </div>
         </div>
         <div className={'container'}>
@@ -402,6 +435,7 @@ const App = () => {
           onSetRotation={setRotation}
           imageStyles={imageStyles}
           disableMouse={disableMouse}
+          isSelecting={isSelecting}
         />
       </div>
       {(fileBoxesMap[src] || []).map(
