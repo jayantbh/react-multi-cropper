@@ -18,13 +18,15 @@ const Scrollbar: FC<
   const prevPos = useRef(0);
   const scrollFrame = useRef(-1);
 
+  const accessBars = isScrolling ? true : !isHidden;
+
   return (
     <div
       className={css['scroll-wrapper']}
       style={{
-        pointerEvents: isHidden ? 'none' : isScrolling ? 'initial' : 'none',
+        pointerEvents: accessBars ? 'initial' : 'none',
         cursor: isVertical ? 'ns-resize' : 'ew-resize',
-        opacity: isHidden ? 0 : 1,
+        opacity: accessBars ? 1 : 0,
       }}
       onMouseUp={(e) => {
         e.stopPropagation();
@@ -49,7 +51,6 @@ const Scrollbar: FC<
         className={`${isVertical ? css.vscroll : css.hscroll} ${css.scrollbar}`}
         style={{
           ...props.style,
-          pointerEvents: 'initial',
         }}
         onMouseDown={(e) => {
           e.stopPropagation();
