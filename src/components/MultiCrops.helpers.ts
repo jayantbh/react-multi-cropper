@@ -438,6 +438,18 @@ export function usePrevious<T>(value: T): T {
   return ref.current;
 }
 
+export const useFrame = (fn: (...args: any[]) => any) => {
+  const frameRef = useRef(-1);
+
+  return useCallback(
+    (..._args: any[]) => {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = requestAnimationFrame(() => fn(..._args));
+    },
+    [fn]
+  );
+};
+
 export const useScrollbars = (
   cont?: HTMLDivElement | null,
   img?: HTMLImageElement | null

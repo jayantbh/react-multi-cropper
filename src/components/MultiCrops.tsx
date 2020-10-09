@@ -7,6 +7,7 @@ import React, {
   MouseEvent,
   SyntheticEvent,
   UIEventHandler,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -43,6 +44,7 @@ import {
   usePropRotation,
   useScrollbars,
   useWorker,
+  useFrame,
 } from './MultiCrops.helpers';
 
 import { deepEquals, isColliding, isInView } from '../utils';
@@ -556,6 +558,32 @@ const MultiCrops: FC<CropperProps> = ({
     isSelecting,
   ]);
 
+  const scrollXHandlerCb = useCallback(
+    (diff: number) => {
+      setStaticPanCoords((coords) => ({
+        ...coords,
+        x: coords.x + diff * pxScaleW,
+      }));
+      setCenterCoords();
+    },
+    [pxScaleW]
+  );
+
+  const scrollXHandler = useFrame(scrollXHandlerCb);
+
+  const scrollYHandlerCb = useCallback(
+    (diff: number) => {
+      setStaticPanCoords((coords) => ({
+        ...coords,
+        y: coords.y + diff * pxScaleH,
+      }));
+      setCenterCoords();
+    },
+    [pxScaleH]
+  );
+
+  const scrollYHandler = useFrame(scrollYHandlerCb);
+
   return (
     <>
       <div
@@ -661,12 +689,7 @@ const MultiCrops: FC<CropperProps> = ({
             right: `calc(${wr}% + ${scrollbarSpacing}px)`,
           }}
           isHidden={!wl && !wr}
-          onScroll={(diff: number) =>
-            setStaticPanCoords({
-              ...staticPanCoords,
-              x: staticPanCoords.x + diff * pxScaleH,
-            })
-          }
+          onScroll={scrollXHandler}
         />
         <Scrollbar
           type={'vertical'}
@@ -675,12 +698,7 @@ const MultiCrops: FC<CropperProps> = ({
             bottom: `calc(${hb}% + ${scrollbarSpacing}px)`,
           }}
           isHidden={!ht && !hb}
-          onScroll={(diff: number) =>
-            setStaticPanCoords({
-              ...staticPanCoords,
-              y: staticPanCoords.y + diff * pxScaleW,
-            })
-          }
+          onScroll={scrollYHandler}
         />
       </div>
       <canvas ref={canvasRef} className={css.canvas} />
