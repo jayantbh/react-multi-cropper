@@ -897,13 +897,6 @@
   resolved "https://unpm.uberinternal.com/@iarna%2ftoml/-/toml-2.2.3.tgz#f060bf6eaafae4d56a7dac618980838b0696e2ab"
   integrity sha1-8GC/bqr65NVqfaxhiYCDiwaW4qs=
 
-"@interactjs/actions@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2factions/-/actions-1.9.4.tgz#8249dd1771e0d9b3260cbb7e20579e4051ee85cd"
-  integrity sha1-gkndF3Hg2bMmDLt+IFeeQFHuhc0=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
-
 "@interactjs/actions@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2factions/-/actions-1.9.7.tgz#b015931f406e090e48d3244343cf7b2cc53c90f1"
@@ -916,26 +909,12 @@
   resolved "https://unpm.uberinternal.com/@interactjs%2farrange/-/arrange-1.9.7.tgz#42323ce4b1af905d6e4ab76fc066cd1573bd41ee"
   integrity sha1-QjI85LGvkF1uSrdvwGbNFXO9Qe4=
 
-"@interactjs/auto-scroll@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fauto-scroll/-/auto-scroll-1.9.4.tgz#6ec104f47b6397755a61d9c4e78eb7daf5a08826"
-  integrity sha1-bsEE9Htjl3VaYdnE54632vWgiCY=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
-
 "@interactjs/auto-scroll@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fauto-scroll/-/auto-scroll-1.9.7.tgz#e6c2e67b6ed43dd0dd6a84e96b5d1389a20a647a"
   integrity sha1-5sLme27UPdDdaoTpa10TiaIKZHo=
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
-
-"@interactjs/auto-start@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fauto-start/-/auto-start-1.9.4.tgz#a585e88fcc98761f928e3009f65e9f7a8a528664"
-  integrity sha1-pYXoj8yYdh+SjjAJ9l6feopShmQ=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
 
 "@interactjs/auto-start@1.9.7":
   version "1.9.7"
@@ -944,24 +923,10 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/core@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fcore/-/core-1.9.4.tgz#480fcb1b167765fea3609087b1da81be4a6ebed3"
-  integrity sha1-SA/LGxZ3Zf6jYJCHsdqBvkpuvtM=
-
 "@interactjs/core@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fcore/-/core-1.9.7.tgz#1fdf924c369df23ffe1300af9c945f2651538043"
   integrity sha1-H9+STDad8j/+EwCvnJRfJlFTgEM=
-
-"@interactjs/dev-tools@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fdev-tools/-/dev-tools-1.9.4.tgz#046b47171c67e0e9f28b5bd0b36befb3304f6910"
-  integrity sha1-BGtHFxxn4Onyi1vQs2vvszBPaRA=
-  dependencies:
-    "@interactjs/utils" "1.9.4"
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
 
 "@interactjs/dev-tools@1.9.7":
   version "1.9.7"
@@ -972,13 +937,6 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/inertia@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2finertia/-/inertia-1.9.4.tgz#75d2a8989db0d784900c9b4143ff694a10195a8c"
-  integrity sha1-ddKomJ2w14SQDJtBQ/9pShAZWow=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
-
 "@interactjs/inertia@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2finertia/-/inertia-1.9.7.tgz#e8c8ed702bd23d0182a1a0ddbca4be7419826511"
@@ -987,11 +945,6 @@
     "@interactjs/offset" "1.9.7"
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
-
-"@interactjs/interact@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2finteract/-/interact-1.9.4.tgz#02385a62402ff14e83f18aaa442a81a1a0544cfe"
-  integrity sha1-AjhaYkAv8U6D8YqqRCqBoaBUTP4=
 
 "@interactjs/interact@1.9.7":
   version "1.9.7"
@@ -1002,31 +955,6 @@
     "@interactjs/types" "1.9.7"
     "@interactjs/utils" "1.9.7"
 
-"@interactjs/interactjs@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2finteractjs/-/interactjs-1.9.4.tgz#2598b782142123acb381b43e6311ae351a98a537"
-  integrity sha1-JZi3ghQhI6yzgbQ+YxGuNRqYpTc=
-  dependencies:
-    "@interactjs/actions" "1.9.4"
-    "@interactjs/auto-scroll" "1.9.4"
-    "@interactjs/auto-start" "1.9.4"
-    "@interactjs/dev-tools" "1.9.4"
-    "@interactjs/inertia" "1.9.4"
-    "@interactjs/interact" "1.9.4"
-    "@interactjs/modifiers" "1.9.4"
-    "@interactjs/offset" "1.9.4"
-    "@interactjs/pointer-events" "1.9.4"
-    "@interactjs/reflow" "1.9.4"
-    "@interactjs/types" "1.9.4"
-    "@interactjs/utils" "1.9.4"
-
-"@interactjs/modifiers@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fmodifiers/-/modifiers-1.9.4.tgz#c8f30d1c197d9dfdcb2513af1633ed13790ec01b"
-  integrity sha1-yPMNHBl9nf3LJROvFjPtE3kOwBs=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
-
 "@interactjs/modifiers@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fmodifiers/-/modifiers-1.9.7.tgz#dcb37e3782c91d7f8b28008d68ec5ebc26101e7a"
@@ -1036,13 +964,6 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/offset@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2foffset/-/offset-1.9.4.tgz#c7aeee4e6837ed91df20148cfaa592d03da77e07"
-  integrity sha1-x67uTmg37ZHfIBSM+qWS0D2nfgc=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
-
 "@interactjs/offset@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2foffset/-/offset-1.9.7.tgz#5a2aec0f25781bd1728c71fe8c16a55edc3f5b8e"
@@ -1050,26 +971,12 @@
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
 
-"@interactjs/pointer-events@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2fpointer-events/-/pointer-events-1.9.4.tgz#e89e607443af20d984a1db72cb2cbf9779bb6761"
-  integrity sha1-6J5gdEOvINmEodtyyyy/l3m7Z2E=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
-
 "@interactjs/pointer-events@1.9.7":
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fpointer-events/-/pointer-events-1.9.7.tgz#5a0e0daff1c322c6cbff8cbb8052c531d66d1aad"
   integrity sha1-Wg4Nr/HDIsbL/4y7gFLFMdZtGq0=
   optionalDependencies:
     "@interactjs/interact" "1.9.7"
-
-"@interactjs/reflow@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2freflow/-/reflow-1.9.4.tgz#c0d9f443e14f4457b8f84b950cdbb8011048c619"
-  integrity sha1-wNn0Q+FPRFe4+EuVDNu4ARBIxhk=
-  optionalDependencies:
-    "@interactjs/interact" "1.9.4"
 
 "@interactjs/reflow@1.9.7":
   version "1.9.7"
@@ -1087,23 +994,6 @@
   version "1.9.7"
   resolved "https://unpm.uberinternal.com/@interactjs%2fsymbol-tree/-/symbol-tree-1.9.7.tgz#2aec371ded47be71cfa359305da959b382de66ff"
   integrity sha1-Kuw3He1HvnHPo1kwXalZs4LeZv8=
-
-"@interactjs/types@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2ftypes/-/types-1.9.4.tgz#b6bcb480258169b88dfcea24490629f7a7d4a744"
-  integrity sha1-try0gCWBabiN/OokSQYp96fUp0Q=
-  dependencies:
-    "@interactjs/actions" "1.9.4"
-    "@interactjs/auto-scroll" "1.9.4"
-    "@interactjs/auto-start" "1.9.4"
-    "@interactjs/core" "1.9.4"
-    "@interactjs/dev-tools" "1.9.4"
-    "@interactjs/inertia" "1.9.4"
-    "@interactjs/interact" "1.9.4"
-    "@interactjs/modifiers" "1.9.4"
-    "@interactjs/pointer-events" "1.9.4"
-    "@interactjs/reflow" "1.9.4"
-    "@interactjs/utils" "1.9.4"
 
 "@interactjs/types@1.9.7", "@interactjs/types@^1.9.7":
   version "1.9.7"
@@ -1123,11 +1013,6 @@
     "@interactjs/snappers" "1.9.7"
     "@interactjs/symbol-tree" "1.9.7"
     "@interactjs/utils" "1.9.7"
-
-"@interactjs/utils@1.9.4":
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/@interactjs%2futils/-/utils-1.9.4.tgz#e8051de35bb0fd136cc6ff833db054b428492ec0"
-  integrity sha1-6AUd41uw/RNsxv+DPbBUtChJLsA=
 
 "@interactjs/utils@1.9.7":
   version "1.9.7"
@@ -1557,6 +1442,11 @@
   version "0.0.39"
   resolved "https://unpm.uberinternal.com/@types%2festree/-/estree-0.0.39.tgz#e177e699ee1b8c22d23174caaa7422644389509f"
   integrity sha1-4Xfmme4bjCLSMXTKqnQiZEOJUJ8=
+
+"@types/fabric@^3.6.2":
+  version "3.6.8"
+  resolved "https://unpm.uberinternal.com/@types%2ffabric/-/fabric-3.6.8.tgz#7c073dc02595e610d9fc50b97d52b4dda0fa1bff"
+  integrity sha1-fAc9wCWV5hDZ/FC5fVK03aD6G/8=
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.1"
@@ -2851,6 +2741,15 @@ caniuse-lite@^1.0.30000792:
   version "1.0.30000811"
   resolved "http://registry.npm.taobao.org/caniuse-lite/download/caniuse-lite-1.0.30000811.tgz#0b6e40f2efccc27bd3cb52f91ee7ca4673d77d10"
 
+canvas@^2.6.1:
+  version "2.6.1"
+  resolved "https://unpm.uberinternal.com/canvas/-/canvas-2.6.1.tgz#0d087dd4d60f5a5a9efa202757270abea8bef89e"
+  integrity sha1-DQh91NYPWlqe+iAnVycKvqi++J4=
+  dependencies:
+    nan "^2.14.0"
+    node-pre-gyp "^0.11.0"
+    simple-get "^3.0.3"
+
 capture-exit@^2.0.0:
   version "2.0.0"
   resolved "https://unpm.uberinternal.com/capture-exit/-/capture-exit-2.0.0.tgz#fb953bfaebeb781f62898239dabb426d08a509a4"
@@ -2915,6 +2814,11 @@ chokidar@^2.0.0, chokidar@^2.1.5:
     upath "^1.1.1"
   optionalDependencies:
     fsevents "^1.2.7"
+
+chownr@^1.1.1:
+  version "1.1.4"
+  resolved "https://unpm.uberinternal.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
+  integrity sha1-b8nXtC0ypYNZYzdmbn0ICE2izGs=
 
 ci-info@^2.0.0:
   version "2.0.0"
@@ -3504,6 +3408,13 @@ debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.8, debug@^2.6.9:
   dependencies:
     ms "2.0.0"
 
+debug@^3.2.6:
+  version "3.2.6"
+  resolved "https://unpm.uberinternal.com/debug/-/debug-3.2.6.tgz#e83d17de16d8a7efb7717edbe5fb10135eee629b"
+  integrity sha1-6D0X3hbYp++3cX7b5fsQE17uYps=
+  dependencies:
+    ms "^2.1.1"
+
 debug@^4.1.0, debug@^4.1.1:
   version "4.1.1"
   resolved "https://unpm.uberinternal.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
@@ -3519,6 +3430,18 @@ decamelize@^1.1.1, decamelize@^1.1.2, decamelize@^1.2.0:
 decode-uri-component@^0.2.0:
   version "0.2.0"
   resolved "http://registry.npm.taobao.org/decode-uri-component/download/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
+
+decompress-response@^4.2.0:
+  version "4.2.1"
+  resolved "https://unpm.uberinternal.com/decompress-response/-/decompress-response-4.2.1.tgz#414023cc7a302da25ce2ec82d0d5238ccafd8986"
+  integrity sha1-QUAjzHowLaJc4uyC0NUjjMr9iYY=
+  dependencies:
+    mimic-response "^2.0.0"
+
+deep-extend@^0.6.0:
+  version "0.6.0"
+  resolved "https://unpm.uberinternal.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
+  integrity sha1-xPp8lUBKF6nD6Mp+FTcxK3NjMKw=
 
 deep-is@~0.1.3:
   version "0.1.3"
@@ -3610,6 +3533,11 @@ detect-indent@^4.0.0:
   integrity sha1-920GQ1LN9Docts5hnE7jqUdd4gg=
   dependencies:
     repeating "^2.0.0"
+
+detect-libc@^1.0.2:
+  version "1.0.3"
+  resolved "https://unpm.uberinternal.com/detect-libc/-/detect-libc-1.0.3.tgz#fa137c4bd698edf55cd5cd02ac559f91a4c4ba9b"
+  integrity sha1-+hN8S9aY7fVc1c0CrFWfkaTEups=
 
 detect-newline@^3.0.0:
   version "3.1.0"
@@ -3992,6 +3920,14 @@ extsprintf@^1.2.0:
   version "1.4.0"
   resolved "http://registry.npm.taobao.org/extsprintf/download/extsprintf-1.4.0.tgz#e2689f8f356fad62cca65a3a91c5df5f9551692f"
 
+fabric@^4.0.0-beta.12:
+  version "4.2.0"
+  resolved "https://unpm.uberinternal.com/fabric/-/fabric-4.2.0.tgz#c16daf5559a9ed457d51eeb938099565ef1b44ba"
+  integrity sha1-wW2vVVmp7UV9Ue65OAmVZe8bRLo=
+  optionalDependencies:
+    canvas "^2.6.1"
+    jsdom "^15.2.1"
+
 falafel@^2.1.0:
   version "2.1.0"
   resolved "http://registry.npm.taobao.org/falafel/download/falafel-2.1.0.tgz#96bb17761daba94f46d001738b3cedf3a67fe06c"
@@ -4168,6 +4104,13 @@ fs-extra@^0.30.0:
     klaw "^1.0.0"
     path-is-absolute "^1.0.0"
     rimraf "^2.2.8"
+
+fs-minipass@^1.2.5:
+  version "1.2.7"
+  resolved "https://unpm.uberinternal.com/fs-minipass/-/fs-minipass-1.2.7.tgz#ccff8570841e7fe4265693da88936c55aed7f7c7"
+  integrity sha1-zP+FcIQef+QmVpPaiJNsVa7X98c=
+  dependencies:
+    minipass "^2.6.0"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -4564,7 +4507,7 @@ human-signals@^1.1.1:
   resolved "https://unpm.uberinternal.com/human-signals/-/human-signals-1.1.1.tgz#c5b1cd14f50aeae09ab6c59fe63ba3395fe4dfa3"
   integrity sha1-xbHNFPUK6uCatsWf5jujOV/k36M=
 
-iconv-lite@0.4.24:
+iconv-lite@0.4.24, iconv-lite@^0.4.4:
   version "0.4.24"
   resolved "https://unpm.uberinternal.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
   integrity sha1-ICK0sl+93CHS9SSXSkdKr+czkIs=
@@ -4584,6 +4527,13 @@ idb-wrapper@^1.5.0:
 ieee754@^1.1.4:
   version "1.1.8"
   resolved "http://registry.npm.taobao.org/ieee754/download/ieee754-1.1.8.tgz#be33d40ac10ef1926701f6f08a2d86fbfd1ad3e4"
+
+ignore-walk@^3.0.1:
+  version "3.0.3"
+  resolved "https://unpm.uberinternal.com/ignore-walk/-/ignore-walk-3.0.3.tgz#017e2447184bfeade7c238e4aefdd1e8f95b1e37"
+  integrity sha1-AX4kRxhL/q3nwjjkrv3R6PlbHjc=
+  dependencies:
+    minimatch "^3.0.4"
 
 import-cwd@^2.0.0, import-cwd@^2.1.0:
   version "2.1.0"
@@ -4668,13 +4618,10 @@ inherits@~2.0.0:
   resolved "https://unpm.uberinternal.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha1-D6LGT5MpF8NDOg3tVTY6rjdBa3w=
 
-interactjs@1.9.4:
-  version "1.9.4"
-  resolved "https://unpm.uberinternal.com/interactjs/-/interactjs-1.9.4.tgz#fba80cd9060dba289530457daaf3c9e27e9e51e9"
-  integrity sha1-+6gM2QYNuiiVMEV9qvPJ4n6eUek=
-  dependencies:
-    "@interactjs/interactjs" "1.9.4"
-    "@interactjs/types" "1.9.4"
+ini@~1.3.0:
+  version "1.3.5"
+  resolved "https://unpm.uberinternal.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
+  integrity sha1-7uJfVtscnsYIXgwid4CD9Zar+Sc=
 
 invariant@^2.2.2:
   version "2.2.3"
@@ -6074,6 +6021,11 @@ mimic-fn@^2.1.0:
   resolved "https://unpm.uberinternal.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha1-ftLCzMyvhNP/y3pptXcR/CCDQBs=
 
+mimic-response@^2.0.0:
+  version "2.1.0"
+  resolved "https://unpm.uberinternal.com/mimic-response/-/mimic-response-2.1.0.tgz#d13763d35f613d09ec37ebb30bac0469c0ee8f43"
+  integrity sha1-0Tdj019hPQnsN+uzC6wEacDuj0M=
+
 minimalistic-assert@^1.0.0:
   version "1.0.0"
   resolved "http://registry.npm.taobao.org/minimalistic-assert/download/minimalistic-assert-1.0.0.tgz#702be2dda6b37f4836bcb3f5db56641b64a1d3d3"
@@ -6100,6 +6052,21 @@ minimist@^1.1.1, minimist@^1.2.5:
 minimist@^1.1.3, minimist@^1.2.0:
   version "1.2.0"
   resolved "http://registry.npm.taobao.org/minimist/download/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
+
+minipass@^2.6.0, minipass@^2.8.6, minipass@^2.9.0:
+  version "2.9.0"
+  resolved "https://unpm.uberinternal.com/minipass/-/minipass-2.9.0.tgz#e713762e7d3e32fed803115cf93e04bca9fcc9a6"
+  integrity sha1-5xN2Ln0+Mv7YAxFc+T4EvKn8yaY=
+  dependencies:
+    safe-buffer "^5.1.2"
+    yallist "^3.0.0"
+
+minizlib@^1.2.1:
+  version "1.3.3"
+  resolved "https://unpm.uberinternal.com/minizlib/-/minizlib-1.3.3.tgz#2290de96818a34c29551c8a8d301216bd65a861d"
+  integrity sha1-IpDeloGKNMKVUcio0wEha9Zahh0=
+  dependencies:
+    minipass "^2.9.0"
 
 mixin-deep@^1.2.0:
   version "1.3.2"
@@ -6149,6 +6116,11 @@ nan@^2.12.1, nan@^2.13.2:
   resolved "https://unpm.uberinternal.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
   integrity sha1-eBj3IgJ7JFmobwKV1DTR/CM2xSw=
 
+nan@^2.14.0:
+  version "2.14.1"
+  resolved "https://unpm.uberinternal.com/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
+  integrity sha1-174036MQW5FJTDFHCJMV7/iHSwE=
+
 nanoid@^2.1.0:
   version "2.1.11"
   resolved "https://unpm.uberinternal.com/nanoid/-/nanoid-2.1.11.tgz#ec24b8a758d591561531b4176a01e3ab4f0f0280"
@@ -6175,6 +6147,15 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://unpm.uberinternal.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
+
+needle@^2.2.1:
+  version "2.5.2"
+  resolved "https://unpm.uberinternal.com/needle/-/needle-2.5.2.tgz#cf1a8fce382b5a280108bba90a14993c00e4010a"
+  integrity sha1-zxqPzjgrWigBCLupChSZPADkAQo=
+  dependencies:
+    debug "^3.2.6"
+    iconv-lite "^0.4.4"
+    sax "^1.2.4"
 
 nice-try@^1.0.4:
   version "1.0.4"
@@ -6256,6 +6237,22 @@ node-notifier@^6.0.0:
     shellwords "^0.1.1"
     which "^1.3.1"
 
+node-pre-gyp@^0.11.0:
+  version "0.11.0"
+  resolved "https://unpm.uberinternal.com/node-pre-gyp/-/node-pre-gyp-0.11.0.tgz#db1f33215272f692cd38f03238e3e9b47c5dd054"
+  integrity sha1-2x8zIVJy9pLNOPAyOOPptHxd0FQ=
+  dependencies:
+    detect-libc "^1.0.2"
+    mkdirp "^0.5.1"
+    needle "^2.2.1"
+    nopt "^4.0.1"
+    npm-packlist "^1.1.6"
+    npmlog "^4.0.2"
+    rc "^1.2.7"
+    rimraf "^2.6.1"
+    semver "^5.3.0"
+    tar "^4"
+
 node-releases@^1.1.53:
   version "1.1.53"
   resolved "https://unpm.uberinternal.com/node-releases/-/node-releases-1.1.53.tgz#2d821bfa499ed7c5dffc5e2f28c88e78a08ee3f4"
@@ -6291,6 +6288,14 @@ node-sass@^4.13.1:
   dependencies:
     abbrev "1"
 
+nopt@^4.0.1:
+  version "4.0.3"
+  resolved "https://unpm.uberinternal.com/nopt/-/nopt-4.0.3.tgz#a375cad9d02fd921278d954c2254d5aa57e15e48"
+  integrity sha1-o3XK2dAv2SEnjZVMIlTVqlfhXkg=
+  dependencies:
+    abbrev "1"
+    osenv "^0.1.4"
+
 normalize-html-whitespace@^1.0.0:
   version "1.0.0"
   resolved "https://unpm.uberinternal.com/normalize-html-whitespace/-/normalize-html-whitespace-1.0.0.tgz#5e3c8e192f1b06c3b9eee4b7e7f28854c7601e34"
@@ -6322,6 +6327,27 @@ normalize-url@^3.0.0:
   resolved "https://unpm.uberinternal.com/normalize-url/-/normalize-url-3.3.0.tgz#b2e1c4dc4f7c6d57743df733a4f5978d18650559"
   integrity sha1-suHE3E98bVd0PfczpPWXjRhlBVk=
 
+npm-bundled@^1.0.1:
+  version "1.1.1"
+  resolved "https://unpm.uberinternal.com/npm-bundled/-/npm-bundled-1.1.1.tgz#1edd570865a94cdb1bc8220775e29466c9fb234b"
+  integrity sha1-Ht1XCGWpTNsbyCIHdeKUZsn7I0s=
+  dependencies:
+    npm-normalize-package-bin "^1.0.1"
+
+npm-normalize-package-bin@^1.0.1:
+  version "1.0.1"
+  resolved "https://unpm.uberinternal.com/npm-normalize-package-bin/-/npm-normalize-package-bin-1.0.1.tgz#6e79a41f23fd235c0623218228da7d9c23b8f6e2"
+  integrity sha1-bnmkHyP9I1wGIyGCKNp9nCO49uI=
+
+npm-packlist@^1.1.6:
+  version "1.4.8"
+  resolved "https://unpm.uberinternal.com/npm-packlist/-/npm-packlist-1.4.8.tgz#56ee6cc135b9f98ad3d51c1c95da22bbb9b2ef3e"
+  integrity sha1-Vu5swTW5+YrT1Rwcldoiu7my7z4=
+  dependencies:
+    ignore-walk "^3.0.1"
+    npm-bundled "^1.0.1"
+    npm-normalize-package-bin "^1.0.1"
+
 npm-run-path@^2.0.0:
   version "2.0.2"
   resolved "https://unpm.uberinternal.com/npm-run-path/-/npm-run-path-2.0.2.tgz#35a9232dfa35d7067b4cb2ddf2357b1871536c5f"
@@ -6336,7 +6362,7 @@ npm-run-path@^4.0.0:
   dependencies:
     path-key "^3.0.0"
 
-"npmlog@0 || 1 || 2 || 3 || 4", npmlog@^4.0.0:
+"npmlog@0 || 1 || 2 || 3 || 4", npmlog@^4.0.0, npmlog@^4.0.2:
   version "4.1.2"
   resolved "https://unpm.uberinternal.com/npmlog/-/npmlog-4.1.2.tgz#08a7f2a8bf734604779a9efa4ad5cc717abb954b"
   integrity sha1-CKfyqL9zRgR3mp76StXMcXq7lUs=
@@ -6536,7 +6562,7 @@ os-tmpdir@^1.0.0, os-tmpdir@^1.0.1:
   resolved "https://unpm.uberinternal.com/os-tmpdir/-/os-tmpdir-1.0.2.tgz#bbe67406c79aa85c5cfec766fe5734555dfa1274"
   integrity sha1-u+Z0BseaqFxc/sdm/lc0VV36EnQ=
 
-osenv@0:
+osenv@0, osenv@^0.1.4:
   version "0.1.5"
   resolved "https://unpm.uberinternal.com/osenv/-/osenv-0.1.5.tgz#85cdfafaeb28e8677f416e287592b5f3f49ea410"
   integrity sha1-hc36+uso6Gd/QW4odZK18/SepBA=
@@ -7436,6 +7462,16 @@ range-parser@~1.2.0:
   version "1.2.0"
   resolved "http://registry.npm.taobao.org/range-parser/download/range-parser-1.2.0.tgz#f49be6b487894ddc40dcc94a322f611092e00d5e"
 
+rc@^1.2.7:
+  version "1.2.8"
+  resolved "https://unpm.uberinternal.com/rc/-/rc-1.2.8.tgz#cd924bf5200a075b83c188cd6b9e211b7fc0d3ed"
+  integrity sha1-zZJL9SAKB1uDwYjNa54hG3/A0+0=
+  dependencies:
+    deep-extend "^0.6.0"
+    ini "~1.3.0"
+    minimist "^1.2.0"
+    strip-json-comments "~2.0.1"
+
 react-dom@^16.13.1:
   version "16.13.1"
   resolved "https://unpm.uberinternal.com/react-dom/-/react-dom-16.13.1.tgz#c1bd37331a0486c078ee54c4740720993b2e0e7f"
@@ -7710,11 +7746,6 @@ require-main-filename@^2.0.0:
   resolved "https://unpm.uberinternal.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
   integrity sha1-0LMp7MfMD2Fkn2IhW+aa9UqomJs=
 
-resize-observer-polyfill@^1.5.1:
-  version "1.5.1"
-  resolved "https://unpm.uberinternal.com/resize-observer-polyfill/-/resize-observer-polyfill-1.5.1.tgz#0e9020dd3d21024458d4ebd27e23e40269810464"
-  integrity sha1-DpAg3T0hAkRY1OvSfiPkAmmBBGQ=
-
 resolve-cwd@^3.0.0:
   version "3.0.0"
   resolved "https://unpm.uberinternal.com/resolve-cwd/-/resolve-cwd-3.0.0.tgz#0f0075f1bb2544766cf73ba6a6e2adfebcb13f2d"
@@ -7787,7 +7818,7 @@ rgba-regex@^1.0.0:
   resolved "https://unpm.uberinternal.com/rgba-regex/-/rgba-regex-1.0.0.tgz#43374e2e2ca0968b0ef1523460b7d730ff22eeb3"
   integrity sha1-QzdOLiyglosO8VI0YLfXMP8i7rM=
 
-rimraf@2, rimraf@^2.2.8:
+rimraf@2, rimraf@^2.2.8, rimraf@^2.6.1:
   version "2.7.1"
   resolved "https://unpm.uberinternal.com/rimraf/-/rimraf-2.7.1.tgz#35797f13a7fdadc566142c29d4f07ccad483e3ec"
   integrity sha1-NXl/E6f9rcVmFCwp1PB8ytSD4+w=
@@ -7993,7 +8024,7 @@ sass@1.7.2:
   dependencies:
     chokidar "^2.0.0"
 
-sax@~1.2.4:
+sax@^1.2.4, sax@~1.2.4:
   version "1.2.4"
   resolved "https://unpm.uberinternal.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
   integrity sha1-KBYjTiN4vdxOU1T6tcqold9xANk=
@@ -8186,6 +8217,20 @@ signal-exit@^3.0.0:
 signal-exit@^3.0.2:
   version "3.0.2"
   resolved "http://registry.npm.taobao.org/signal-exit/download/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
+
+simple-concat@^1.0.0:
+  version "1.0.1"
+  resolved "https://unpm.uberinternal.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
+  integrity sha1-9Gl2CCujXCJj8cirXt/ibEHJVS8=
+
+simple-get@^3.0.3:
+  version "3.1.0"
+  resolved "https://unpm.uberinternal.com/simple-get/-/simple-get-3.1.0.tgz#b45be062435e50d159540b576202ceec40b9c6b3"
+  integrity sha1-tFvgYkNeUNFZVAtXYgLO7EC5xrM=
+  dependencies:
+    decompress-response "^4.2.0"
+    once "^1.3.1"
+    simple-concat "^1.0.0"
 
 simple-swizzle@^0.2.2:
   version "0.2.2"
@@ -8582,6 +8627,11 @@ strip-indent@^1.0.1:
   dependencies:
     get-stdin "^4.0.1"
 
+strip-json-comments@~2.0.1:
+  version "2.0.1"
+  resolved "https://unpm.uberinternal.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
+  integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
+
 style-inject@^0.3.0:
   version "0.3.0"
   resolved "https://unpm.uberinternal.com/style-inject/-/style-inject-0.3.0.tgz#d21c477affec91811cc82355832a700d22bf8dd3"
@@ -8678,6 +8728,19 @@ tar@^2.0.0:
     block-stream "*"
     fstream "^1.0.12"
     inherits "2"
+
+tar@^4:
+  version "4.4.13"
+  resolved "https://unpm.uberinternal.com/tar/-/tar-4.4.13.tgz#43b364bc52888d555298637b10d60790254ab525"
+  integrity sha1-Q7NkvFKIjVVSmGN7ENYHkCVKtSU=
+  dependencies:
+    chownr "^1.1.1"
+    fs-minipass "^1.2.5"
+    minipass "^2.8.6"
+    minizlib "^1.2.1"
+    mkdirp "^0.5.0"
+    safe-buffer "^5.1.2"
+    yallist "^3.0.3"
 
 terminal-link@^2.0.0:
   version "2.1.1"
@@ -9008,13 +9071,6 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
-use-resize-observer@^6.0.0:
-  version "6.0.0"
-  resolved "https://unpm.uberinternal.com/use-resize-observer/-/use-resize-observer-6.0.0.tgz#8450ade735c386e8d93cdf983c26d34a9f478a54"
-  integrity sha1-hFCt5zXDhujZPN+YPCbTSp9HilQ=
-  dependencies:
-    resize-observer-polyfill "^1.5.1"
-
 use@^2.0.0:
   version "2.0.2"
   resolved "http://registry.npm.taobao.org/use/download/use-2.0.2.tgz#ae28a0d72f93bf22422a18a2e379993112dec8e8"
@@ -9306,6 +9362,11 @@ y18n@^4.0.0:
 yallist@^2.1.2:
   version "2.1.2"
   resolved "http://registry.npm.taobao.org/yallist/download/yallist-2.1.2.tgz#1c11f9218f076089a47dd512f93c6699a6a81d52"
+
+yallist@^3.0.0, yallist@^3.0.3:
+  version "3.1.1"
+  resolved "https://unpm.uberinternal.com/yallist/-/yallist-3.1.1.tgz#dbb7daf9bfd8bac9ab45ebf602b8cbad0d5d08fd"
+  integrity sha1-27fa+b/YusmrRev2ArjLrQ1dCP0=
 
 yaml@^1.7.2:
   version "1.8.3"
