@@ -1,35 +1,28 @@
+import { CustomRect } from '../types';
 import {
-  CustomRect
-} from '../types';
-import { imageDataToDataUrl, getCenterCoords, getImageDimensions, getScrollPositions } from '../utils';
+  imageDataToDataUrl,
+  getCenterCoords,
+  getImageDimensions,
+  getScrollPositions,
+} from '../utils';
 
 import { fabric } from 'fabric';
 
-const dpr = 2;// window.devicePixelRatio;
+const dpr = 2; // window.devicePixelRatio;
 
-import {
-  Dispatch,
-  MutableRefObject,
-  SetStateAction,
-  useEffect,
-
-} from 'react';
+import { Dispatch, MutableRefObject, SetStateAction, useEffect } from 'react';
 
 export const performCanvasPaint = (
   image: fabric.Image,
   canvasFab: any,
   canvasTar: any,
-  rotation: any,
-
+  rotation: any
 ) => {
   if (!canvasTar || !image || !canvasFab) return;
 
   const ctx = canvasTar.getContext('2d');
   if (!ctx) return;
-  const {
-    height,
-    width,
-  } = canvasFab.getElement().getBoundingClientRect();
+  const { height, width } = canvasFab.getElement().getBoundingClientRect();
   canvasTar.height = height * dpr;
   canvasTar.width = width * dpr;
   let imgValues = getCenterCoords(image);
@@ -40,10 +33,14 @@ export const performCanvasPaint = (
   ctx.translate(tx, ty);
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-tx, -ty);
-  ctx.drawImage(image.getElement(), 0, 0, height * dpr * aspectRatio, height * dpr);
+  ctx.drawImage(
+    image.getElement(),
+    0,
+    0,
+    height * dpr * aspectRatio,
+    height * dpr
+  );
   ctx.resetTransform();
-
-
 };
 export const getCroppedImageFromBox = (
   image: fabric.Image,
@@ -51,10 +48,7 @@ export const getCroppedImageFromBox = (
   boxes: any[]
 ): any => {
   if (!canvas || !image) return {};
-  const {
-    height,
-    width,
-  } = canvas.getElement().getBoundingClientRect();
+  const { height, width } = canvas.getElement().getBoundingClientRect();
 
   let imgValues = getCenterCoords(image);
   let map: any = {};
@@ -65,21 +59,30 @@ export const getCroppedImageFromBox = (
     let ctx: any = tempCanvas.getContext('2d');
     tempCanvas.height = height * dpr;
     tempCanvas.width = width * dpr;
-    let { height: imageHeight, width: imageWidth } = getImageDimensions(image, canvas.getElement())
+    let { height: imageHeight, width: imageWidth } = getImageDimensions(
+      image,
+      canvas.getElement()
+    );
     let tx = imgValues.translateX - imageWidth / 2;
     let ty = imgValues.translateY - imageHeight / 2;
     ctx.fillRect(0, 0, width, height);
     const boxTopLeftX = imgValues.translateX * dpr;
     const boxTopLeftY = imgValues.translateY * dpr;
     ctx.translate(boxTopLeftX, boxTopLeftY);
-    ctx.rotate(initRotation * Math.PI / 180);
+    ctx.rotate((initRotation * Math.PI) / 180);
     ctx.translate(-boxTopLeftX, -boxTopLeftY);
-    ctx.drawImage(image.getElement(), tx * dpr, ty * dpr, imageWidth * dpr, imageHeight * dpr);
+    ctx.drawImage(
+      image.getElement(),
+      tx * dpr,
+      ty * dpr,
+      imageWidth * dpr,
+      imageHeight * dpr
+    );
     let activeObject = canvas.getActiveObject();
     canvas.discardActiveObject();
     canvas.renderAll();
     let activeObject1: any = new fabric.ActiveSelection([image, box], {
-      hasRotatingPoint: false
+      hasRotatingPoint: false,
     });
     canvas.setActiveObject(activeObject1);
     if (activeObject1 != null) {
@@ -87,10 +90,10 @@ export const getCroppedImageFromBox = (
     }
     let boxValues = getCenterCoords(box);
     const rotatedImageData = ctx.getImageData(
-      (boxValues.translateX - (box.getScaledWidth()) / 2) * dpr,
-      (boxValues.translateY - (box.getScaledHeight()) / 2) * dpr,
-      (box.getScaledWidth()) * dpr,
-      (box.getScaledHeight()) * dpr
+      (boxValues.translateX - box.getScaledWidth() / 2) * dpr,
+      (boxValues.translateY - box.getScaledHeight() / 2) * dpr,
+      box.getScaledWidth() * dpr,
+      box.getScaledHeight() * dpr
     );
     canvas.setActiveObject(activeObject1);
     if (activeObject1 != null) {
@@ -106,18 +109,13 @@ export const getCroppedImageFromBox = (
     if (!finalImageUrl) return;
     map = { ...map, [box.id]: finalImageUrl };
     return;
-  }, {})
-  return map
-}
+  }, {});
+  return map;
+};
 
-export const useScrollbars = (
-  canvas?: any,
-  image?: any,
-): any => {
-  if (!canvas || !image)
-    return { wl: 0, wr: 0, ht: 0, hb: 0 };
+export const useScrollbars = (canvas?: any, image?: any): any => {
+  if (!canvas || !image) return { wl: 0, wr: 0, ht: 0, hb: 0 };
   return getScrollPositions(canvas, image);
-  
 };
 
 export const useRotation = (
@@ -133,10 +131,12 @@ export const useRotation = (
       canvas.discardActiveObject();
       canvas.renderAll();
 
-      let activeObject = new fabric.ActiveSelection([image, ...canvas.getObjects()], {
-        hasControls: false,
-
-      })
+      let activeObject = new fabric.ActiveSelection(
+        [image, ...canvas.getObjects()],
+        {
+          hasControls: false,
+        }
+      );
       canvas.setActiveObject(activeObject);
       if (activeObject != null) {
         activeObject.rotate(rotation - (rotationRef.current || 0));
@@ -150,17 +150,19 @@ export const useRotation = (
         resetToCenter(image, canvas, container);
         isReset.current = false;
       }
-
     }
-  }, [rotation, isReset.current])
-}
+  }, [rotation, isReset.current]);
+};
 
 export const resetToCenter = (
   image: fabric.Image,
   canvas: fabric.Canvas,
   container: any
 ) => {
-  canvas.setDimensions({ width: container ?.offsetWidth || 1000, height: container ?.offsetHeight || 1000 });
+  canvas.setDimensions({
+    width: container?.offsetWidth || 1000,
+    height: container?.offsetHeight || 1000,
+  });
   let imgValues = getCenterCoords(image);
   let dimensions: any = getImageDimensions(image, canvas.getElement());
   let x = (canvas.getWidth() - dimensions.width) / 2;
@@ -178,7 +180,7 @@ export const resetToCenter = (
     return;
   });
   canvas.renderAll();
-}
+};
 
 export const useCursor = (
   canvas: any,
@@ -189,37 +191,39 @@ export const useCursor = (
   useEffect(() => {
     if (canvas) {
       if (cursorMode == 'pan') {
-        canvas.set({ selection: false })
+        canvas.set({ selection: false });
       } else {
-        canvas.set({ selection: true })
+        canvas.set({ selection: true });
       }
 
       attachListeners();
       return () => {
         detachListeners();
-      }
+      };
     }
     return;
-  }, [cursorMode])
-}
+  }, [cursorMode]);
+};
 
 export const useZoom = (
   image: fabric.Image,
   canvas: fabric.Canvas,
   zoom: number,
-  setScrollPositions: Dispatch<SetStateAction<any>>,
+  setScrollPositions: Dispatch<SetStateAction<any>>
 ) => {
   useEffect(() => {
     if (zoom > 20) zoom = 20;
     if (zoom < 0.01) zoom = 0.01;
     if (image) {
       let imgValues = getCenterCoords(image);
-      canvas.zoomToPoint(new fabric.Point(imgValues.translateX, imgValues.translateY), zoom);
+      canvas.zoomToPoint(
+        new fabric.Point(imgValues.translateX, imgValues.translateY),
+        zoom
+      );
       [...canvas.getObjects()].map((rect) => {
-
-        rect.set('strokeWidth', 2/zoom)
-      })
+        rect.set('strokeWidth', 2 / zoom);
+      });
     }
     setScrollPositions(useScrollbars(canvas, image));
-  }, [zoom])
-}
+  }, [zoom]);
+};

@@ -25,7 +25,7 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
 
   canvas.width = imageData.width;
   canvas.height = imageData.height;
-  console.log(imageData.width, imageData.height)
+  console.log(imageData.width, imageData.height);
   ctx.putImageData(imageData, 0, 0);
 
   return canvas.toDataURL();
@@ -34,13 +34,13 @@ export const getCenterCoords = (image: any) => {
   const matrix = image.calcTransformMatrix();
   const values = fabric.util.qrDecompose(matrix);
   return values;
-}
+};
 
 export const getImageDimensions = (image: any, container: any) => {
   const imageRefHeight = image.height || 0;
   const imageRefWidth = image.width || 0;
-  const containerRefHeight = container ?.offsetHeight || 0;
-  const containerRefWidth = container ?.offsetWidth || 0;
+  const containerRefHeight = container?.offsetHeight || 0;
+  const containerRefWidth = container?.offsetWidth || 0;
   const contAspectRatio = containerRefWidth / containerRefHeight;
   const imgAspectRatio = imageRefWidth / imageRefHeight || 1;
   let imgBaseHeight, imgBaseWidth;
@@ -52,20 +52,23 @@ export const getImageDimensions = (image: any, container: any) => {
     imgBaseHeight = imgBaseWidth / imgAspectRatio;
   }
   return { height: imgBaseHeight, width: imgBaseWidth };
-}
+};
 
 export const getScrollPositions = (canvas: any, image: any) => {
   const canHeight = canvas.getHeight();
   const canWidth = canvas.getWidth();
   let zoom = canvas.getZoom();
-  let { height: imageHeight, width: imageWidth } = getImageDimensions(image, canvas.getElement());
-  const bottom = Math.max((image.top + imageHeight)*zoom - canHeight, 0);
-  const top = Math.max((- image.top)*zoom, 0 )
-  const right = Math.max((image.left + imageWidth)*zoom - canWidth, 0);
-  const left = Math.max((-image.left)*zoom, 0 )
-  const wr = 1 * (right / (imageWidth*zoom*2)) * 100
-  const wl = 1 * (left / (imageWidth*zoom*2)) * 100;
-  const hb = 1 * (bottom / (imageHeight*zoom*2)) * 100;
-  const ht = 1 * (top / (imageHeight*zoom*2)) * 100;
+  let { height: imageHeight, width: imageWidth } = getImageDimensions(
+    image,
+    canvas.getElement()
+  );
+  const bottom = Math.max((image.top + imageHeight) * zoom - canHeight, 0);
+  const top = Math.max(-image.top * zoom, 0);
+  const right = Math.max((image.left + imageWidth) * zoom - canWidth, 0);
+  const left = Math.max(-image.left * zoom, 0);
+  const wr = 1 * (right / (imageWidth * zoom * 2)) * 100;
+  const wl = 1 * (left / (imageWidth * zoom * 2)) * 100;
+  const hb = 1 * (bottom / (imageHeight * zoom * 2)) * 100;
+  const ht = 1 * (top / (imageHeight * zoom * 2)) * 100;
   return zoom < 1 ? { wl: 0, wr: 0, ht: 0, hb: 0 } : { wl, wr, ht, hb };
-}
+};

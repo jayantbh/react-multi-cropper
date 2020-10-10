@@ -87,7 +87,7 @@ const App = () => {
       </button>
       <span>
         <label htmlFor='zoom'>
-        Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
+          Zoom: ({(fileZoomMap[src] || 1).toFixed(2)})
         </label>
         <input
           id='zoom'
@@ -101,7 +101,7 @@ const App = () => {
       </span>
       <span>
         <label htmlFor='rotation'>
-        Rotation: ({(fileRotationMap[src] || 0).toString().padStart(3, '0')}{' '}
+          Rotation: ({(fileRotationMap[src] || 0).toString().padStart(3, '0')}{' '}
           deg)
         </label>
         <input
@@ -110,7 +110,7 @@ const App = () => {
           min={0}
           max={360}
           step={1}
-          value={fileRotationMap[src] || 0} 
+          value={fileRotationMap[src] || 0}
           onChange={(e) => setRotation(Number(e.currentTarget.value))}
         />
       </span>
@@ -128,7 +128,7 @@ const App = () => {
         boxes={fileBoxesMap[src] || []}
         onChange={updateBoxes}
         onCrop={(e, map, currentImg?) => {
-          console.log('Crop', e, map, currentImg ?.boxId);
+          console.log('Crop', e, map, currentImg?.boxId);
           setImageMap(map);
         }}
         onDelete={(e, box, index, boxes) => {
@@ -147,7 +147,7 @@ const App = () => {
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}
       />
-       {(fileBoxesMap[src] || []).map(
+      {(fileBoxesMap[src] || []).map(
         (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
       )}
     </div>

@@ -79,7 +79,7 @@ export type CropperProps = {
   cursorMode?: CropperCursorMode;
   modifiable?: boolean;
   zoom?: number;
-  onReset?: any
+  onReset?: any;
   onZoomGesture?: (newZoom: number) => any;
   disableKeyboard?: boolean;
   disableMouse?: boolean;
@@ -94,14 +94,12 @@ export class CustomRect extends fabric.Rect {
   id: string;
   initRotation: number;
   /**
-	 * Constructor
-	 * @param [options] Options object
-	 */
-  constructor(id: string, rotation: number,options?:fabric.IRectOptions) {
+   * Constructor
+   * @param [options] Options object
+   */
+  constructor(id: string, rotation: number, options?: fabric.IRectOptions) {
     super(options);
     this.id = id;
-    this.initRotation = rotation
+    this.initRotation = rotation;
   }
-
-  
 }

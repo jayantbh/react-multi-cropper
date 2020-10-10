@@ -3,14 +3,14 @@ declare module '*.scss' {
   export default content;
 }
 declare module '*.svg' {
-  const content: string ;
+  const content: string;
   export default content;
 }
 declare module '*.png' {
-  const content:  string;
+  const content: string;
   export default content;
 }
 declare module 'fabric-customise-controls' {
-  const content: any
+  const content: any;
   export default content;
 }
