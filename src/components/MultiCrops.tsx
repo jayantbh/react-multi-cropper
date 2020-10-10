@@ -1,5 +1,5 @@
 import React, { FC, MouseEvent, useRef, useEffect, useState } from 'react';
-import sid from 'shortid';
+import { v4 as uuid } from 'uuid';
 import { fabric } from 'fabric';
 // import * as controls from 'fabric-customise-controls';
 import css from './MultiCrops.module.scss';
@@ -9,7 +9,6 @@ import {
   CropperEvent,
   CropperProps,
   CurrentImgParam,
-  CustomRect,
 } from '../types';
 import {
   getCroppedImageFromBox,
@@ -23,6 +22,7 @@ import Scrollbar from './Scrollbar';
 const scrollbarSpacing = 6;
 
 import { getCenterCoords, getImageDimensions } from '../utils';
+import { Box } from './Box';
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 let object: any = fabric.Object;
@@ -67,7 +67,6 @@ const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
   rotation = 0,
   zoom = 1,
-  modifiable = true,
   disableKeyboard = false,
   disableMouse = false,
   ...props
@@ -77,7 +76,7 @@ const MultiCrops: FC<CropperProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const pointA = useRef<Partial<Coordinates>>(blankCoords);
-  const id = useRef<string>(sid.generate());
+  const id = useRef<string>(uuid());
   const drawingIndex = useRef(-1);
   const lastUpdatedBox = useRef<any>(null);
   const isDrawing = useRef<boolean>(false);
@@ -91,7 +90,6 @@ const MultiCrops: FC<CropperProps> = ({
   const keyFrame = useRef(-1);
   const drawMode = useRef<any>({
     cursorMode,
-    modifiable,
     disableKeyboard,
     disableMouse,
   });
@@ -105,7 +103,7 @@ const MultiCrops: FC<CropperProps> = ({
 
   const drawBoxes = (boxes: any) => {
     boxes.map((box: any) => {
-      let rect: CustomRect = new CustomRect(box.id, box.initRotation || 0, {
+      const rect = new Box(box.id, box.initRotation || 0, {
         height: box.height,
         width: box.width,
         top: box.top,
@@ -122,7 +120,7 @@ const MultiCrops: FC<CropperProps> = ({
       canvasFab.current?.add(rect);
     });
     handleAllCrops(canvasFab.current.getObjects());
-    canvasFab.current.renderAll();
+    canvasFab.current.requestRenderAll();
   };
 
   const getSelections = (box: any) =>
@@ -188,7 +186,7 @@ const MultiCrops: FC<CropperProps> = ({
             useScrollbars(canvasFab.current, imageRef.current)
           );
 
-          canvasFab.current.renderAll();
+          canvasFab.current.requestRenderAll();
         });
       }
     });
@@ -210,7 +208,7 @@ const MultiCrops: FC<CropperProps> = ({
     });
     canvasFab.current = canvas;
     canvas.backgroundColor = '';
-    canvasFab.current.renderAll();
+    canvasFab.current.requestRenderAll();
   }, []);
 
   // change image src
@@ -225,7 +223,7 @@ const MultiCrops: FC<CropperProps> = ({
     } else {
       rotationRef.current = 0;
     }
-    canvasFab.current.renderAll();
+    canvasFab.current.requestRenderAll();
     drawBoxes(props.boxes);
   }, [props.src]);
 
@@ -234,7 +232,7 @@ const MultiCrops: FC<CropperProps> = ({
     if (imageRef.current) {
       canvasFab.current.setBackgroundImage(imageRef.current);
       attachListeners();
-      canvasFab.current.renderAll();
+      canvasFab.current.requestRenderAll();
     } else {
       fabric.Image.fromURL(
         imageSource.current,
@@ -253,7 +251,7 @@ const MultiCrops: FC<CropperProps> = ({
           img.set('left', x);
           img.set('top', y);
           canvasFab.current.setBackgroundImage(img);
-          canvasFab.current.renderAll();
+          canvasFab.current.requestRenderAll();
           attachListeners();
           performCanvasPaint(
             img,
@@ -301,11 +299,10 @@ const MultiCrops: FC<CropperProps> = ({
     }
     drawMode.current = {
       cursorMode,
-      modifiable,
       disableKeyboard,
       disableMouse,
     };
-  }, [cursorMode, modifiable, disableKeyboard, disableMouse]);
+  }, [cursorMode, disableKeyboard, disableMouse]);
 
   // zoom changed
   useZoom(imageRef.current, canvasFab.current, zoom, setScrollPositions);
@@ -337,8 +334,11 @@ const MultiCrops: FC<CropperProps> = ({
     props.onCrop?.({ type: 'draw' }, imageMapRef.current);
   };
 
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
   const handleMouseDown = (e: MouseEvent) => {
-    const { cursorMode, modifiable } = drawMode.current;
+    console.log(zoom, zoomRef.current, 2 / zoomRef.current);
+    const { cursorMode } = drawMode.current;
     if (cursorMode === 'pan') {
       pointA.current = canvasFab.current.getPointer(e);
       setIsPanning(true);
@@ -346,38 +346,25 @@ const MultiCrops: FC<CropperProps> = ({
       canvasFab.current.selection = false;
       pointA.current = canvasFab.current.getPointer(e);
       drawingIndex.current = canvasFab.current.getObjects().length;
-      id.current = sid.generate();
+      id.current = uuid();
       isDrawing.current = true;
-      let rect: CustomRect = new CustomRect(id.current, rotationRef.current, {
+      let rect = new Box({
+        id: id.current,
+        rotation: rotationRef.current,
         top: pointA.current.y,
         left: pointA.current.x,
-        fill: 'rgba(255,255,255,0.2)',
-        hasBorders: false,
-        stroke: 'black',
-        strokeWidth: 2,
-        hasRotatingPoint: false,
-        strokeUniform: true,
-        lockMovementX: !modifiable,
-        lockMovementY: !modifiable,
-        lockScalingX: !modifiable,
-        lockScalingY: !modifiable,
-        objectCaching: false,
-      });
-      rect.setControlsVisibility({
-        tl: modifiable,
-        bl: modifiable,
-        br: modifiable,
-        mb: modifiable,
-        ml: modifiable,
-        mt: modifiable,
-        mr: modifiable,
-        mtr: false,
-        tr: false,
+        // fill: 'rgba(255,255,255,0.2)',
+        // hasBorders: false,
+        // stroke: 'black',
+        strokeWidth: 2 / zoomRef.current,
+        // hasRotatingPoint: false,
+        // strokeUniform: true,
+        // objectCaching: false,
       });
       canvasFab.current?.add(rect);
       lastUpdatedBox.current = rect;
 
-      canvasFab.current?.renderAll();
+      canvasFab.current?.requestRenderAll();
     }
   };
   const handleMouseMove = (e: MouseEvent) => {
@@ -401,7 +388,7 @@ const MultiCrops: FC<CropperProps> = ({
         })
       );
 
-      canvasFab.current.renderAll();
+      canvasFab.current.requestRenderAll();
       pointA.current = pointB;
       setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
     } else if (cursorMode === 'draw') {
@@ -417,7 +404,7 @@ const MultiCrops: FC<CropperProps> = ({
         width: Math.abs(pointA.current.x - pointB.x),
         height: Math.abs(pointA.current.y - pointB.y),
       });
-      canvasFab.current.renderAll();
+      canvasFab.current.requestRenderAll();
       lastUpdatedBox.current = rect;
       // const nextBoxes = [...boxes, lastUpdatedBox.current];
       onChange?.(
@@ -444,7 +431,7 @@ const MultiCrops: FC<CropperProps> = ({
       if (!lastUpdatedBox.current) return;
       isDrawing.current = false;
       handleCrop('draw-end', lastUpdatedBox.current);
-      canvasFab.current.renderAll();
+      canvasFab.current.requestRenderAll();
     }
     pointA.current = {};
   };
@@ -505,7 +492,7 @@ const MultiCrops: FC<CropperProps> = ({
                 useScrollbars(canvasFab.current, imageRef.current)
               );
 
-              canvasFab.current.renderAll();
+              canvasFab.current.requestRenderAll();
             }
           });
         }}
@@ -519,7 +506,7 @@ const MultiCrops: FC<CropperProps> = ({
           ref={mainCanvasRef}
           id='main-canvas'
           style={{ width: '100%', height: '100%' }}
-        ></canvas>
+        />
         <Scrollbar
           type={'horizontal'}
           style={{
@@ -539,7 +526,7 @@ const MultiCrops: FC<CropperProps> = ({
             setScrollPositions(
               useScrollbars(canvasFab.current, imageRef.current)
             );
-            canvasFab.current.renderAll();
+            canvasFab.current.requestRenderAll();
           }}
         />
         <Scrollbar
@@ -562,7 +549,7 @@ const MultiCrops: FC<CropperProps> = ({
               useScrollbars(canvasFab.current, imageRef.current)
             );
 
-            canvasFab.current.renderAll();
+            canvasFab.current.requestRenderAll();
           }}
         />
       </div>

@@ -1,6 +1,5 @@
 import { CSSProperties, MouseEvent } from 'react';
 import { DragEvent, ResizeEvent } from '@interactjs/types/types';
-import { fabric } from 'fabric';
 
 export type DataUrl = string;
 
@@ -66,8 +65,7 @@ export type ImgOnLoadWithImageData = (
 
 export type CropperProps = {
   src: string;
-  width: number;
-  height: number;
+  zoom?: number;
   rotation?: number; // degrees
   boxes: CropperBox[];
   onChange?: UpdateFunction;
@@ -77,8 +75,6 @@ export type CropperProps = {
   containerClassName?: string;
   containerStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
-  modifiable?: boolean;
-  zoom?: number;
   onReset?: any;
   onZoomGesture?: (newZoom: number) => any;
   disableKeyboard?: boolean;
@@ -89,17 +85,3 @@ export type RefSize = {
   width: number;
   height: number;
 };
-
-export class CustomRect extends fabric.Rect {
-  id: string;
-  initRotation: number;
-  /**
-   * Constructor
-   * @param [options] Options object
-   */
-  constructor(id: string, rotation: number, options?: fabric.IRectOptions) {
-    super(options);
-    this.id = id;
-    this.initRotation = rotation;
-  }
-}

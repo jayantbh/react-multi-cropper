@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import MultiCrops from '../dist';
 import img1 from './imgs/sample1.jpg';
@@ -6,7 +6,7 @@ import img2 from './imgs/sample2.jpg';
 import { CropperBox, CropperBoxDataMap } from '../dist';
 import { CropperCursorMode, CropperProps } from '../src/types';
 
-const initialBoxes = [
+const initialBoxes: CropperBox[] = [
   // { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
   // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
   // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
@@ -15,22 +15,19 @@ const initialBoxes = [
   // { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
 ];
 
+type MapOf<T> = { [key in string]?: T };
+
 const App = () => {
   const resetCenterRef = useRef(() => {});
   const initReset = resetCenterRef.current;
   const [images, setImages] = useState([img1, img2]);
-  // const [zoom, setZoom] = useState(1.0);
-  // const [rotation, setRotation] = useState(0);
   const [cursorMode, setCursorMode] = useState<CropperCursorMode>('draw');
-  // const [boxes, setBoxes] = useState<CropperBox[]>(initialBoxes);
   const src = images[0];
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
-  const [fileBoxesMap, setFileBoxesMap] = useState<
-    { [key in string]?: CropperBox[] }
-  >({ [src]: initialBoxes });
-  const [fileRotationMap, setFileRotationMap] = useState<
-    { [key in string]?: number }
-  >({});
+  const [fileBoxesMap, setFileBoxesMap] = useState<MapOf<CropperBox[]>>({
+    [src]: initialBoxes,
+  });
+  const [fileRotationMap, setFileRotationMap] = useState<MapOf<number>>({});
   const [fileZoomMap, setFileZoomMap] = useState<{ [key in string]?: number }>(
     {}
   );
@@ -57,7 +54,7 @@ const App = () => {
     });
   };
 
-  const updateBoxes: CropperProps['onChange'] = (e, bx, i, _boxes) => {
+  const updateBoxes: CropperProps['onChange'] = (e, _bx, _i, _boxes) => {
     console.log(e.type, src, fileBoxesMap[src]?.length, _boxes.length);
     setFileBoxesMap({
       ...fileBoxesMap,
@@ -117,14 +114,9 @@ const App = () => {
       <MultiCrops
         zoom={fileZoomMap[src] || 1}
         src={images[0]}
-        // width={`${100 * zoom}%`}
-        modifiable={true}
         disableKeyboard={true}
         disableMouse={true}
-        containerStyles={{
-          height: '500px',
-          width: '100%',
-        }}
+        containerStyles={{ height: '500px', width: '100%' }}
         boxes={fileBoxesMap[src] || []}
         onChange={updateBoxes}
         onCrop={(e, map, currentImg?) => {

@@ -1,4 +1,3 @@
-import { CustomRect } from '../types';
 import {
   imageDataToDataUrl,
   getCenterCoords,
@@ -10,13 +9,20 @@ import { fabric } from 'fabric';
 
 const dpr = 2; // window.devicePixelRatio;
 
-import { Dispatch, MutableRefObject, SetStateAction, useEffect } from 'react';
+import {
+  DependencyList,
+  Dispatch,
+  MutableRefObject,
+  SetStateAction,
+  useEffect,
+} from 'react';
+import { Box } from './Box';
 
 export const performCanvasPaint = (
   image: fabric.Image,
-  canvasFab: any,
-  canvasTar: any,
-  rotation: any
+  canvasFab: fabric.Canvas,
+  canvasTar: HTMLCanvasElement | null,
+  rotation: number
 ) => {
   if (!canvasTar || !image || !canvasFab) return;
 
@@ -28,8 +34,8 @@ export const performCanvasPaint = (
   let imgValues = getCenterCoords(image);
   const tx = imgValues.translateX * dpr;
   const ty = imgValues.translateY * dpr;
-  const aspectRatio = (image.width || 0) / (image.height || 0);
-  ctx.fillRect(0, 0, canvasFab.width, canvasFab.height);
+  const aspectRatio = (image.width || 1) / (image.height || 1);
+  ctx.fillRect(0, 0, canvasFab.width as number, canvasFab.height as number);
   ctx.translate(tx, ty);
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-tx, -ty);
@@ -52,7 +58,7 @@ export const getCroppedImageFromBox = (
 
   let imgValues = getCenterCoords(image);
   let map: any = {};
-  boxes.map((box: CustomRect) => {
+  boxes.map((box: typeof Box) => {
     if (box.width === 0 || box.height === 0) return;
     let { angle: rotateAngle = 0, initRotation = 0 } = box;
     let tempCanvas = document.createElement('canvas');
@@ -226,4 +232,20 @@ export const useZoom = (
     }
     setScrollPositions(useScrollbars(canvas, image));
   }, [zoom]);
+};
+
+export const useWheelEvent = (
+  cont: MutableRefObject<HTMLDivElement | null>,
+  listener: EventListener,
+  deps: DependencyList
+) => {
+  useEffect(() => {
+    if (!cont.current) return;
+    cont.current.addEventListener('wheel', listener);
+
+    return () => {
+      if (!cont.current) return;
+      cont.current.removeEventListener('wheel', listener);
+    };
+  }, deps);
 };
