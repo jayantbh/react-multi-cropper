@@ -16,6 +16,7 @@ import {
   useScrollbars,
   useZoom,
   useRotation,
+  useWheelEvent,
   // useCursor
 } from './MultiCrops.helpers';
 import Scrollbar from './Scrollbar';
@@ -163,7 +164,7 @@ const MultiCrops: FC<CropperProps> = ({
     });
     canvasFab.current.on('mouse:wheel', function (opt: any) {
       const { disableMouse } = drawMode.current;
-      if (disableMouse) return;
+      if (disableMouse.zoom || disableMouse.all) return;
       opt.e.preventDefault();
       opt.e.stopPropagation();
       let shiftKey = opt.e.shiftKey;
@@ -440,6 +441,40 @@ const MultiCrops: FC<CropperProps> = ({
 
     props.onChange?.(e, box, index, boxes);
   };
+
+  useWheelEvent(
+    containerRef,
+    (e: WheelEvent) => {
+      const { disableMouse } = drawMode.current;
+      if (disableMouse.zoom || disableMouse.all) return;
+      e.preventDefault();
+      e.stopPropagation();
+      let shiftKey = e.shiftKey;
+      const deltaY = e.deltaY;
+      const deltaX = e.deltaX;
+      if (shiftKey) {
+        let zoom = canvasFab.current.getZoom();
+        props.onZoomGesture?.(zoom + deltaY * 0.01);
+      } else {
+        cancelAnimationFrame(wheelFrame.current);
+        wheelFrame.current = requestAnimationFrame(() => {
+          [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
+            const translateX = rect.left - deltaX;
+            const translateY = rect.top - deltaY;
+            rect.set({ left: translateX, top: translateY });
+            rect.setCoords();
+            return;
+          });
+          setScrollPositions(
+            useScrollbars(canvasFab.current, imageRef.current)
+          );
+
+          canvasFab.current.requestRenderAll();
+        });
+      }
+    },
+    [props.onZoomGesture, zoom, disableMouse]
+  );
 
   return (
     <>

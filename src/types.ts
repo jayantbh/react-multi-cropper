@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEvent } from 'react';
+import { CSSProperties, FC, MouseEvent } from 'react';
 import { DragEvent, ResizeEvent } from '@interactjs/types/types';
 
 export type DataUrl = string;
@@ -7,13 +7,17 @@ export type Coordinates = { x: number; y: number };
 
 export type CropperBoxId = string;
 
-export type CropperBox = {
+export type CropperBox<T = any> = {
   x: number;
   y: number;
   width: number;
   height: number;
   id: CropperBoxId;
   rotation: number;
+  style?: CSSProperties | ((css: CSSProperties) => CSSProperties);
+  labelStyle?: CSSProperties | ((css: CSSProperties) => CSSProperties);
+  noImage?: boolean;
+  meta?: T;
 };
 
 export type CropperBoxDataMap = {
@@ -70,6 +74,9 @@ export type CropperProps = {
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
+  onBoxMouseEnter?: UpdateFunction;
+  onBoxMouseLeave?: UpdateFunction;
+  onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
   containerClassName?: string;
@@ -77,8 +84,18 @@ export type CropperProps = {
   cursorMode?: CropperCursorMode;
   onReset?: any;
   onZoomGesture?: (newZoom: number) => any;
+  // onZoomGesture?: (newZoom: number, prevZoom: number) => any;
   disableKeyboard?: boolean;
-  disableMouse?: boolean;
+  disableMouse?: {
+    all?: boolean;
+    zoom?: boolean;
+    pan?: boolean;
+    draw?: boolean;
+  };
+  CustomLabel?: FC<{ box: CropperBox; index: number }>;
+  boxInView?: { id?: string; rotate?: boolean; panInView?: boolean };
+  onSetRotation?: Function;
+  boxViewZoomBuffer?: number;
 };
 
 export type RefSize = {
