@@ -69,7 +69,7 @@ const MultiCrops: FC<CropperProps> = ({
   rotation = 0,
   zoom = 1,
   disableKeyboard = false,
-  disableMouse = false,
+  disableMouse,
   ...props
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -172,7 +172,7 @@ const MultiCrops: FC<CropperProps> = ({
       const deltaX = opt.e.deltaX;
       if (shiftKey) {
         let zoom = canvasFab.current.getZoom();
-        props.onZoomGesture?.(zoom + deltaY * 0.01);
+        props.onZoomGesture?.(zoom + deltaY * 0.01, zoom);
       } else {
         cancelAnimationFrame(wheelFrame.current);
         wheelFrame.current = requestAnimationFrame(() => {
@@ -207,6 +207,7 @@ const MultiCrops: FC<CropperProps> = ({
       width: containerRef.current?.offsetWidth || 1000,
       height: containerRef.current?.offsetHeight || 1000,
     });
+    canvas.selection = false;
     canvasFab.current = canvas;
     canvas.backgroundColor = '';
     canvasFab.current.requestRenderAll();
@@ -454,7 +455,7 @@ const MultiCrops: FC<CropperProps> = ({
       const deltaX = e.deltaX;
       if (shiftKey) {
         let zoom = canvasFab.current.getZoom();
-        props.onZoomGesture?.(zoom + deltaY * 0.01);
+        props.onZoomGesture?.(zoom + deltaY * 0.01, zoom);
       } else {
         cancelAnimationFrame(wheelFrame.current);
         wheelFrame.current = requestAnimationFrame(() => {
@@ -508,7 +509,7 @@ const MultiCrops: FC<CropperProps> = ({
                   : key === 'ArrowLeft' || key === 'ArrowDown'
                   ? -0.05
                   : 0;
-              props.onZoomGesture?.(zoom + delta);
+              props.onZoomGesture?.(zoom + delta, zoom);
             } else {
               const deltaX =
                 key === 'ArrowRight' ? 10 : key === 'ArrowLeft' ? -10 : 0;

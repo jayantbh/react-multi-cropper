@@ -1,5 +1,5 @@
 import { CSSProperties, FC, MouseEvent } from 'react';
-import { DragEvent, ResizeEvent } from '@interactjs/types/types';
+import { DragEvent } from '@interactjs/types/types';
 
 export type DataUrl = string;
 
@@ -32,21 +32,27 @@ export type CurrentImg = {
 export type CurrentImgParam = undefined | CurrentImg;
 
 export type CropperEventType =
+  | 'load'
   | 'draw'
   | 'draw-end'
   | 'resize'
+  | 'zoom'
   | 'auto-resize'
   | 'drag'
   | 'delete'
+  | 'src-change'
   | 'manual-resize'
   | 'rotate'
-  | 'pan';
+  | 'pan'
+  | 'click'
+  | 'mouse-enter'
+  | 'mouse-leave';
 
-export type CropperCursorMode = 'draw' | 'pan';
+export type CropperCursorMode = 'draw' | 'pan' | 'select';
 
 export type CropperEvent = {
   type: CropperEventType;
-  event?: ResizeEvent | MouseEvent<HTMLImageElement> | MouseEvent | DragEvent;
+  event?: MouseEvent<HTMLImageElement | Element> | DragEvent;
 };
 
 export type CropTriggerFunctionWithImageData = (
@@ -59,7 +65,7 @@ export type UpdateFunction = (
   event: CropperEvent,
   box: CropperBox | undefined,
   index: number | undefined,
-  boxes: CropperBox[]
+  boxes?: CropperBox[]
 ) => any;
 
 export type ImgOnLoadWithImageData = (
@@ -79,12 +85,11 @@ export type CropperProps = {
   onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
+  onZoomGesture?: (newZoom: number, prevZoom: number) => any;
   containerClassName?: string;
   containerStyles?: CSSProperties;
+  imageStyles?: CSSProperties;
   cursorMode?: CropperCursorMode;
-  onReset?: any;
-  onZoomGesture?: (newZoom: number) => any;
-  // onZoomGesture?: (newZoom: number, prevZoom: number) => any;
   disableKeyboard?: boolean;
   disableMouse?: {
     all?: boolean;

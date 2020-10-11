@@ -55,10 +55,10 @@ const App = () => {
   };
 
   const updateBoxes: CropperProps['onChange'] = (e, _bx, _i, _boxes) => {
-    console.log(e.type, src, fileBoxesMap[src]?.length, _boxes.length);
+    console.log(e.type, src, fileBoxesMap[src]?.length, _boxes?.length);
     setFileBoxesMap({
       ...fileBoxesMap,
-      [src]: [..._boxes],
+      [src]: [...(_boxes || [])],
     });
   };
 
@@ -114,8 +114,8 @@ const App = () => {
       <MultiCrops
         zoom={fileZoomMap[src] || 1}
         src={images[0]}
-        disableKeyboard={true}
-        disableMouse={true}
+        disableKeyboard={false}
+        disableMouse={{ all: false }}
         containerStyles={{ height: '500px', width: '100%' }}
         boxes={fileBoxesMap[src] || []}
         onChange={updateBoxes}
@@ -131,10 +131,6 @@ const App = () => {
         onLoad={(map, reset) => {
           setImageMap(map);
           resetCenterRef.current = reset;
-        }}
-        onReset={() => {
-          setRotation(0);
-          setZoom(1);
         }}
         cursorMode={cursorMode}
         rotation={fileRotationMap[src] || 0}

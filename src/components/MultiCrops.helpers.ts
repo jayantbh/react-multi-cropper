@@ -17,6 +17,7 @@ import {
   useEffect,
 } from 'react';
 import { Box } from './Box';
+import { CropperCursorMode } from '../types';
 
 export const performCanvasPaint = (
   image: fabric.Image,
@@ -192,22 +193,19 @@ export const useCursor = (
   canvas: any,
   attachListeners: Function,
   detachListeners: Function,
-  cursorMode: string
+  cursorMode: CropperCursorMode
 ) => {
   useEffect(() => {
-    if (canvas) {
-      if (cursorMode == 'pan') {
-        canvas.set({ selection: false });
-      } else {
-        canvas.set({ selection: true });
-      }
+    if (!canvas) return;
 
-      attachListeners();
-      return () => {
-        detachListeners();
-      };
+    if (cursorMode === 'select') {
+      canvas.set({ selection: true });
+    } else {
+      canvas.set({ selection: false });
     }
-    return;
+
+    attachListeners();
+    return () => detachListeners();
   }, [cursorMode]);
 };
 
