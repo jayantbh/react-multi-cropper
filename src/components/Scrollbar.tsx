@@ -25,13 +25,9 @@ const Scrollbar: FC<
       className={css['scroll-wrapper']}
       style={{
         pointerEvents: accessBars ? 'initial' : 'none',
-        cursor: isVertical ? 'ns-resize' : 'ew-resize',
         opacity: accessBars ? 1 : 0,
       }}
-      onMouseUp={(e) => {
-        e.stopPropagation();
-        setScroll(false);
-      }}
+      onMouseUp={() => setScroll(false)}
       onMouseLeave={() => setScroll(false)}
       onMouseMove={(e) => {
         if (!isScrolling) return;
@@ -50,6 +46,7 @@ const Scrollbar: FC<
         {...props}
         className={`${isVertical ? css.vscroll : css.hscroll} ${css.scrollbar}`}
         style={{
+          cursor: isVertical ? 'ns-resize' : 'ew-resize',
           ...props.style,
         }}
         onMouseDown={(e) => {
