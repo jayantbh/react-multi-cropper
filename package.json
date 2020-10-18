@@ -44,6 +44,7 @@
     "@types/react-dom": "^16.9.6",
     "@types/shortid": "^0.0.29",
     "@types/use-resize-observer": "^6.0.0",
+    "@types/uuid": "^8.3.0",
     "babel-core": "^6.26.3",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
@@ -75,8 +76,9 @@
     "react-dom": "^16.2.0"
   },
   "dependencies": {
-    "@types/fabric": "^3.6.2",
+    "@types/fabric": "^3.6.8",
     "fabric": "^4.0.0-beta.12",
-    "shortid": "^2.2.15"
+    "shortid": "^2.2.15",
+    "uuid": "^8.3.1"
   }
 }

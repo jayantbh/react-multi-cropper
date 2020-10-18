@@ -51,7 +51,7 @@ export const performCanvasPaint = (
 };
 export const getCroppedImageFromBox = (
   image: fabric.Image,
-  canvas: fabric.Canvas,
+  canvas: fabric.Canvas | null,
   boxes: any[]
 ): any => {
   if (!canvas || !image) return {};
@@ -127,36 +127,35 @@ export const useScrollbars = (canvas?: any, image?: any): any => {
 
 export const useRotation = (
   image: fabric.Image,
-  canvas: fabric.Canvas,
+  canvas: fabric.Canvas | null,
   container: any,
   rotation: number,
   rotationRef: MutableRefObject<number | undefined>,
   isReset: MutableRefObject<boolean | undefined>
 ) => {
   useEffect(() => {
-    if (image) {
+    if (!canvas || !image) return;
+
+    canvas.discardActiveObject();
+    canvas.renderAll();
+    let activeObject = new fabric.ActiveSelection(
+      [image, ...canvas.getObjects()],
+      {
+        hasControls: false,
+      }
+    );
+    canvas.setActiveObject(activeObject);
+    if (activeObject != null) {
+      activeObject.rotate(rotation - (rotationRef.current || 0));
+
       canvas.discardActiveObject();
+
       canvas.renderAll();
-
-      let activeObject = new fabric.ActiveSelection(
-        [image, ...canvas.getObjects()],
-        {
-          hasControls: false,
-        }
-      );
-      canvas.setActiveObject(activeObject);
-      if (activeObject != null) {
-        activeObject.rotate(rotation - (rotationRef.current || 0));
-
-        canvas.discardActiveObject();
-
-        canvas.renderAll();
-      }
-      rotationRef.current = rotation;
-      if (isReset.current) {
-        resetToCenter(image, canvas, container);
-        isReset.current = false;
-      }
+    }
+    rotationRef.current = rotation;
+    if (isReset.current) {
+      resetToCenter(image, canvas, container);
+      isReset.current = false;
     }
   }, [rotation, isReset.current]);
 };
@@ -211,13 +210,15 @@ export const useCursor = (
 
 export const useZoom = (
   image: fabric.Image,
-  canvas: fabric.Canvas,
-  zoom: number,
+  canvas: fabric.Canvas | null,
+  _zoom: number,
   setScrollPositions: Dispatch<SetStateAction<any>>
 ) => {
   useEffect(() => {
-    if (zoom > 20) zoom = 20;
-    if (zoom < 0.01) zoom = 0.01;
+    if (!canvas) return;
+
+    const zoom = Math.min(20, Math.max(0.1, _zoom));
+
     if (image) {
       let imgValues = getCenterCoords(image);
       canvas.zoomToPoint(
@@ -229,7 +230,7 @@ export const useZoom = (
       });
     }
     setScrollPositions(useScrollbars(canvas, image));
-  }, [zoom]);
+  }, [_zoom]);
 };
 
 export const useWheelEvent = (

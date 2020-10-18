@@ -6,6 +6,7 @@ import css from './MultiCrops.module.scss';
 import cross from '../cross.svg';
 import {
   Coordinates,
+  CropperBox,
   CropperEvent,
   CropperProps,
   CurrentImgParam,
@@ -84,7 +85,7 @@ const MultiCrops: FC<CropperProps> = ({
   const mainCanvasRef = useRef<any>(null);
   const imageSrcMap = useRef<any>({});
   const [isPanning, setIsPanning] = useState(false);
-  let canvasFab = useRef<any>(null);
+  let canvasFab = useRef<fabric.Canvas | null>(null);
   const rotationRef = useRef<any>(rotation);
   const panFrame = useRef(-1);
   const wheelFrame = useRef(-1);
@@ -120,8 +121,8 @@ const MultiCrops: FC<CropperProps> = ({
       });
       canvasFab.current?.add(rect);
     });
-    handleAllCrops(canvasFab.current.getObjects());
-    canvasFab.current.requestRenderAll();
+    handleAllCrops(canvasFab.current?.getObjects());
+    canvasFab.current?.requestRenderAll();
   };
 
   const getSelections = (box: any) =>
@@ -129,21 +130,21 @@ const MultiCrops: FC<CropperProps> = ({
 
   // fabricjs  mouse event listeners
   const attachListeners = () => {
-    canvasFab.current.on('mouse:down', (e: any) => {
+    canvasFab.current?.on('mouse:down', (e: any) => {
       if (!e.target || e.target.type !== 'rect') {
         handleMouseDown(e);
       }
     });
-    canvasFab.current.on('mouse:move', (e: any) => {
+    canvasFab.current?.on('mouse:move', (e: any) => {
       handleMouseMove(e);
     });
-    canvasFab.current.on('mouse:up', (e: MouseEvent) => {
+    canvasFab.current?.on('mouse:up', (e: any) => {
       handleMouseUp(e);
     });
-    canvasFab.current.on('object:modified', (e: any) => {
+    canvasFab.current?.on('object:modified', (e: any) => {
       handleCrop('resize', e.target);
     });
-    canvasFab.current.on('object:removed', (e: any) => {
+    canvasFab.current?.on('object:removed', (e: any) => {
       imageMapRef.current[e.target.id] = undefined;
       const boxId = e.target.id;
       const currentImgParam: CurrentImgParam = boxId
@@ -157,12 +158,12 @@ const MultiCrops: FC<CropperProps> = ({
         { type: 'delete', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        canvasFab.current.getObjects()
+        ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
       );
       props.onCrop?.({ type: 'delete' }, imageMapRef.current, currentImgParam);
       isDrawing.current = false;
     });
-    canvasFab.current.on('mouse:wheel', function (opt: any) {
+    canvasFab.current?.on('mouse:wheel', function (opt: any) {
       const { disableMouse } = drawMode.current;
       if (disableMouse.zoom || disableMouse.all) return;
       opt.e.preventDefault();
@@ -171,34 +172,36 @@ const MultiCrops: FC<CropperProps> = ({
       const deltaY = opt.e.deltaY;
       const deltaX = opt.e.deltaX;
       if (shiftKey) {
-        let zoom = canvasFab.current.getZoom();
+        let zoom = canvasFab.current?.getZoom() || 1;
         props.onZoomGesture?.(zoom + deltaY * 0.01, zoom);
       } else {
         cancelAnimationFrame(wheelFrame.current);
         wheelFrame.current = requestAnimationFrame(() => {
-          [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
-            const translateX = rect.left - deltaX;
-            const translateY = rect.top - deltaY;
-            rect.set({ left: translateX, top: translateY });
-            rect.setCoords();
-            return;
-          });
+          [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
+            (rect) => {
+              const translateX = rect.left - deltaX;
+              const translateY = rect.top - deltaY;
+              rect.set({ left: translateX, top: translateY });
+              rect.setCoords();
+              return;
+            }
+          );
           setScrollPositions(
             useScrollbars(canvasFab.current, imageRef.current)
           );
 
-          canvasFab.current.requestRenderAll();
+          canvasFab.current?.requestRenderAll();
         });
       }
     });
   };
   const detachListeners = () => {
-    canvasFab.current.off('mouse:down');
-    canvasFab.current.off('mouse:move');
-    canvasFab.current.off('mouse:up');
-    canvasFab.current.off('object:modified');
-    canvasFab.current.off('object:removed');
-    canvasFab.current.off('mouse:wheel');
+    canvasFab.current?.off('mouse:down');
+    canvasFab.current?.off('mouse:move');
+    canvasFab.current?.off('mouse:up');
+    canvasFab.current?.off('object:modified');
+    canvasFab.current?.off('object:removed');
+    canvasFab.current?.off('mouse:wheel');
   };
   // init canvas
   useEffect(() => {
@@ -210,7 +213,7 @@ const MultiCrops: FC<CropperProps> = ({
     canvas.selection = false;
     canvasFab.current = canvas;
     canvas.backgroundColor = '';
-    canvasFab.current.requestRenderAll();
+    canvasFab.current?.requestRenderAll();
   }, []);
 
   // change image src
@@ -218,42 +221,44 @@ const MultiCrops: FC<CropperProps> = ({
     detachListeners();
     imageSource.current = props.src;
     imageRef.current = imageSrcMap.current[props.src];
-    canvasFab.current.remove(...canvasFab.current.getObjects());
+    canvasFab.current?.remove(...canvasFab.current?.getObjects());
     if (imageRef.current) {
       let imgValues = getCenterCoords(imageRef.current);
       rotationRef.current = imgValues.angle;
     } else {
       rotationRef.current = 0;
     }
-    canvasFab.current.requestRenderAll();
+    canvasFab.current?.requestRenderAll();
     drawBoxes(props.boxes);
   }, [props.src]);
 
   // load image on src change
   useEffect(() => {
+    if (!canvasFab.current) return;
     if (imageRef.current) {
-      canvasFab.current.setBackgroundImage(imageRef.current);
+      canvasFab.current?.setBackgroundImage(imageRef.current, () => {});
       attachListeners();
-      canvasFab.current.requestRenderAll();
+      canvasFab.current?.requestRenderAll();
     } else {
       fabric.Image.fromURL(
         imageSource.current,
         (img: any) => {
+          if (!canvasFab.current) return;
           img.set('objectCaching', false);
           let dimensions: any = getImageDimensions(
             img,
-            canvasFab.current.getElement()
+            canvasFab.current?.getElement()
           );
-          let x = (canvasFab.current.getWidth() - dimensions.width) / 2;
-          let y = (canvasFab.current.getHeight() - dimensions.height) / 2;
+          let x = (canvasFab.current?.getWidth() - dimensions.width) / 2;
+          let y = (canvasFab.current?.getHeight() - dimensions.height) / 2;
           imageRef.current = img;
           imageSrcMap.current[imageSource.current] = img;
           img.scaleToWidth(dimensions.width);
           img.scaleToHeight(dimensions.height);
           img.set('left', x);
           img.set('top', y);
-          canvasFab.current.setBackgroundImage(img);
-          canvasFab.current.requestRenderAll();
+          canvasFab.current?.setBackgroundImage(img, () => {});
+          canvasFab.current?.requestRenderAll();
           attachListeners();
           performCanvasPaint(
             img,
@@ -294,11 +299,13 @@ const MultiCrops: FC<CropperProps> = ({
   );
   // cursor changed from draw to zoom
   useEffect(() => {
-    if (cursorMode == 'pan') {
-      canvasFab.current.set({ selection: false });
+    if (!canvasFab.current) return;
+    if (cursorMode == 'select') {
+      canvasFab.current.selection = true;
     } else {
-      canvasFab.current.set({ selection: true });
+      canvasFab.current.selection = false;
     }
+
     drawMode.current = {
       cursorMode,
       disableKeyboard,
@@ -339,17 +346,20 @@ const MultiCrops: FC<CropperProps> = ({
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
   const handleMouseDown = (e: MouseEvent) => {
+    if (!canvasFab.current) return;
+
     console.log(zoom, zoomRef.current, 2 / zoomRef.current);
     const { cursorMode } = drawMode.current;
     if (cursorMode === 'pan') {
-      pointA.current = canvasFab.current.getPointer(e);
+      pointA.current = canvasFab.current?.getPointer((e as unknown) as Event);
       setIsPanning(true);
     } else if (cursorMode === 'draw') {
       canvasFab.current.selection = false;
-      pointA.current = canvasFab.current.getPointer(e);
-      drawingIndex.current = canvasFab.current.getObjects().length;
+      pointA.current = canvasFab.current?.getPointer((e as unknown) as Event);
+      drawingIndex.current = canvasFab.current?.getObjects().length;
       id.current = uuid();
       isDrawing.current = true;
+
       let rect = new Box({
         id: id.current,
         rotation: rotationRef.current,
@@ -371,8 +381,10 @@ const MultiCrops: FC<CropperProps> = ({
   };
   const handleMouseMove = (e: MouseEvent) => {
     const { cursorMode } = drawMode.current;
+    const pointB = canvasFab.current?.getPointer(
+      (e as unknown) as Event
+    ) as Coordinates;
     if (cursorMode === 'pan') {
-      const pointB = canvasFab.current.getPointer(e);
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
 
@@ -381,20 +393,21 @@ const MultiCrops: FC<CropperProps> = ({
       const yDiff = -1 * (intialPoint.y - pointB.y);
       cancelAnimationFrame(panFrame.current);
       panFrame.current = requestAnimationFrame(() =>
-        [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
-          const translateX = rect.left + xDiff;
-          const translateY = rect.top + yDiff;
-          rect.set({ left: translateX, top: translateY });
-          rect.setCoords();
-          return;
-        })
+        [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
+          (rect) => {
+            const translateX = rect.left + xDiff;
+            const translateY = rect.top + yDiff;
+            rect.set({ left: translateX, top: translateY });
+            rect.setCoords();
+            return;
+          }
+        )
       );
 
-      canvasFab.current.requestRenderAll();
+      canvasFab.current?.requestRenderAll();
       pointA.current = pointB;
       setScrollPositions(useScrollbars(canvasFab.current, imageRef.current));
     } else if (cursorMode === 'draw') {
-      const pointB = canvasFab.current.getPointer(e);
       if (!isDrawing.current) return;
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
@@ -406,18 +419,20 @@ const MultiCrops: FC<CropperProps> = ({
         width: Math.abs(pointA.current.x - pointB.x),
         height: Math.abs(pointA.current.y - pointB.y),
       });
-      canvasFab.current.requestRenderAll();
+      canvasFab.current?.requestRenderAll();
       lastUpdatedBox.current = rect;
       // const nextBoxes = [...boxes, lastUpdatedBox.current];
       onChange?.(
         { type: 'draw', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        canvasFab.current.getObjects()
+        ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
       );
     }
   };
   const handleMouseUp = (e: MouseEvent) => {
+    if (!canvasFab.current) return;
+
     const { cursorMode } = drawMode.current;
     if (cursorMode === 'pan') {
       cancelAnimationFrame(panFrame.current);
@@ -425,7 +440,7 @@ const MultiCrops: FC<CropperProps> = ({
         { type: 'draw', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        canvasFab.current.getObjects()
+        ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
       );
     } else if (cursorMode === 'draw') {
       canvasFab.current.selection = true;
@@ -433,7 +448,7 @@ const MultiCrops: FC<CropperProps> = ({
       if (!lastUpdatedBox.current) return;
       isDrawing.current = false;
       handleCrop('draw-end', lastUpdatedBox.current);
-      canvasFab.current.requestRenderAll();
+      canvasFab.current?.requestRenderAll();
     }
     pointA.current = {};
   };
@@ -454,23 +469,25 @@ const MultiCrops: FC<CropperProps> = ({
       const deltaY = e.deltaY;
       const deltaX = e.deltaX;
       if (shiftKey) {
-        let zoom = canvasFab.current.getZoom();
+        let zoom = canvasFab.current?.getZoom() || 1;
         props.onZoomGesture?.(zoom + deltaY * 0.01, zoom);
       } else {
         cancelAnimationFrame(wheelFrame.current);
         wheelFrame.current = requestAnimationFrame(() => {
-          [imageRef.current, ...canvasFab.current.getObjects()].map((rect) => {
-            const translateX = rect.left - deltaX;
-            const translateY = rect.top - deltaY;
-            rect.set({ left: translateX, top: translateY });
-            rect.setCoords();
-            return;
-          });
+          [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
+            (rect) => {
+              const translateX = rect.left - deltaX;
+              const translateY = rect.top - deltaY;
+              rect.set({ left: translateX, top: translateY });
+              rect.setCoords();
+              return;
+            }
+          );
           setScrollPositions(
             useScrollbars(canvasFab.current, imageRef.current)
           );
 
-          canvasFab.current.requestRenderAll();
+          canvasFab.current?.requestRenderAll();
         });
       }
     },
@@ -515,20 +532,21 @@ const MultiCrops: FC<CropperProps> = ({
                 key === 'ArrowRight' ? 10 : key === 'ArrowLeft' ? -10 : 0;
               const deltaY =
                 key === 'ArrowDown' ? 10 : key === 'ArrowUp' ? -10 : 0;
-              [imageRef.current, ...canvasFab.current.getObjects()].map(
-                (rect) => {
-                  const translateX = rect.left + deltaX;
-                  const translateY = rect.top + deltaY;
-                  rect.set({ left: translateX, top: translateY });
-                  rect.setCoords();
-                  return;
-                }
-              );
+              [
+                imageRef.current,
+                ...(canvasFab.current?.getObjects() || []),
+              ].map((rect) => {
+                const translateX = rect.left + deltaX;
+                const translateY = rect.top + deltaY;
+                rect.set({ left: translateX, top: translateY });
+                rect.setCoords();
+                return;
+              });
               setScrollPositions(
                 useScrollbars(canvasFab.current, imageRef.current)
               );
 
-              canvasFab.current.requestRenderAll();
+              canvasFab.current?.requestRenderAll();
             }
           });
         }}
@@ -551,7 +569,7 @@ const MultiCrops: FC<CropperProps> = ({
           }}
           isHidden={!scrollPositions.wl && !scrollPositions.wr}
           onScroll={(diff: number) => {
-            [imageRef.current, ...canvasFab.current.getObjects()].map(
+            [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
               (rect) => {
                 const translateX = rect.left + diff;
                 rect.set({ left: translateX });
@@ -562,7 +580,7 @@ const MultiCrops: FC<CropperProps> = ({
             setScrollPositions(
               useScrollbars(canvasFab.current, imageRef.current)
             );
-            canvasFab.current.requestRenderAll();
+            canvasFab.current?.requestRenderAll();
           }}
         />
         <Scrollbar
@@ -573,7 +591,7 @@ const MultiCrops: FC<CropperProps> = ({
           }}
           isHidden={!scrollPositions.ht && !scrollPositions.hb}
           onScroll={(diff: number) => {
-            [imageRef.current, ...canvasFab.current.getObjects()].map(
+            [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
               (rect) => {
                 const translateY = rect.top + diff;
                 rect.set({ top: translateY });
@@ -585,7 +603,7 @@ const MultiCrops: FC<CropperProps> = ({
               useScrollbars(canvasFab.current, imageRef.current)
             );
 
-            canvasFab.current.requestRenderAll();
+            canvasFab.current?.requestRenderAll();
           }}
         />
       </div>

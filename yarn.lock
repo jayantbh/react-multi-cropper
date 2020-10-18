@@ -1443,10 +1443,10 @@
   resolved "https://unpm.uberinternal.com/@types%2festree/-/estree-0.0.39.tgz#e177e699ee1b8c22d23174caaa7422644389509f"
   integrity sha1-4Xfmme4bjCLSMXTKqnQiZEOJUJ8=
 
-"@types/fabric@^3.6.2":
+"@types/fabric@^3.6.8":
   version "3.6.8"
-  resolved "https://unpm.uberinternal.com/@types%2ffabric/-/fabric-3.6.8.tgz#7c073dc02595e610d9fc50b97d52b4dda0fa1bff"
-  integrity sha1-fAc9wCWV5hDZ/FC5fVK03aD6G/8=
+  resolved "https://registry.yarnpkg.com/@types/fabric/-/fabric-3.6.8.tgz#7c073dc02595e610d9fc50b97d52b4dda0fa1bff"
+  integrity sha512-EqRgmWXQ0Hh9JKH8M0KyoeFLBt1TuQ88cLICynd8xXWM052mINp1ijdfvFY/jCN5QMI6ctv2gbI1kBkDFETSSQ==
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.1"
@@ -1539,6 +1539,11 @@
   integrity sha1-0bFisnM7IiJZCKeHfKcRXGfzdS4=
   dependencies:
     "@types/react" "*"
+
+"@types/uuid@^8.3.0":
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.0.tgz#215c231dff736d5ba92410e6d602050cce7e273f"
+  integrity sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==
 
 "@types/yargs-parser@*":
   version "15.0.0"
@@ -9103,6 +9108,11 @@ uuid@^3.3.2:
   version "3.4.0"
   resolved "https://unpm.uberinternal.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha1-sj5DWK+oogL+ehAK8fX4g/AgB+4=
+
+uuid@^8.3.1:
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.1.tgz#2ba2e6ca000da60fce5a196954ab241131e05a31"
+  integrity sha512-FOmRr+FmWEIG8uhZv6C2bTgEVXsHk08kE7mPlrBbEe+c3r9pjceVPgupIfNIhc4yx55H69OXANrUaSuu9eInKg==
 
 v8-compile-cache@^2.0.0:
   version "2.1.0"

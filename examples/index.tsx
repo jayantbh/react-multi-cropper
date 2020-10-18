@@ -21,7 +21,11 @@ const App = () => {
   const resetCenterRef = useRef(() => {});
   const initReset = resetCenterRef.current;
   const [images, setImages] = useState([img1, img2]);
-  const [cursorMode, setCursorMode] = useState<CropperCursorMode>('draw');
+  const [cursorMode, setCursorMode] = useState<CropperCursorMode[]>([
+    'draw',
+    'pan',
+    'select',
+  ]);
   const src = images[0];
   const [imageMap, setImageMap] = useState<CropperBoxDataMap>({});
   const [fileBoxesMap, setFileBoxesMap] = useState<MapOf<CropperBox[]>>({
@@ -33,7 +37,6 @@ const App = () => {
   );
 
   useEffect(() => {
-    setCursorMode('draw');
     setFileRotationMap({
       ...fileRotationMap,
       [src]: fileRotationMap[src] || 0,
@@ -69,9 +72,9 @@ const App = () => {
         Toggle Image
       </button>
       <button
-        onClick={() => setCursorMode(cursorMode === 'draw' ? 'pan' : 'draw')}
+        onClick={() => setCursorMode(cursorMode.slice(1).concat(cursorMode[0]))}
       >
-        Toggle Mode [{cursorMode}]
+        Toggle Mode [{cursorMode[0]} -> {cursorMode[1]}]
       </button>
       <button
         onClick={() => {
@@ -132,7 +135,7 @@ const App = () => {
           setImageMap(map);
           resetCenterRef.current = reset;
         }}
-        cursorMode={cursorMode}
+        cursorMode={cursorMode[0]}
         rotation={fileRotationMap[src] || 0}
       />
       {(fileBoxesMap[src] || []).map(
