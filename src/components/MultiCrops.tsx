@@ -104,8 +104,10 @@ const MultiCrops: FC<CropperProps> = ({
   );
 
   const drawBoxes = (boxes: any) => {
-    boxes.map((box: any) => {
-      const rect = new Box(box.id, box.initRotation || 0, {
+    console.log(boxes);
+    boxes.forEach((box: any) => {
+      const rect = new Box({
+        id: box.id,
         height: box.height,
         width: box.width,
         top: box.top,
@@ -121,8 +123,8 @@ const MultiCrops: FC<CropperProps> = ({
       });
       canvasFab.current?.add(rect);
     });
-    handleAllCrops(canvasFab.current?.getObjects());
-    canvasFab.current?.requestRenderAll();
+    // handleAllCrops(canvasFab.current?.getObjects());
+    // canvasFab.current?.requestRenderAll();
   };
 
   const getSelections = (box: any) =>
@@ -163,37 +165,6 @@ const MultiCrops: FC<CropperProps> = ({
       props.onCrop?.({ type: 'delete' }, imageMapRef.current, currentImgParam);
       isDrawing.current = false;
     });
-    canvasFab.current?.on('mouse:wheel', function (opt: any) {
-      const { disableMouse } = drawMode.current;
-      if (disableMouse.zoom || disableMouse.all) return;
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
-      let shiftKey = opt.e.shiftKey;
-      const deltaY = opt.e.deltaY;
-      const deltaX = opt.e.deltaX;
-      if (shiftKey) {
-        let zoom = canvasFab.current?.getZoom() || 1;
-        props.onZoomGesture?.(zoom + deltaY * 0.01, zoom);
-      } else {
-        cancelAnimationFrame(wheelFrame.current);
-        wheelFrame.current = requestAnimationFrame(() => {
-          [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
-            (rect) => {
-              const translateX = rect.left - deltaX;
-              const translateY = rect.top - deltaY;
-              rect.set({ left: translateX, top: translateY });
-              rect.setCoords();
-              return;
-            }
-          );
-          setScrollPositions(
-            useScrollbars(canvasFab.current, imageRef.current)
-          );
-
-          canvasFab.current?.requestRenderAll();
-        });
-      }
-    });
   };
   const detachListeners = () => {
     canvasFab.current?.off('mouse:down');
@@ -218,6 +189,7 @@ const MultiCrops: FC<CropperProps> = ({
 
   // change image src
   useEffect(() => {
+    console.log('src changed');
     detachListeners();
     imageSource.current = props.src;
     imageRef.current = imageSrcMap.current[props.src];
@@ -228,7 +200,7 @@ const MultiCrops: FC<CropperProps> = ({
     } else {
       rotationRef.current = 0;
     }
-    canvasFab.current?.requestRenderAll();
+    // canvasFab.current?.requestRenderAll();
     drawBoxes(props.boxes);
   }, [props.src]);
 
@@ -333,15 +305,15 @@ const MultiCrops: FC<CropperProps> = ({
     isDrawing.current = false;
   };
 
-  const handleAllCrops = (boxes: any) => {
-    const imageMap = getCroppedImageFromBox(
-      imageRef.current,
-      canvasFab.current,
-      boxes
-    );
-    imageMapRef.current = imageMap;
-    props.onCrop?.({ type: 'draw' }, imageMapRef.current);
-  };
+  // const handleAllCrops = (boxes: any) => {
+  //   const imageMap = getCroppedImageFromBox(
+  //     imageRef.current,
+  //     canvasFab.current,
+  //     boxes
+  //   );
+  //   imageMapRef.current = imageMap;
+  //   props.onCrop?.({ type: 'draw' }, imageMapRef.current);
+  // };
 
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;

@@ -211,26 +211,17 @@ export const useCursor = (
 export const useZoom = (
   image: fabric.Image,
   canvas: fabric.Canvas | null,
-  _zoom: number,
+  zoom: number,
   setScrollPositions: Dispatch<SetStateAction<any>>
 ) => {
   useEffect(() => {
-    if (!canvas) return;
+    if (!canvas || !image) return;
 
-    const zoom = Math.min(20, Math.max(0.1, _zoom));
-
-    if (image) {
-      let imgValues = getCenterCoords(image);
-      canvas.zoomToPoint(
-        new fabric.Point(imgValues.translateX, imgValues.translateY),
-        zoom
-      );
-      [...canvas.getObjects()].map((rect) => {
-        rect.set('strokeWidth', 2 / zoom);
-      });
-    }
+    const center = canvas.getCenter();
+    canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
+    [...canvas.getObjects()].forEach((r) => r.set('strokeWidth', 2 / zoom));
     setScrollPositions(useScrollbars(canvas, image));
-  }, [_zoom]);
+  }, [zoom]);
 };
 
 export const useWheelEvent = (

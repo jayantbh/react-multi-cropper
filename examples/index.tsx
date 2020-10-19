@@ -3,8 +3,12 @@ import ReactDOM from 'react-dom';
 import MultiCrops from '../dist';
 import img1 from './imgs/sample1.jpg';
 import img2 from './imgs/sample2.jpg';
-import { CropperBox, CropperBoxDataMap } from '../dist';
-import { CropperCursorMode, CropperProps } from '../src/types';
+import {
+  CropperBox,
+  CropperBoxDataMap,
+  CropperCursorMode,
+  CropperProps,
+} from '../dist';
 
 const initialBoxes: CropperBox[] = [
   // { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
@@ -139,7 +143,10 @@ const App = () => {
         rotation={fileRotationMap[src] || 0}
       />
       {(fileBoxesMap[src] || []).map(
-        (box, i) => !!imageMap[box.id] && <img src={imageMap[box.id]} key={i} />
+        (box, i) =>
+          !!imageMap[box.id] && (
+            <img src={imageMap[box.id]} key={i} alt={box.id} />
+          )
       )}
     </div>
   );
