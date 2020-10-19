@@ -29,7 +29,7 @@ const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 let object: any = fabric.Object;
 
-var img = document.createElement('img');
+const img = document.createElement('img');
 img.src = cross;
 const renderIcon = function (
   this: any,
@@ -38,7 +38,7 @@ const renderIcon = function (
   top: any,
   fabricObject: any
 ) {
-  var size = (this as any).cornerSize;
+  const size = (this as any).cornerSize;
   ctx.save();
   ctx.translate(left, top);
   ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
