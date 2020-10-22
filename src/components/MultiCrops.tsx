@@ -414,15 +414,17 @@ const MultiCrops: FC<CropperProps> = ({
         { type: 'draw', event: e },
         lastUpdatedBox.current,
         drawingIndex.current,
-        ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
+        ((canvasFab.current.getObjects() || []) as unknown) as CropperBox[]
       );
     } else if (cursorMode === 'draw') {
       canvasFab.current.selection = true;
       if (!isDrawing.current) return;
       if (!lastUpdatedBox.current) return;
       isDrawing.current = false;
+      canvasFab.current.setActiveObject(lastUpdatedBox.current);
+
       handleCrop('draw-end', lastUpdatedBox.current);
-      canvasFab.current?.requestRenderAll();
+      canvasFab.current.requestRenderAll();
     }
     pointA.current = {};
   };

@@ -78,7 +78,7 @@ const App = () => {
       <button
         onClick={() => setCursorMode(cursorMode.slice(1).concat(cursorMode[0]))}
       >
-        Toggle Mode [{cursorMode[0]} -> {cursorMode[1]}]
+        Toggle Mode [{cursorMode[0]} -&gt; {cursorMode[1]}]
       </button>
       <button
         onClick={() => {
