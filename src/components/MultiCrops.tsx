@@ -48,7 +48,7 @@ const renderIcon = function (
 fabric.Object.prototype.cornerColor = 'blue';
 fabric.Object.prototype.cornerStyle = 'circle';
 fabric.Object.prototype.controls;
-fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+fabric.Object.prototype.controls.tr = new fabric.Control({
   x: 0.5,
   y: -0.5,
   offsetY: 0,

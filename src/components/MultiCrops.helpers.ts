@@ -141,7 +141,7 @@ export const useRotation = (
     let activeObject = new fabric.ActiveSelection(
       [image, ...canvas.getObjects()],
       {
-        hasControls: false,
+        hasControls: true,
       }
     );
     canvas.setActiveObject(activeObject);
