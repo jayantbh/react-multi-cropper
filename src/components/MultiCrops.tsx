@@ -1,7 +1,6 @@
 import React, { FC, MouseEvent, useRef, useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { fabric } from 'fabric';
-// import * as controls from 'fabric-customise-controls';
 import css from './MultiCrops.module.scss';
 import cross from '../cross.svg';
 import {
@@ -27,7 +26,8 @@ import { getCenterCoords, getImageDimensions } from '../utils';
 import { Box } from './Box';
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
-let object: any = fabric.Object;
+const object = fabric.Object;
+fabric.Lol;
 
 const img = document.createElement('img');
 img.src = cross;
@@ -46,8 +46,11 @@ const renderIcon = function (
   ctx.restore();
 };
 
+fabric.a;
+
 fabric.Object.prototype.cornerColor = 'blue';
 fabric.Object.prototype.cornerStyle = 'circle';
+fabric.Object.prototype.controls;
 object.prototype.controls.deleteControl = new (fabric as any).Control({
   position: { x: 0.5, y: -0.5 },
   offsetY: 0,
