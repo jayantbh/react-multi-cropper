@@ -39,6 +39,7 @@ const pluginsTsExt = [
   typescript({
     rollupCommonJSResolveHack: true,
     clean: true,
+    exclude: ['src/fabric.d.ts']
   }),
 ];
 
