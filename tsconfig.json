@@ -19,7 +19,8 @@
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true,
     "importHelpers": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "rootDirs": ["src", "node_modules"]
   },
   "include": ["src"],
   "exclude": ["build", "dist", "example", "rollup.config.js"]

@@ -26,8 +26,7 @@ import { getCenterCoords, getImageDimensions } from '../utils';
 import { Box } from './Box';
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
-const object = fabric.Object;
-fabric.Lol;
+import '../fabric.d.ts';
 
 const img = document.createElement('img');
 img.src = cross;
@@ -46,13 +45,12 @@ const renderIcon = function (
   ctx.restore();
 };
 
-fabric.a;
-
 fabric.Object.prototype.cornerColor = 'blue';
 fabric.Object.prototype.cornerStyle = 'circle';
 fabric.Object.prototype.controls;
-object.prototype.controls.deleteControl = new (fabric as any).Control({
-  position: { x: 0.5, y: -0.5 },
+fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+  x: 0.5,
+  y: -0.5,
   offsetY: 0,
   cursorStyle: 'pointer',
   mouseUpHandler: deleteObject,
@@ -63,9 +61,10 @@ fabric.Object.prototype.cornerSize = 8;
 fabric.Object.prototype.transparentCorners = false;
 function deleteObject(eventData: any, target: any) {
   console.log(eventData);
-  var canvas = target.canvas;
+  const { canvas } = target;
   canvas.remove(target);
   canvas.requestRenderAll();
+  return true;
 }
 
 const MultiCrops: FC<CropperProps> = ({

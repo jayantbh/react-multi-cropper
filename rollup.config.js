@@ -9,6 +9,7 @@ import json from '@rollup/plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 import { terser } from 'rollup-plugin-terser';
+import dts from "rollup-plugin-dts";
 
 import pkg from './package.json';
 
@@ -55,6 +56,11 @@ const commonConfig = {
 };
 
 export default [
+  {
+    input: "src/fabric.d.ts",
+    output: [{ file: "dist/fabric.d.ts", format: "es" }],
+    plugins: [dts()],
+  },
   {
     external: commonExternal,
     input: 'src/index.ts',
