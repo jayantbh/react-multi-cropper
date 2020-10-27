@@ -1,13 +1,10 @@
 import {
-  imageDataToDataUrl,
-  getCenterCoords,
   getImageDimensions,
   getScrollPositions,
+  fabricRectToCropperBox,
 } from '../utils';
 
 import { fabric } from 'fabric';
-
-const dpr = window.devicePixelRatio; // window.devicePixelRatio;
 
 import {
   DependencyList,
@@ -18,126 +15,30 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { Box } from './Box';
-import { CropperCursorMode } from '../types';
-
-export const performCanvasPaint = (
-  image: fabric.Image,
-  canvasFab: fabric.Canvas,
-  canvasTar: HTMLCanvasElement | null,
-  rotation: number
-) => {
-  if (!canvasTar || !image || !canvasFab) return;
-
-  const ctx = canvasTar.getContext('2d');
-  if (!ctx) return;
-  const { height, width } = canvasFab.getElement().getBoundingClientRect();
-  canvasTar.height = height * dpr;
-  canvasTar.width = width * dpr;
-  let imgValues = getCenterCoords(image);
-  const tx = imgValues.translateX * dpr;
-  const ty = imgValues.translateY * dpr;
-  const aspectRatio = (image.width || 1) / (image.height || 1);
-  ctx.fillRect(0, 0, canvasFab.width as number, canvasFab.height as number);
-  ctx.translate(tx, ty);
-  ctx.rotate((rotation * Math.PI) / 180);
-  ctx.translate(-tx, -ty);
-  ctx.drawImage(
-    image.getElement(),
-    0,
-    0,
-    height * dpr * aspectRatio,
-    height * dpr
-  );
-  ctx.resetTransform();
-};
+import { CropperCursorMode, CropperProps } from '../types';
 
 export const getCroppedImageFromBox = (
   _image: fabric.Image,
   canvas: fabric.Canvas | null,
-  box: typeof Box
+  box: fabric.Rect
 ) => {
   if (!canvas) return;
   const objects = canvas.getObjects();
   canvas.remove(...objects);
 
-  const zoom = canvas.getZoom();
+  const zoom = 2;
   const data = canvas.toDataURL({
-    left: box.left,
-    top: box.top,
-    width: box.width * zoom,
-    height: box.height * zoom,
+    left: box.lineCoords.tl.x,
+    top: box.lineCoords.tl.y,
+    width: (box.width || 1) * zoom,
+    height: (box.height || 1) * zoom,
+    enableRetinaScaling: true,
   });
+
+  console.log('BOX', box);
   canvas.add(...objects);
   canvas.requestRenderAll();
   return { [box.id]: data };
-};
-
-export const _getCroppedImageFromBox = (
-  image: fabric.Image,
-  canvas: fabric.Canvas | null,
-  box: typeof Box
-) => {
-  if (!canvas || !image) return {};
-  const { height, width } = canvas.getElement().getBoundingClientRect();
-
-  let imgValues = getCenterCoords(image);
-
-  if (box.width === 0 || box.height === 0) return;
-  let { angle: rotateAngle = 0, initRotation = 0 } = box;
-  let tempCanvas = document.createElement('canvas');
-  let ctx: any = tempCanvas.getContext('2d');
-  tempCanvas.height = height * dpr;
-  tempCanvas.width = width * dpr;
-  let { height: imageHeight, width: imageWidth } = getImageDimensions(
-    image,
-    canvas.getElement()
-  );
-  let tx = imgValues.translateX - imageWidth / 2;
-  let ty = imgValues.translateY - imageHeight / 2;
-  ctx.fillRect(0, 0, width, height);
-  const boxTopLeftX = imgValues.translateX * dpr;
-  const boxTopLeftY = imgValues.translateY * dpr;
-  ctx.translate(boxTopLeftX, boxTopLeftY);
-  ctx.rotate((initRotation * Math.PI) / 180);
-  ctx.translate(-boxTopLeftX, -boxTopLeftY);
-  ctx.drawImage(
-    image.getElement(),
-    tx * dpr,
-    ty * dpr,
-    imageWidth * dpr,
-    imageHeight * dpr
-  );
-  let activeObject = canvas.getActiveObject();
-  canvas.discardActiveObject();
-  canvas.requestRenderAll();
-  let activeObject1: any = new fabric.ActiveSelection([image, box], {
-    hasRotatingPoint: false,
-  });
-  canvas.setActiveObject(activeObject1);
-  if (activeObject1 != null) {
-    activeObject1.rotate(-rotateAngle);
-  }
-  let boxValues = getCenterCoords(box);
-  const rotatedImageData = ctx.getImageData(
-    (boxValues.translateX - box.getScaledWidth() / 2) * dpr,
-    (boxValues.translateY - box.getScaledHeight() / 2) * dpr,
-    box.getScaledWidth() * dpr,
-    box.getScaledHeight() * dpr
-  );
-  canvas.setActiveObject(activeObject1);
-  if (activeObject1 != null) {
-    activeObject1.rotate(0);
-
-    canvas.discardActiveObject();
-  }
-  if (activeObject) {
-    canvas.setActiveObject(activeObject);
-  }
-  canvas.requestRenderAll();
-  const finalImageUrl = imageDataToDataUrl(rotatedImageData);
-  if (!finalImageUrl) return;
-  return { [box.id]: finalImageUrl };
 };
 
 export const useScrollbars = (canvas?: any, image?: any): any => {
@@ -165,17 +66,51 @@ export const useFrame = (fn: (...args: any[]) => any) => {
   );
 };
 
+export const performRotation = (
+  image: fabric.Image,
+  canvas: fabric.Canvas,
+  rotation: number,
+  rotDiff: number = 0
+) => {
+  const { top: cy, left: cx } = canvas.getCenter();
+  let center = new fabric.Point(cx, cy);
+  let radians = fabric.util.degreesToRadians(rotDiff);
+
+  console.log('img rot', image.angle, rotation, rotDiff);
+  if (image.angle !== rotation) {
+    image.angle = rotation;
+    let origin = new fabric.Point(image?.left || 0, image?.top || 0);
+    let new_loc = fabric.util.rotatePoint(origin, center, radians);
+    image.top = new_loc.y;
+    image.left = new_loc.x;
+    image.setCoords();
+  }
+
+  canvas.getObjects().forEach((obj) => {
+    if (!obj?.left || !obj?.top) return;
+    let origin = new fabric.Point(obj.left, obj.top);
+    let new_loc = fabric.util.rotatePoint(origin, center, radians);
+    obj.top = new_loc.y;
+    obj.left = new_loc.x;
+    obj.angle = (obj.angle || 0) + rotDiff; //rotate each object by the same angle
+    obj.setCoords();
+  });
+
+  canvas.requestRenderAll();
+};
+
 export const useRotation = (
   src: string,
   image: fabric.Image,
   canvas: fabric.Canvas | null,
-  nativeCanvas: HTMLCanvasElement | null,
-  // container: any,
   rotation: number,
   rotationRef: MutableRefObject<number | undefined>,
-  isReset: MutableRefObject<boolean | undefined>
+  isReset: MutableRefObject<boolean | undefined>,
+  onChange: CropperProps['onChange']
 ) => {
   const prevSrc = usePrevious(src);
+  const rotFrame = useRef(-1);
+  const rotTimerRef = useRef(-1);
 
   useEffect(() => {
     if (src !== prevSrc) return;
@@ -185,71 +120,79 @@ export const useRotation = (
       rotationRef.current = 0;
       return;
     }
-    // if (isReset.current) {
-    //   isReset.current = false;
-    //   console.log(rotation, rotationRef.current);
-    //   image.rotate(rotation - (rotationRef.current || 0));
-    //
-    //   rotationRef.current = rotation;
-    //   return;
-    // }
 
-    canvas.discardActiveObject();
-    canvas.requestRenderAll();
+    cancelAnimationFrame(rotFrame.current);
+    rotFrame.current = requestAnimationFrame(() => {
+      performRotation(
+        image,
+        canvas,
+        rotation,
+        rotation - (rotationRef.current || 0)
+      );
 
-    let activeObject = new fabric.ActiveSelection([
-      image,
-      ...canvas.getObjects(),
-    ]);
-    canvas.setActiveObject(activeObject);
+      clearTimeout(rotTimerRef.current);
+      // @ts-ignore
+      rotTimerRef.current = setTimeout(() => {
+        onChange?.(
+          { type: 'rotate' },
+          undefined,
+          undefined,
+          canvas.getObjects().map(fabricRectToCropperBox)
+        );
+      }, 500);
 
-    activeObject.rotate(rotation - (rotationRef.current || 0));
-
-    canvas.discardActiveObject();
-    canvas.requestRenderAll();
-
-    rotationRef.current = rotation;
-    // if (isReset.current) {
-    //   resetToCenter(image, canvas, container);
-    //   isReset.current = false;
-    // }
-
-    performCanvasPaint(image, canvas, nativeCanvas, rotation);
+      rotationRef.current = rotation;
+    });
   }, [rotation, isReset.current, src, prevSrc]);
 };
 
 export const resetToCenter = (
   image: fabric.Image,
   canvas: fabric.Canvas,
-  container: HTMLDivElement,
-  shiftBoxes: boolean = false
+  container: HTMLDivElement
 ) => {
-  shiftBoxes;
-  // console.trace('fn called', shiftBoxes);
   canvas.setDimensions({
     width: container?.offsetWidth || 1000,
     height: container?.offsetHeight || 1000,
   });
+  let { x: x1, y: y1 } = image.getCenterPoint();
   let dimensions: any = getImageDimensions(image, canvas.getElement());
   let x = (canvas.getWidth() - dimensions.width) / 2;
   let y = (canvas.getHeight() - dimensions.height) / 2;
-  console.log(x, y);
-  image.set({ left: x, top: y, angle: 0 });
+  console.log('Img origin', x, y);
+  image.set({ left: x, top: y });
 
-  // if (true) {
-  //   let imgValues = getCenterCoords(image);
-  //   let newImgValues = getCenterCoords(image);
-  //   const diffx = -1 * (imgValues.translateX - newImgValues.translateX);
-  //   const diffy = -1 * (imgValues.translateY - newImgValues.translateY);
-  //   console.log(diffx, diffy);
-  //
-  //   [...canvas.getObjects()].forEach((rect) => {
-  //     const translateX = (rect.left || 0) + diffx;
-  //     const translateY = (rect.top || 0) + diffy;
-  //     rect.set({ left: translateX, top: translateY });
-  //     rect.setCoords();
-  //   });
-  // }
+  let { x: x2, y: y2 } = image.getCenterPoint();
+  const diffX = x2 - x1;
+  const diffY = y2 - y1;
+  console.log('Diffs', diffX, diffY);
+
+  let anchor = new fabric.Point(x, y);
+
+  canvas.getObjects().forEach((rect) => {
+    if (!rect?.left || !rect?.top) return;
+
+    const translateX = (rect.left || 0) + diffX;
+    const translateY = (rect.top || 0) + diffY;
+    rect.set({
+      left: translateX,
+      top: translateY,
+    });
+
+    let origin = new fabric.Point(rect.left, rect.top);
+    let radians = fabric.util.degreesToRadians(-(image.angle || 0));
+    let new_loc = fabric.util.rotatePoint(origin, anchor, radians);
+    rect.set({
+      left: new_loc.x,
+      top: new_loc.y,
+      angle: (rect?.angle || 0) - (image?.angle || 0),
+    });
+
+    rect.setCoords();
+  });
+
+  image.set({ angle: 0 });
+
   canvas.requestRenderAll();
 };
 

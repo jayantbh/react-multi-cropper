@@ -32,11 +32,12 @@ const controlVisibilities = {
 };
 
 export const Box = fabric.util.createClass(fabric.Rect, {
-  initialize(options: BoxType) {
+  initialize(options: BoxType, zoom = 1) {
     this.callSuper('initialize', {
       ...defaults,
       _controlsVisibility: controlVisibilities,
       ...options,
+      strokeWidth: 2 / zoom,
       style: undefined, // clear options.style being set
       ...(options.style || {}),
     });

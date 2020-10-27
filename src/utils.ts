@@ -57,7 +57,9 @@ export const getScrollPositions = (canvas: fabric.Canvas, image: DOMRect) => {
   return zoom < 1 ? { wl: 0, wr: 0, ht: 0, hb: 0 } : { wl, wr, ht, hb };
 };
 
-export const fabricRectToCropperBox = (rect: BoxType): CropperBox => ({
+export const fabricRectToCropperBox = (
+  rect: BoxType & fabric.Object
+): CropperBox => ({
   id: rect.id,
   width: rect.width,
   height: rect.height,

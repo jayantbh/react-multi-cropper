@@ -264,5 +264,11 @@ declare module 'fabric' {
       id: string;
       manualDeletion?: true;
     }
+
+    export interface Rect {
+      lineCoords: {
+        tl: { x: number; y: number };
+      };
+    }
   }
 }

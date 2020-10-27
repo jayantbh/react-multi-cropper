@@ -15,15 +15,12 @@ import {
 } from '../types';
 import {
   getCroppedImageFromBox,
-  performCanvasPaint,
   useScrollbars,
   useZoom,
   useRotation,
   useWheelEvent,
   resetToCenter,
   usePrevious,
-  // usePrevious,
-  // useCursor
 } from './MultiCrops.helpers';
 import Scrollbar from './Scrollbar';
 const scrollbarSpacing = 6;
@@ -122,7 +119,7 @@ const MultiCrops: FC<CropperProps> = ({
     if (!fab) return;
 
     fab.remove(...fab.getObjects());
-    fab.add(...boxes.map((box) => new Box(box)));
+    fab.add(...boxes.map((box) => new Box(box, zoom)));
 
     canvasFab.current?.renderAll();
   };
@@ -221,12 +218,6 @@ const MultiCrops: FC<CropperProps> = ({
           canvasFab.current?.setBackgroundImage(img, () => {});
           canvasFab.current?.requestRenderAll();
           attachListeners();
-          performCanvasPaint(
-            img,
-            canvasFab.current,
-            canvasRef.current,
-            rotation
-          );
           setScrollPositions(
             useScrollbars(canvasFab.current, imageRef.current)
           );
@@ -260,8 +251,7 @@ const MultiCrops: FC<CropperProps> = ({
         resetToCenter(
           imageRef.current,
           canvasFab.current,
-          containerRef.current,
-          true
+          containerRef.current
         );
 
       canvasFab.current?.requestRenderAll();
@@ -274,11 +264,10 @@ const MultiCrops: FC<CropperProps> = ({
     props.src,
     imageRef.current,
     canvasFab.current,
-    canvasRef.current,
-    // containerRef.current,
     rotation,
     rotationRef,
-    isReset
+    isReset,
+    props.onChange
   );
   // cursor changed from draw to zoom
   useEffect(() => {
@@ -430,7 +419,7 @@ const MultiCrops: FC<CropperProps> = ({
 
       fab.requestRenderAll();
     } else if (cursorMode === 'select') {
-      const selection = (fab.getActiveObjects() as unknown) as BoxType[];
+      const selection = fab.getActiveObjects();
       if (!selection.length) return;
       const groupRects = (map: MapOf<BoxType>, box: BoxType) => ({
         ...map,
@@ -449,6 +438,7 @@ const MultiCrops: FC<CropperProps> = ({
     props.onChange?.(e, box, index, boxes);
   };
 
+  const panTimerRef = useRef(-1);
   useWheelEvent(
     containerRef,
     (e: WheelEvent) => {
@@ -465,15 +455,28 @@ const MultiCrops: FC<CropperProps> = ({
       } else {
         cancelAnimationFrame(wheelFrame.current);
         wheelFrame.current = requestAnimationFrame(() => {
-          [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
-            (rect) => {
-              const translateX = rect.left - deltaX;
-              const translateY = rect.top - deltaY;
-              rect.set({ left: translateX, top: translateY });
-              rect.setCoords();
-              return;
-            }
-          );
+          const [, ...boxes] = [
+            imageRef.current,
+            ...(canvasFab.current?.getObjects() || []),
+          ].map((obj) => {
+            const translateX = obj.left - deltaX;
+            const translateY = obj.top - deltaY;
+            obj.set({ left: translateX, top: translateY });
+            obj.setCoords();
+            return fabricRectToCropperBox(obj);
+          });
+
+          clearTimeout(panTimerRef.current);
+          // @ts-ignore
+          panTimerRef.current = setTimeout(() => {
+            props.onChange?.(
+              { event: e, type: 'pan' },
+              undefined,
+              undefined,
+              boxes
+            );
+          }, 500);
+
           setScrollPositions(
             useScrollbars(canvasFab.current, imageRef.current)
           );
