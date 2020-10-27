@@ -7,7 +7,7 @@ import css from './MultiCrops.module.scss';
 import cross from '../cross.svg';
 import {
   Coordinates,
-  CropperBox,
+  // CropperBox,
   CropperEvent,
   CropperProps,
   CurrentImgParam,
@@ -21,20 +21,20 @@ import {
   useRotation,
   useWheelEvent,
   resetToCenter,
+  usePrevious,
+  // usePrevious,
   // useCursor
 } from './MultiCrops.helpers';
 import Scrollbar from './Scrollbar';
 const scrollbarSpacing = 6;
 
-import {
-  fabricRectToCropperBox,
-  getCenterCoords,
-  getImageDimensions,
-} from '../utils';
+import { fabricRectToCropperBox, getImageDimensions } from '../utils';
 import { Box, BoxType } from './Box';
 const blankCoords: Partial<Coordinates> = { x: undefined, y: undefined };
 const blankStyles = {};
 import '../fabric.d.ts';
+import { equals } from 'ramda';
+// import { difference, equals } from 'ramda';
 
 const img = document.createElement('img');
 img.src = cross;
@@ -117,23 +117,18 @@ const MultiCrops: FC<CropperProps> = ({
     useScrollbars(canvasFab.current, imageRef.current)
   );
 
-  const drawBoxes = (boxes: any) => {
-    console.log(boxes);
+  const drawBoxes = (boxes: BoxType[]) => {
     const fab = canvasFab.current;
     if (!fab) return;
 
     fab.remove(...fab.getObjects());
+    fab.add(...boxes.map((box) => new Box(box)));
 
-    boxes.forEach((box: BoxType) => {
-      const rect = new Box(box);
-      canvasFab.current?.add(rect);
-    });
-    // handleAllCrops(canvasFab.current?.getObjects());
-    canvasFab.current?.requestRenderAll();
+    canvasFab.current?.renderAll();
   };
 
-  const getSelections = (box: any) =>
-    getCroppedImageFromBox(imageRef.current, canvasFab.current, [box]);
+  const getSelections = (box: typeof Box) =>
+    getCroppedImageFromBox(imageRef.current, canvasFab.current, box);
 
   // fabricjs  mouse event listeners
   const attachListeners = () => {
@@ -145,9 +140,6 @@ const MultiCrops: FC<CropperProps> = ({
     });
     canvasFab.current?.on('mouse:up', (e: any) => {
       handleMouseUp(e);
-    });
-    canvasFab.current?.on('object:modified', (e: IEvent) => {
-      e.target && handleCrop('resize', e.target as BoxType);
     });
     canvasFab.current?.on('object:removed', (e: IEvent) => {
       if (!e.target?.manualDeletion) return;
@@ -194,12 +186,8 @@ const MultiCrops: FC<CropperProps> = ({
     imageSource.current = props.src;
     imageRef.current = imageSrcMap.current[props.src];
     canvasFab.current?.remove(...canvasFab.current?.getObjects());
-    if (imageRef.current) {
-      let imgValues = getCenterCoords(imageRef.current);
-      rotationRef.current = imgValues.angle;
-    } else {
-      rotationRef.current = 0;
-    }
+    rotationRef.current = 0;
+
     // canvasFab.current?.requestRenderAll();
     drawBoxes(props.boxes);
   }, [props.src]);
@@ -253,13 +241,20 @@ const MultiCrops: FC<CropperProps> = ({
     }
   }, [imageSource.current]);
 
+  const prevBoxes = usePrevious(props.boxes);
+  useEffect(() => {
+    const boxesChanged = !equals(prevBoxes, props.boxes);
+    console.log('Boxes changed?', boxesChanged, props.boxes);
+    boxesChanged && drawBoxes(props.boxes);
+  }, [prevBoxes, props.boxes]);
+
   const drawBoxesRef = useRef(() => drawBoxes(props.boxes));
   drawBoxesRef.current = () => drawBoxes(props.boxes);
   // reset functionality
   useEffect(() => {
     const cb = () => {
       isReset.current = true;
-      drawBoxes(props.boxes);
+      drawBoxesRef.current();
       canvasFab.current &&
         containerRef.current &&
         resetToCenter(
@@ -268,6 +263,8 @@ const MultiCrops: FC<CropperProps> = ({
           containerRef.current,
           true
         );
+
+      canvasFab.current?.requestRenderAll();
     };
     props.onLoad?.(imageMapRef.current, cb);
   }, []);
@@ -302,7 +299,7 @@ const MultiCrops: FC<CropperProps> = ({
   // zoom changed
   useZoom(imageRef.current, canvasFab.current, zoom, setScrollPositions);
 
-  const handleCrop = (type: CropperEvent['type'], box: any) => {
+  const handleCrop = (type: CropperEvent['type'], box: typeof Box) => {
     const selections = getSelections(box);
     imageMapRef.current = { ...imageMapRef.current, ...selections };
     lastUpdatedBox.current = null;
@@ -314,7 +311,12 @@ const MultiCrops: FC<CropperProps> = ({
         }
       : undefined;
 
-    props.onCrop?.({ type }, imageMapRef.current, currentImgParam);
+    props.onCrop?.(
+      { type },
+      imageMapRef.current,
+      currentImgParam,
+      fabricRectToCropperBox(box)
+    );
 
     isDrawing.current = false;
   };
@@ -398,12 +400,12 @@ const MultiCrops: FC<CropperProps> = ({
       canvasFab.current?.requestRenderAll();
       lastUpdatedBox.current = rect;
       // const nextBoxes = [...boxes, lastUpdatedBox.current];
-      onChange?.(
-        { type: 'draw', event: e },
-        lastUpdatedBox.current,
-        drawingIndex.current,
-        ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
-      );
+      // onChange?.(
+      //   { type: 'draw', event: e },
+      //   lastUpdatedBox.current,
+      //   drawingIndex.current,
+      //   ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
+      // );
     }
   };
   const handleMouseUp = (e: MouseEvent) => {

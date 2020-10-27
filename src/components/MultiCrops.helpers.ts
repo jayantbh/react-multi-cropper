@@ -7,7 +7,7 @@ import {
 
 import { fabric } from 'fabric';
 
-const dpr = 2; // window.devicePixelRatio;
+const dpr = window.devicePixelRatio; // window.devicePixelRatio;
 
 import {
   DependencyList,
@@ -51,75 +51,93 @@ export const performCanvasPaint = (
   );
   ctx.resetTransform();
 };
+
 export const getCroppedImageFromBox = (
+  _image: fabric.Image,
+  canvas: fabric.Canvas | null,
+  box: typeof Box
+) => {
+  if (!canvas) return;
+  const objects = canvas.getObjects();
+  canvas.remove(...objects);
+
+  const zoom = canvas.getZoom();
+  const data = canvas.toDataURL({
+    left: box.left,
+    top: box.top,
+    width: box.width * zoom,
+    height: box.height * zoom,
+  });
+  canvas.add(...objects);
+  canvas.requestRenderAll();
+  return { [box.id]: data };
+};
+
+export const _getCroppedImageFromBox = (
   image: fabric.Image,
   canvas: fabric.Canvas | null,
-  boxes: any[]
-): any => {
+  box: typeof Box
+) => {
   if (!canvas || !image) return {};
   const { height, width } = canvas.getElement().getBoundingClientRect();
 
   let imgValues = getCenterCoords(image);
-  let map: any = {};
-  boxes.map((box: typeof Box) => {
-    if (box.width === 0 || box.height === 0) return;
-    let { angle: rotateAngle = 0, initRotation = 0 } = box;
-    let tempCanvas = document.createElement('canvas');
-    let ctx: any = tempCanvas.getContext('2d');
-    tempCanvas.height = height * dpr;
-    tempCanvas.width = width * dpr;
-    let { height: imageHeight, width: imageWidth } = getImageDimensions(
-      image,
-      canvas.getElement()
-    );
-    let tx = imgValues.translateX - imageWidth / 2;
-    let ty = imgValues.translateY - imageHeight / 2;
-    ctx.fillRect(0, 0, width, height);
-    const boxTopLeftX = imgValues.translateX * dpr;
-    const boxTopLeftY = imgValues.translateY * dpr;
-    ctx.translate(boxTopLeftX, boxTopLeftY);
-    ctx.rotate((initRotation * Math.PI) / 180);
-    ctx.translate(-boxTopLeftX, -boxTopLeftY);
-    ctx.drawImage(
-      image.getElement(),
-      tx * dpr,
-      ty * dpr,
-      imageWidth * dpr,
-      imageHeight * dpr
-    );
-    let activeObject = canvas.getActiveObject();
-    canvas.discardActiveObject();
-    canvas.requestRenderAll();
-    let activeObject1: any = new fabric.ActiveSelection([image, box], {
-      hasRotatingPoint: false,
-    });
-    canvas.setActiveObject(activeObject1);
-    if (activeObject1 != null) {
-      activeObject1.rotate(-rotateAngle);
-    }
-    let boxValues = getCenterCoords(box);
-    const rotatedImageData = ctx.getImageData(
-      (boxValues.translateX - box.getScaledWidth() / 2) * dpr,
-      (boxValues.translateY - box.getScaledHeight() / 2) * dpr,
-      box.getScaledWidth() * dpr,
-      box.getScaledHeight() * dpr
-    );
-    canvas.setActiveObject(activeObject1);
-    if (activeObject1 != null) {
-      activeObject1.rotate(0);
 
-      canvas.discardActiveObject();
-    }
-    if (activeObject) {
-      canvas.setActiveObject(activeObject);
-    }
-    canvas.requestRenderAll();
-    const finalImageUrl = imageDataToDataUrl(rotatedImageData);
-    if (!finalImageUrl) return;
-    map = { ...map, [box.id]: finalImageUrl };
-    return;
-  }, {});
-  return map;
+  if (box.width === 0 || box.height === 0) return;
+  let { angle: rotateAngle = 0, initRotation = 0 } = box;
+  let tempCanvas = document.createElement('canvas');
+  let ctx: any = tempCanvas.getContext('2d');
+  tempCanvas.height = height * dpr;
+  tempCanvas.width = width * dpr;
+  let { height: imageHeight, width: imageWidth } = getImageDimensions(
+    image,
+    canvas.getElement()
+  );
+  let tx = imgValues.translateX - imageWidth / 2;
+  let ty = imgValues.translateY - imageHeight / 2;
+  ctx.fillRect(0, 0, width, height);
+  const boxTopLeftX = imgValues.translateX * dpr;
+  const boxTopLeftY = imgValues.translateY * dpr;
+  ctx.translate(boxTopLeftX, boxTopLeftY);
+  ctx.rotate((initRotation * Math.PI) / 180);
+  ctx.translate(-boxTopLeftX, -boxTopLeftY);
+  ctx.drawImage(
+    image.getElement(),
+    tx * dpr,
+    ty * dpr,
+    imageWidth * dpr,
+    imageHeight * dpr
+  );
+  let activeObject = canvas.getActiveObject();
+  canvas.discardActiveObject();
+  canvas.requestRenderAll();
+  let activeObject1: any = new fabric.ActiveSelection([image, box], {
+    hasRotatingPoint: false,
+  });
+  canvas.setActiveObject(activeObject1);
+  if (activeObject1 != null) {
+    activeObject1.rotate(-rotateAngle);
+  }
+  let boxValues = getCenterCoords(box);
+  const rotatedImageData = ctx.getImageData(
+    (boxValues.translateX - box.getScaledWidth() / 2) * dpr,
+    (boxValues.translateY - box.getScaledHeight() / 2) * dpr,
+    box.getScaledWidth() * dpr,
+    box.getScaledHeight() * dpr
+  );
+  canvas.setActiveObject(activeObject1);
+  if (activeObject1 != null) {
+    activeObject1.rotate(0);
+
+    canvas.discardActiveObject();
+  }
+  if (activeObject) {
+    canvas.setActiveObject(activeObject);
+  }
+  canvas.requestRenderAll();
+  const finalImageUrl = imageDataToDataUrl(rotatedImageData);
+  if (!finalImageUrl) return;
+  return { [box.id]: finalImageUrl };
 };
 
 export const useScrollbars = (canvas?: any, image?: any): any => {
@@ -176,7 +194,8 @@ export const useRotation = (
     //   return;
     // }
 
-    canvas.discardActiveObject().requestRenderAll();
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
 
     let activeObject = new fabric.ActiveSelection([
       image,
@@ -186,7 +205,8 @@ export const useRotation = (
 
     activeObject.rotate(rotation - (rotationRef.current || 0));
 
-    canvas.discardActiveObject().requestRenderAll();
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
 
     rotationRef.current = rotation;
     // if (isReset.current) {

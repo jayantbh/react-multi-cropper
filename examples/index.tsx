@@ -77,7 +77,19 @@ const App = () => {
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
       <h1>Dragging, Drawing, Resizing rectangles on the image</h1>
-      <button onClick={() => setImages([...images.slice(1), images[0]])}>
+      <button
+        onClick={() => {
+          setImages([...images.slice(1), images[0]]);
+          setFileRotationMap((map) => ({
+            ...map,
+            [images[0]]: 0,
+          }));
+          setFileZoomMap((map) => ({
+            ...map,
+            [images[0]]: 0,
+          }));
+        }}
+      >
         Toggle Image
       </button>
       <button
