@@ -1,5 +1,4 @@
 import { CSSProperties, FC, MouseEvent } from 'react';
-import { DragEvent } from '@interactjs/types/types';
 
 export type DataUrl = string;
 
@@ -52,7 +51,7 @@ export type CropperCursorMode = 'draw' | 'pan' | 'select';
 
 export type CropperEvent = {
   type: CropperEventType;
-  event?: MouseEvent<HTMLImageElement | Element> | DragEvent;
+  event?: MouseEvent<HTMLImageElement | Element>;
 };
 
 export type CropTriggerFunctionWithImageData = (
