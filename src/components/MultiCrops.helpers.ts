@@ -26,7 +26,7 @@ export const getCroppedImageFromBox = (
   const objects = canvas.getObjects();
   canvas.remove(...objects);
 
-  const zoom = 2;
+  const zoom = canvas.getZoom();
   const data = canvas.toDataURL({
     left: box.lineCoords.tl.x,
     top: box.lineCoords.tl.y,
