@@ -10,14 +10,19 @@ import {
   CropperProps,
 } from '../dist';
 
-const initialBoxes: CropperBox[] = [
-  // { x: -178, y: -191, width: 120, height: 178, id: 'SJxb6YpuG', rotation: 0 },
-  // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
-  // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
-  // { x: -118, y: -219, width: 78, height: 331, id: 'LkZ7r33rk', rotation: -222 },
-  // { x: -193, y: -206, width: 71, height: 377, id: 'HDFMSvIDX', rotation: -241 },
-  // { x: -215, y: -180, width: 77, height: 339, id: 'v-3TX_fom', rotation: -297 },
-];
+const initialBoxes: CropperBox[] = Array(10)
+  .fill(0)
+  .map((_, i) => ({
+    left: 178 + i * 10,
+    top: 191 + i * 10,
+    width: 120,
+    height: 178,
+    id: 'SJxb6YpuG-' + i,
+    angle: 10 - Math.random() * 20,
+    style: {
+      stroke: 'red',
+    },
+  }));
 
 type MapOf<T> = { [key in string]?: T };
 
@@ -126,9 +131,14 @@ const App = () => {
         containerStyles={{ height: '500px', width: '100%' }}
         boxes={fileBoxesMap[src] || []}
         onChange={updateBoxes}
-        onCrop={(e, map, currentImg?) => {
+        onCrop={(e, map, currentImg?, box?) => {
           console.log('Crop', e, map, currentImg?.boxId);
           setImageMap(map);
+          box &&
+            setFileBoxesMap((map) => ({
+              ...map,
+              [src]: map[src]?.concat(box),
+            }));
         }}
         onDelete={(e, box, index, boxes) => {
           console.log('Delete', box, index, boxes);
@@ -141,6 +151,17 @@ const App = () => {
         }}
         cursorMode={cursorMode[0]}
         rotation={fileRotationMap[src] || 0}
+        onSelect={(map) => {
+          setFileBoxesMap((boxMap) => ({
+            ...boxMap,
+            [src]: boxMap[src]?.map((box) =>
+              !!map[box.id]
+                ? { ...box, style: { stroke: 'yellow' } }
+                : { ...box, style: { stroke: 'red' } }
+            ),
+          }));
+          console.log('On select', map);
+        }}
       />
       {(fileBoxesMap[src] || []).map(
         (box, i) =>

@@ -1,4 +1,8 @@
 import { CSSProperties, FC, MouseEvent } from 'react';
+import { BoxType } from './components/Box';
+import { IEvent } from 'fabric/fabric-impl';
+
+export type MapOf<T> = { [key in string]?: T };
 
 export type DataUrl = string;
 
@@ -7,14 +11,13 @@ export type Coordinates = { x: number; y: number };
 export type CropperBoxId = string;
 
 export type CropperBox<T = any> = {
-  x: number;
-  y: number;
+  left: number;
+  top: number;
   width: number;
   height: number;
   id: CropperBoxId;
-  rotation: number;
+  angle: number;
   style?: CSSProperties | ((css: CSSProperties) => CSSProperties);
-  labelStyle?: CSSProperties | ((css: CSSProperties) => CSSProperties);
   noImage?: boolean;
   meta?: T;
 };
@@ -51,13 +54,14 @@ export type CropperCursorMode = 'draw' | 'pan' | 'select';
 
 export type CropperEvent = {
   type: CropperEventType;
-  event?: MouseEvent<HTMLImageElement | Element>;
+  event?: Event | MouseEvent<HTMLImageElement | Element> | IEvent;
 };
 
 export type CropTriggerFunctionWithImageData = (
   e: CropperEvent,
   dataMap: CropperBoxDataMap,
-  currentImg?: CurrentImgParam
+  currentImg?: CurrentImgParam,
+  box?: BoxType
 ) => any;
 
 export type UpdateFunction = (
@@ -72,6 +76,8 @@ export type ImgOnLoadWithImageData = (
   resetCenter: () => any
 ) => any;
 
+export type SelectionHandler = (boxMap: MapOf<BoxType>) => any;
+
 export type CropperProps = {
   src: string;
   zoom?: number;
@@ -84,6 +90,7 @@ export type CropperProps = {
   onBoxClick?: UpdateFunction;
   onLoad?: ImgOnLoadWithImageData;
   onCrop?: CropTriggerFunctionWithImageData;
+  onSelect?: SelectionHandler;
   onZoomGesture?: (newZoom: number, prevZoom: number) => any;
   containerClassName?: string;
   containerStyles?: CSSProperties;

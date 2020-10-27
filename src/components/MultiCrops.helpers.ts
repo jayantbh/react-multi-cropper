@@ -14,7 +14,9 @@ import {
   Dispatch,
   MutableRefObject,
   SetStateAction,
+  useCallback,
   useEffect,
+  useRef,
 } from 'react';
 import { Box } from './Box';
 import { CropperCursorMode } from '../types';
@@ -87,7 +89,7 @@ export const getCroppedImageFromBox = (
     );
     let activeObject = canvas.getActiveObject();
     canvas.discardActiveObject();
-    canvas.renderAll();
+    canvas.requestRenderAll();
     let activeObject1: any = new fabric.ActiveSelection([image, box], {
       hasRotatingPoint: false,
     });
@@ -111,7 +113,7 @@ export const getCroppedImageFromBox = (
     if (activeObject) {
       canvas.setActiveObject(activeObject);
     }
-    canvas.renderAll();
+    canvas.requestRenderAll();
     const finalImageUrl = imageDataToDataUrl(rotatedImageData);
     if (!finalImageUrl) return;
     map = { ...map, [box.id]: finalImageUrl };
@@ -125,67 +127,110 @@ export const useScrollbars = (canvas?: any, image?: any): any => {
   return getScrollPositions(canvas, image);
 };
 
+export function usePrevious<T>(value: T): T {
+  const ref = useRef<T>(value);
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
+export const useFrame = (fn: (...args: any[]) => any) => {
+  const frameRef = useRef(-1);
+
+  return useCallback(
+    (..._args: any[]) => {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = requestAnimationFrame(() => fn(..._args));
+    },
+    [fn]
+  );
+};
+
 export const useRotation = (
+  src: string,
   image: fabric.Image,
   canvas: fabric.Canvas | null,
-  container: any,
+  nativeCanvas: HTMLCanvasElement | null,
+  // container: any,
   rotation: number,
   rotationRef: MutableRefObject<number | undefined>,
   isReset: MutableRefObject<boolean | undefined>
 ) => {
+  const prevSrc = usePrevious(src);
+
   useEffect(() => {
+    if (src !== prevSrc) return;
     if (!canvas || !image) return;
-
-    canvas.discardActiveObject();
-    canvas.renderAll();
-    let activeObject = new fabric.ActiveSelection(
-      [image, ...canvas.getObjects()],
-      {
-        hasControls: true,
-      }
-    );
-    canvas.setActiveObject(activeObject);
-    if (activeObject != null) {
-      activeObject.rotate(rotation - (rotationRef.current || 0));
-
-      canvas.discardActiveObject();
-
-      canvas.renderAll();
-    }
-    rotationRef.current = rotation;
     if (isReset.current) {
-      resetToCenter(image, canvas, container);
       isReset.current = false;
+      rotationRef.current = 0;
+      return;
     }
-  }, [rotation, isReset.current]);
+    // if (isReset.current) {
+    //   isReset.current = false;
+    //   console.log(rotation, rotationRef.current);
+    //   image.rotate(rotation - (rotationRef.current || 0));
+    //
+    //   rotationRef.current = rotation;
+    //   return;
+    // }
+
+    canvas.discardActiveObject().requestRenderAll();
+
+    let activeObject = new fabric.ActiveSelection([
+      image,
+      ...canvas.getObjects(),
+    ]);
+    canvas.setActiveObject(activeObject);
+
+    activeObject.rotate(rotation - (rotationRef.current || 0));
+
+    canvas.discardActiveObject().requestRenderAll();
+
+    rotationRef.current = rotation;
+    // if (isReset.current) {
+    //   resetToCenter(image, canvas, container);
+    //   isReset.current = false;
+    // }
+
+    performCanvasPaint(image, canvas, nativeCanvas, rotation);
+  }, [rotation, isReset.current, src, prevSrc]);
 };
 
 export const resetToCenter = (
   image: fabric.Image,
   canvas: fabric.Canvas,
-  container: any
+  container: HTMLDivElement,
+  shiftBoxes: boolean = false
 ) => {
+  shiftBoxes;
+  // console.trace('fn called', shiftBoxes);
   canvas.setDimensions({
     width: container?.offsetWidth || 1000,
     height: container?.offsetHeight || 1000,
   });
-  let imgValues = getCenterCoords(image);
   let dimensions: any = getImageDimensions(image, canvas.getElement());
   let x = (canvas.getWidth() - dimensions.width) / 2;
   let y = (canvas.getHeight() - dimensions.height) / 2;
-  image.set({ left: x, top: y });
-  let newImgValues = getCenterCoords(image);
-  const diffx = -1 * (imgValues.translateX - newImgValues.translateX);
-  const diffy = -1 * (imgValues.translateY - newImgValues.translateY);
+  console.log(x, y);
+  image.set({ left: x, top: y, angle: 0 });
 
-  [...canvas.getObjects()].map((rect) => {
-    const translateX = (rect.left || 0) + diffx;
-    const translateY = (rect.top || 0) + diffy;
-    rect.set({ left: translateX, top: translateY });
-    rect.setCoords();
-    return;
-  });
-  canvas.renderAll();
+  // if (true) {
+  //   let imgValues = getCenterCoords(image);
+  //   let newImgValues = getCenterCoords(image);
+  //   const diffx = -1 * (imgValues.translateX - newImgValues.translateX);
+  //   const diffy = -1 * (imgValues.translateY - newImgValues.translateY);
+  //   console.log(diffx, diffy);
+  //
+  //   [...canvas.getObjects()].forEach((rect) => {
+  //     const translateX = (rect.left || 0) + diffx;
+  //     const translateY = (rect.top || 0) + diffy;
+  //     rect.set({ left: translateX, top: translateY });
+  //     rect.setCoords();
+  //   });
+  // }
+  canvas.requestRenderAll();
 };
 
 export const useCursor = (

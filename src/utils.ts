@@ -1,22 +1,6 @@
 import { fabric } from 'fabric';
-
-export function update<T>(index: number, item: T, items: T[]): T[] {
-  return [...items.slice(0, index), item, ...items.slice(index + 1)];
-}
-
-export function remove<T>(index: number, count: number, items: T[]): T[] {
-  const _items = [...items];
-  _items.splice(index, count);
-  return _items;
-}
-
-export const oneLevelEquals = (o1: object = {}, o2: object = {}) => {
-  const keys = Object.keys(o1);
-  return (
-    keys.length === Object.keys(o2).length &&
-    Object.keys(o1).every((key) => o1[key] === o2[key])
-  );
-};
+import { CropperBox } from './types';
+import { BoxType } from './components/Box';
 
 export const imageDataToDataUrl = (imageData: ImageData): string | null => {
   const canvas = document.createElement('canvas');
@@ -72,3 +56,15 @@ export const getScrollPositions = (canvas: fabric.Canvas, image: DOMRect) => {
   const ht = (top / (imageHeight * zoom * 2)) * 100;
   return zoom < 1 ? { wl: 0, wr: 0, ht: 0, hb: 0 } : { wl, wr, ht, hb };
 };
+
+export const fabricRectToCropperBox = (rect: BoxType): CropperBox => ({
+  id: rect.id,
+  width: rect.width,
+  height: rect.height,
+  angle: rect.angle,
+  left: rect.left,
+  top: rect.top,
+  style: rect.style,
+  meta: rect.meta,
+  noImage: rect.noImage,
+});

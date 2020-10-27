@@ -261,6 +261,8 @@ declare module 'fabric' {
 
     export interface Object {
       controls: any;
+      id: string;
+      manualDeletion?: true;
     }
   }
 }
