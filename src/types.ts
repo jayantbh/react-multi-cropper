@@ -20,6 +20,7 @@ export type CropperBox<T = any> = {
   style?: CSSProperties | ((css: CSSProperties) => CSSProperties);
   noImage?: boolean;
   meta?: T;
+  showCross?: boolean;
 };
 
 export type CropperBoxDataMap = {

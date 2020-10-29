@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 import { fabric } from 'fabric';
 import { CropperBox } from './types';
 import { BoxType } from './components/Box';
@@ -9,7 +11,6 @@ export const imageDataToDataUrl = (imageData: ImageData): string | null => {
 
   canvas.width = imageData.width;
   canvas.height = imageData.height;
-  console.log(imageData.width, imageData.height);
   ctx.putImageData(imageData, 0, 0);
 
   return canvas.toDataURL();
@@ -70,3 +71,21 @@ export const fabricRectToCropperBox = (
   meta: rect.meta,
   noImage: rect.noImage,
 });
+
+export const getAbsoluteDetectedBoxes = (
+  parent: CropperBox,
+  children: Array<[number, number, number, number]>
+): CropperBox[] => {
+  const { top: tx, left: lx, angle } = parent;
+  return children.map((child) => {
+    const [top, left, width, height] = child;
+    return {
+      left: left + lx,
+      top: top + tx,
+      width,
+      height,
+      angle,
+      id: uuid(),
+    };
+  });
+};

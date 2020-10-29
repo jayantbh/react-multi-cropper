@@ -7,9 +7,6 @@ export type BoxType = IRectOptions & CropperBox;
 const defaults = {
   fill: 'transparent',
   hasControls: true,
-  borderColor: 'black',
-  borderWidth: '2px',
-  hasBorders: true,
   strokeWidth: 2,
   stroke: 'black',
   strokeUniform: true,
@@ -19,7 +16,7 @@ const defaults = {
   transparentCorners: true,
 };
 
-const controlVisibilities = {
+const controlVisibilities = (showCross: boolean = true) => ({
   bl: false,
   br: false,
   mb: false,
@@ -27,19 +24,21 @@ const controlVisibilities = {
   mr: false,
   mt: false,
   tl: false,
-  tr: true,
+  tr: showCross,
   mtr: false,
-};
+});
 
 export const Box = fabric.util.createClass(fabric.Rect, {
   initialize(options: BoxType, zoom = 1) {
     this.callSuper('initialize', {
       ...defaults,
-      _controlsVisibility: controlVisibilities,
+      _controlsVisibility: controlVisibilities(options.showCross),
       ...options,
       strokeWidth: 2 / zoom,
-      style: undefined, // clear options.style being set
-      ...(options.style || {}),
+      style: options.style, // just stored for persistence purposes
+      ...(typeof options.style === 'function'
+        ? options.style(defaults)
+        : options.style || {}),
     });
   },
 });

@@ -35,7 +35,6 @@ export const getCroppedImageFromBox = (
     enableRetinaScaling: true,
   });
 
-  console.log('BOX', box);
   canvas.add(...objects);
   canvas.requestRenderAll();
   return { [box.id]: data };
@@ -76,7 +75,6 @@ export const performRotation = (
   let center = new fabric.Point(cx, cy);
   let radians = fabric.util.degreesToRadians(rotDiff);
 
-  console.log('img rot', image.angle, rotation, rotDiff);
   if (image.angle !== rotation) {
     image.angle = rotation;
     let origin = new fabric.Point(image?.left || 0, image?.top || 0);
@@ -147,10 +145,11 @@ export const useRotation = (
 };
 
 export const resetToCenter = (
-  image: fabric.Image,
-  canvas: fabric.Canvas,
-  container: HTMLDivElement
+  image: fabric.Image | null,
+  canvas: fabric.Canvas | null,
+  container: HTMLDivElement | null
 ) => {
+  if (!image || !canvas) return;
   canvas.setDimensions({
     width: container?.offsetWidth || 1000,
     height: container?.offsetHeight || 1000,
@@ -159,13 +158,12 @@ export const resetToCenter = (
   let dimensions: any = getImageDimensions(image, canvas.getElement());
   let x = (canvas.getWidth() - dimensions.width) / 2;
   let y = (canvas.getHeight() - dimensions.height) / 2;
-  console.log('Img origin', x, y);
+
   image.set({ left: x, top: y });
 
   let { x: x2, y: y2 } = image.getCenterPoint();
   const diffX = x2 - x1;
   const diffY = y2 - y1;
-  console.log('Diffs', diffX, diffY);
 
   let anchor = new fabric.Point(x, y);
 

@@ -263,6 +263,10 @@ declare module 'fabric' {
       controls: any;
       id: string;
       manualDeletion?: true;
+      showCross?: boolean;
+      style?: {
+        [key in string]: any;
+      } & { hover: object };
     }
 
     export interface Rect {
