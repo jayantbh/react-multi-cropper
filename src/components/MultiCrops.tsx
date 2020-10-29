@@ -32,8 +32,6 @@ const blankStyles = {};
 import '../fabric.d.ts';
 import { equals } from 'ramda';
 
-const img = document.createElement('img');
-img.src = cross;
 const renderIcon = function (
   this: fabric.Rect,
   ctx: CanvasRenderingContext2D,
@@ -41,6 +39,9 @@ const renderIcon = function (
   top: number,
   obj: fabric.Object
 ) {
+  const img = document.createElement('img');
+  img.src = cross;
+
   const size = this.cornerSize || 1;
   ctx.save();
   ctx.translate(left, top);
