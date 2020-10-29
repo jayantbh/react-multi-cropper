@@ -68,7 +68,7 @@ export type CropTriggerFunctionWithImageData = (
 export type UpdateFunction = (
   event: CropperEvent,
   box: CropperBox | undefined,
-  index: number | undefined,
+  index?: number,
   boxes?: CropperBox[]
 ) => any;
 

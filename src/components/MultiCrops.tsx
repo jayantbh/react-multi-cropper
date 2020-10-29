@@ -129,7 +129,13 @@ const MultiCrops: FC<CropperProps> = ({
   // fabricjs  mouse event listeners
   const attachListeners = () => {
     canvasFab.current?.on('mouse:down', (e: any) => {
+      if (!e.target) return;
       if (e.target?.type !== 'rect') handleMouseDown(e);
+      else
+        props.onBoxClick?.(
+          { type: 'click', event: e },
+          fabricRectToCropperBox(e.target)
+        );
     });
     canvasFab.current?.on('mouse:move', (e: any) => {
       handleMouseMove(e);
@@ -138,14 +144,23 @@ const MultiCrops: FC<CropperProps> = ({
       handleMouseUp(e);
     });
     canvasFab.current?.on('mouse:over', function (e) {
+      if (!e.target) return;
+
       e.target?.set({
         hasControls: e.target.showCross ?? true,
         ...(e.target.style?.hover || {}),
       });
+
+      props.onBoxMouseEnter?.(
+        { event: e, type: 'mouse-enter' },
+        fabricRectToCropperBox(e.target as typeof Box)
+      );
       canvasFab.current?.requestRenderAll();
     });
 
     canvasFab.current?.on('mouse:out', function (e) {
+      if (!e.target) return;
+
       const styleWithoutHover = {
         ...(e.target?.style || {}),
         hover: undefined,
@@ -154,6 +169,11 @@ const MultiCrops: FC<CropperProps> = ({
         hasControls: e.target.showCross ?? false,
         ...styleWithoutHover,
       });
+
+      props.onBoxMouseEnter?.(
+        { event: e, type: 'mouse-leave' },
+        fabricRectToCropperBox(e.target as typeof Box)
+      );
       canvasFab.current?.requestRenderAll();
     });
     canvasFab.current?.on('object:removed', (e: IEvent) => {
@@ -325,11 +345,7 @@ const MultiCrops: FC<CropperProps> = ({
   // cursor changed from draw to zoom
   useEffect(() => {
     if (!canvasFab.current) return;
-    if (cursorMode == 'select') {
-      canvasFab.current.selection = true;
-    } else {
-      canvasFab.current.selection = false;
-    }
+    canvasFab.current.selection = cursorMode === 'select';
 
     drawMode.current = {
       cursorMode,
