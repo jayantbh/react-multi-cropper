@@ -46,6 +46,7 @@ const pluginsTsExt = [
 const commonExternal = [
   'react',
   'react-dom',
+  'fabric',
 ];
 const commonConfig = {
   exports: 'named',
