@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 import { fabric } from 'fabric';
 import { CropperBox } from './types';
-import { BoxType } from './components/Box';
+import { Box, BoxType } from './components/Box';
 
 export const imageDataToDataUrl = (imageData: ImageData): string | null => {
   const canvas = document.createElement('canvas');
@@ -59,7 +59,7 @@ export const getScrollPositions = (canvas: fabric.Canvas, image: DOMRect) => {
 };
 
 export const fabricRectToCropperBox = (
-  rect: BoxType & fabric.Object
+  rect: BoxType & fabric.Object & typeof Box
 ): CropperBox => ({
   id: rect.id,
   width: rect.width,
@@ -70,6 +70,7 @@ export const fabricRectToCropperBox = (
   style: rect.style,
   meta: rect.meta,
   noImage: rect.noImage,
+  showCross: rect.showCross,
 });
 
 export const getAbsoluteDetectedBoxes = (

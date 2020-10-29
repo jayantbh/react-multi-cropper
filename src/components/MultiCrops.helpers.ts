@@ -15,10 +15,18 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { CropperCursorMode, CropperProps } from '../types';
+import { CropperProps } from '../types';
 
+export const boxSaveTimerDuration = 50;
+let boxSaveTimerId = -1;
+export const boxSaveTimeout = (cb: Function) => {
+  clearTimeout(boxSaveTimerId);
+  // @ts-ignore
+  boxSaveTimerId = setTimeout(cb, boxSaveTimerDuration);
+};
+
+// This implementation makes the snipped image quality be dependent on the canvas, and not the image.
 export const getCroppedImageFromBox = (
-  _image: fabric.Image,
   canvas: fabric.Canvas | null,
   box: fabric.Rect
 ) => {
@@ -32,7 +40,6 @@ export const getCroppedImageFromBox = (
     top: box.lineCoords.tl.y,
     width: (box.width || 1) * zoom,
     height: (box.height || 1) * zoom,
-    enableRetinaScaling: true,
   });
 
   canvas.add(...objects);
@@ -108,7 +115,6 @@ export const useRotation = (
 ) => {
   const prevSrc = usePrevious(src);
   const rotFrame = useRef(-1);
-  const rotTimerRef = useRef(-1);
 
   useEffect(() => {
     if (src !== prevSrc) return;
@@ -128,16 +134,14 @@ export const useRotation = (
         rotation - (rotationRef.current || 0)
       );
 
-      clearTimeout(rotTimerRef.current);
-      // @ts-ignore
-      rotTimerRef.current = setTimeout(() => {
+      boxSaveTimeout(() => {
         onChange?.(
           { type: 'rotate' },
           undefined,
           undefined,
           canvas.getObjects().map(fabricRectToCropperBox)
         );
-      }, 500);
+      });
 
       rotationRef.current = rotation;
     });
@@ -192,26 +196,6 @@ export const resetToCenter = (
   image.set({ angle: 0 });
 
   canvas.requestRenderAll();
-};
-
-export const useCursor = (
-  canvas: any,
-  attachListeners: Function,
-  detachListeners: Function,
-  cursorMode: CropperCursorMode
-) => {
-  useEffect(() => {
-    if (!canvas) return;
-
-    if (cursorMode === 'select') {
-      canvas.set({ selection: true });
-    } else {
-      canvas.set({ selection: false });
-    }
-
-    attachListeners();
-    return () => detachListeners();
-  }, [cursorMode]);
 };
 
 export const useZoom = (

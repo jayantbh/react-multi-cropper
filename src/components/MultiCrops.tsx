@@ -7,7 +7,6 @@ import css from './MultiCrops.module.scss';
 import cross from '../cross.svg';
 import {
   Coordinates,
-  // CropperBox,
   CropperEvent,
   CropperProps,
   CurrentImgParam,
@@ -21,6 +20,7 @@ import {
   useWheelEvent,
   resetToCenter,
   usePrevious,
+  boxSaveTimeout,
 } from './MultiCrops.helpers';
 import Scrollbar from './Scrollbar';
 const scrollbarSpacing = 6;
@@ -50,9 +50,11 @@ const renderIcon = function (
   ctx.restore();
 };
 
-const deleteObject: IControlActionHandlerFunction = (_e, target) => {
+const deleteObject: IControlActionHandlerFunction = (e, target) => {
   const { canvas } = target;
   if (!canvas) return false;
+
+  e.stopPropagation();
 
   target.manualDeletion = true;
   canvas.remove(target);
@@ -60,20 +62,16 @@ const deleteObject: IControlActionHandlerFunction = (_e, target) => {
   return true;
 };
 
-fabric.Object.prototype.cornerColor = 'blue';
-fabric.Object.prototype.cornerStyle = 'circle';
 fabric.Object.prototype.controls;
 fabric.Object.prototype.controls.tr = new fabric.Control({
   x: 0.5,
   y: -0.5,
   offsetY: 0,
   cursorStyle: 'pointer',
-  mouseUpHandler: deleteObject,
+  mouseDownHandler: deleteObject,
   render: renderIcon,
   cornerSize: 24,
 });
-fabric.Object.prototype.cornerSize = 8;
-fabric.Object.prototype.transparentCorners = false;
 
 const MultiCrops: FC<CropperProps> = ({
   cursorMode = 'draw',
@@ -119,24 +117,37 @@ const MultiCrops: FC<CropperProps> = ({
     if (!fab) return;
 
     fab.remove(...fab.getObjects());
-    fab.add(...boxes.map((box) => new Box(box, zoom)));
+    let activeBox: typeof Box | undefined;
+    fab.add(
+      ...boxes.map((box) => {
+        const b = new Box(box, zoom);
+        if (b.id === lastSelectedBox.current?.id) activeBox = b;
+        return b;
+      })
+    );
 
-    canvasFab.current?.renderAll();
+    activeBox && canvasFab.current?.setActiveObject(activeBox);
+
+    canvasFab.current?.requestRenderAll();
   };
 
   const getSelections = (box: typeof Box) =>
-    getCroppedImageFromBox(imageRef.current, canvasFab.current, box);
+    getCroppedImageFromBox(canvasFab.current, box);
 
-  // fabricjs  mouse event listeners
+  const lastSelectedBox = useRef<fabric.Rect | null>(null);
+
   const attachListeners = () => {
     canvasFab.current?.on('mouse:down', (e: any) => {
-      if (!e.target) return;
-      if (e.target?.type !== 'rect') handleMouseDown(e);
-      else
+      if (e.target?.type === 'rect') {
         props.onBoxClick?.(
           { type: 'click', event: e },
           fabricRectToCropperBox(e.target)
         );
+        lastSelectedBox.current = e.target;
+      } else {
+        lastSelectedBox.current = null;
+        handleMouseDown(e);
+      }
     });
     canvasFab.current?.on('mouse:move', (e: any) => {
       handleMouseMove(e);
@@ -167,13 +178,15 @@ const MultiCrops: FC<CropperProps> = ({
         hover: undefined,
       };
       e.target?.set({
-        hasControls: e.target.showCross ?? false,
+        hasControls:
+          (e.target.showCross || e.target.id === lastSelectedBox.current?.id) ??
+          false,
         ...styleWithoutHover,
       });
 
       props.onBoxMouseEnter?.(
         { event: e, type: 'mouse-leave' },
-        fabricRectToCropperBox(e.target as typeof Box)
+        fabricRectToCropperBox(e.target)
       );
       canvasFab.current?.requestRenderAll();
     });
@@ -182,13 +195,14 @@ const MultiCrops: FC<CropperProps> = ({
 
       imageMapRef.current[e.target?.id ?? ''] = undefined;
 
-      onChange?.(
+      props.onDelete?.(
         { type: 'delete', event: e.e },
-        lastUpdatedBox.current,
-        drawingIndex.current,
-        (canvasFab.current?.getObjects() as BoxType[]).map(
-          fabricRectToCropperBox
-        )
+        fabricRectToCropperBox(e.target),
+        undefined,
+        canvasFab.current
+          ?.getObjects()
+          .filter((b) => b.id !== e.target?.id)
+          .map(fabricRectToCropperBox)
       );
       isDrawing.current = false;
     });
@@ -251,6 +265,15 @@ const MultiCrops: FC<CropperProps> = ({
     });
 
     fab.requestRenderAll();
+
+    boxSaveTimeout(() => {
+      onChange?.(
+        { type: 'pan' },
+        undefined,
+        undefined,
+        fab.getObjects().map(fabricRectToCropperBox)
+      );
+    });
   }, [boxInView]);
 
   // change image src
@@ -333,6 +356,14 @@ const MultiCrops: FC<CropperProps> = ({
     props.onLoad?.(imageMapRef.current, cb);
   }, []);
 
+  useEffect(() => {
+    const canvas = canvasFab.current;
+    if (!canvas) return;
+
+    canvas.selection = cursorMode === 'select';
+    canvas.requestRenderAll();
+  }, [cursorMode]);
+
   // rotation
   useRotation(
     props.src,
@@ -346,7 +377,6 @@ const MultiCrops: FC<CropperProps> = ({
   // cursor changed from draw to zoom
   useEffect(() => {
     if (!canvasFab.current) return;
-    canvasFab.current.selection = cursorMode === 'select';
 
     drawMode.current = {
       cursorMode,
@@ -387,26 +417,27 @@ const MultiCrops: FC<CropperProps> = ({
 
     const { cursorMode } = drawMode.current;
     if (cursorMode === 'pan') {
-      pointA.current = canvasFab.current?.getPointer((e as unknown) as Event);
+      pointA.current = canvasFab.current.getPointer((e as unknown) as Event);
       setIsPanning(true);
     } else if (cursorMode === 'draw') {
-      canvasFab.current.selection = false;
-      pointA.current = canvasFab.current?.getPointer((e as unknown) as Event);
-      drawingIndex.current = canvasFab.current?.getObjects().length;
+      pointA.current = canvasFab.current.getPointer((e as unknown) as Event);
+      drawingIndex.current = canvasFab.current.getObjects().length;
       id.current = uuid();
       isDrawing.current = true;
 
-      let rect = new Box({
-        id: id.current,
-        rotation: rotationRef.current,
-        top: pointA.current.y,
-        left: pointA.current.x,
-        strokeWidth: 2 / zoomRef.current,
-      });
-      canvasFab.current?.add(rect);
+      let rect = new Box(
+        {
+          id: id.current,
+          angle: rotationRef.current,
+          top: pointA.current.y,
+          left: pointA.current.x,
+        },
+        zoomRef.current
+      );
+      canvasFab.current.add(rect);
       lastUpdatedBox.current = rect;
 
-      canvasFab.current?.requestRenderAll();
+      canvasFab.current.requestRenderAll();
     }
   };
   const handleMouseMove = (e: MouseEvent) => {
@@ -451,13 +482,6 @@ const MultiCrops: FC<CropperProps> = ({
       });
       canvasFab.current?.requestRenderAll();
       lastUpdatedBox.current = rect;
-      // const nextBoxes = [...boxes, lastUpdatedBox.current];
-      // onChange?.(
-      //   { type: 'draw', event: e },
-      //   lastUpdatedBox.current,
-      //   drawingIndex.current,
-      //   ((canvasFab.current?.getObjects() || []) as unknown) as CropperBox[]
-      // );
     }
   };
   const handleMouseUp = (e: MouseEvent) => {
@@ -468,7 +492,6 @@ const MultiCrops: FC<CropperProps> = ({
     if (cursorMode === 'pan') {
       // do nothing
     } else if (cursorMode === 'draw') {
-      fab.selection = true;
       if (!isDrawing.current) return;
       isDrawing.current = false;
 
@@ -477,6 +500,7 @@ const MultiCrops: FC<CropperProps> = ({
         fab.remove(box);
       } else {
         fab.setActiveObject(box);
+        lastSelectedBox.current = box;
         handleCrop('draw-end', box);
       }
 
@@ -501,7 +525,6 @@ const MultiCrops: FC<CropperProps> = ({
     props.onChange?.(e, box, index, boxes);
   };
 
-  const panTimerRef = useRef(-1);
   useWheelEvent(
     containerRef,
     (e: WheelEvent) => {
@@ -529,16 +552,14 @@ const MultiCrops: FC<CropperProps> = ({
             return fabricRectToCropperBox(obj);
           });
 
-          clearTimeout(panTimerRef.current);
-          // @ts-ignore
-          panTimerRef.current = setTimeout(() => {
+          boxSaveTimeout(() => {
             props.onChange?.(
               { event: e, type: 'pan' },
               undefined,
               undefined,
               boxes
             );
-          }, 500);
+          });
 
           setScrollPositions(
             useScrollbars(canvasFab.current, imageRef.current)

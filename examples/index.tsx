@@ -92,8 +92,8 @@ const App = () => {
   }, [src]);
 
   const updateBoxes: UpdateFunction = useCallback(
-    (_e, _bx, i, _boxes) => {
-      if (i && !fileBoxesMap[src]?.[i] && _boxes)
+    (_e, _bx, i = 0, _boxes) => {
+      if (i >= 0 && !fileBoxesMap[src]?.[i] && _boxes)
         _boxes[i] = { ..._boxes[i], showCross: false };
 
       console.log(_boxes);
@@ -123,13 +123,6 @@ const App = () => {
   const handleClick: UpdateFunction = useCallback(
     (_e, bx, _i) => {
       console.log('click');
-      setFileBoxesMap((boxMap) => ({
-        ...boxMap,
-        [src]: boxMap[src]?.map((box) => ({
-          ...box,
-          labelStyle: box.id === bx?.id ? {} : { display: 'none' },
-        })),
-      }));
       bx && setBoxInView({ id: bx.id });
     },
     [src, setBoxInView, setFileBoxesMap]
@@ -162,31 +155,22 @@ const App = () => {
   useEffect(reset, [src]);
 
   const handleCrop = useCallback(
-    (e, map, currentImg, selectedBoxes = []) => {
-      console.log('Crop', e, map, currentImg?.boxId);
+    (e, map, currentImg, box) => {
+      console.log('Crop', e, map, currentImg?.boxId, box);
       if (e.type === 'draw-end') {
         if (!currentImg) return;
-        const { dataUrl, boxId } = currentImg;
-        setImageMap((im) => ({ ...im, [boxId]: dataUrl }));
+        if (currentImg) {
+          const { dataUrl, boxId } = currentImg;
+          setImageMap((im) => ({ ...im, [boxId]: dataUrl }));
+        }
+
+        if (box) {
+          setFileBoxesMap((map) => ({
+            ...map,
+            [src]: [...(map[src] || []), box],
+          }));
+        }
       } else if (e.type === 'load') setImageMap(map);
-      else if (e.type === 'select') {
-        setFileBoxesMap((boxMap) => ({
-          ...boxMap,
-          [src]: boxMap[src]?.map((box) => {
-            const isSelected = !!selectedBoxes[box.id];
-            return {
-              ...box,
-              style: {
-                ...(typeof box.style === 'function'
-                  ? box.style({})
-                  : box.style),
-                boxShadow: `0 0 0 2px ${isSelected ? '#0a9' : '#ff0'}`,
-              },
-            };
-          }),
-        }));
-        return;
-      }
     },
     [src]
   );
@@ -242,7 +226,13 @@ const App = () => {
           </Button>
           <Button
             onClick={() =>
-              setCursorMode(cursorMode === 'draw' ? 'pan' : 'draw')
+              setCursorMode(
+                cursorMode === 'draw'
+                  ? 'pan'
+                  : cursorMode === 'pan'
+                  ? 'select'
+                  : 'draw'
+              )
             }
           >
             Toggle Mode [{cursorMode}]
@@ -427,6 +417,17 @@ const App = () => {
           onSetRotation={setRotation}
           imageStyles={imageStyles}
           disableMouse={disableMouse}
+          onSelect={(map) => {
+            setFileBoxesMap((boxMap) => ({
+              ...boxMap,
+              [src]: boxMap[src]?.map((box) =>
+                !!map[box.id]
+                  ? { ...box, style: { stroke: 'yellow' } }
+                  : { ...box, style: { stroke: 'red' } }
+              ),
+            }));
+            console.log('On select', map);
+          }}
         />
       </div>
       {(fileBoxesMap[src] || []).map(
