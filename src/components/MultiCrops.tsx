@@ -298,27 +298,28 @@ const MultiCrops: FC<CropperProps> = ({
     } else {
       fabric.Image.fromURL(
         imageSource.current,
-        (img: any) => {
+        (img: fabric.Image) => {
           if (!canvasFab.current) return;
           img.set('objectCaching', false);
           let dimensions: any = getImageDimensions(
             img,
-            canvasFab.current?.getElement()
+            canvasFab.current.getElement()
           );
-          let x = (canvasFab.current?.getWidth() - dimensions.width) / 2;
-          let y = (canvasFab.current?.getHeight() - dimensions.height) / 2;
+          let x = (canvasFab.current.getWidth() - dimensions.width) / 2;
+          let y = (canvasFab.current.getHeight() - dimensions.height) / 2;
           imageRef.current = img;
           imageSrcMap.current[imageSource.current] = img;
           img.scaleToWidth(dimensions.width);
           img.scaleToHeight(dimensions.height);
           img.set('left', x);
           img.set('top', y);
-          canvasFab.current?.setBackgroundImage(img, () => {});
-          canvasFab.current?.requestRenderAll();
+          img.setCoords();
+          canvasFab.current.setBackgroundImage(img, () => {});
           attachListeners();
           setScrollPositions(
             useScrollbars(canvasFab.current, imageRef.current)
           );
+          canvasFab.current.requestRenderAll();
         },
         {
           selectable: false,
@@ -500,6 +501,7 @@ const MultiCrops: FC<CropperProps> = ({
         fab.remove(box);
       } else {
         fab.setActiveObject(box);
+        console.log(box);
         lastSelectedBox.current = box;
         handleCrop('draw-end', box);
       }

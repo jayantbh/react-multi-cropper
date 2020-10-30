@@ -21,7 +21,10 @@ export const getCenterCoords = (image: any) => {
   return values;
 };
 
-export const getImageDimensions = (image: any, container: any) => {
+export const getImageDimensions = (
+  image: fabric.Image,
+  container: HTMLCanvasElement
+) => {
   const imageRefHeight = image.height || 0;
   const imageRefWidth = image.width || 0;
   const containerRefHeight = container?.offsetHeight || 0;
@@ -39,7 +42,10 @@ export const getImageDimensions = (image: any, container: any) => {
   return { height: imgBaseHeight, width: imgBaseWidth };
 };
 
-export const getScrollPositions = (canvas: fabric.Canvas, image: DOMRect) => {
+export const getScrollPositions = (
+  canvas: fabric.Canvas,
+  image: fabric.Image
+) => {
   const canHeight = canvas.getHeight();
   const canWidth = canvas.getWidth();
   let zoom = canvas.getZoom();
@@ -47,10 +53,13 @@ export const getScrollPositions = (canvas: fabric.Canvas, image: DOMRect) => {
     image,
     canvas.getElement()
   );
-  const bottom = Math.max((image.top + imageHeight) * zoom - canHeight, 0);
-  const top = Math.max(-image.top * zoom, 0);
-  const right = Math.max((image.left + imageWidth) * zoom - canWidth, 0);
-  const left = Math.max(-image.left * zoom, 0);
+  const bottom = Math.max(
+    ((image.top || 0) + imageHeight) * zoom - canHeight,
+    0
+  );
+  const top = Math.max(-(image.top || 0) * zoom, 0);
+  const right = Math.max(((image.left || 0) + imageWidth) * zoom - canWidth, 0);
+  const left = Math.max(-(image.left || 0) * zoom, 0);
   const wr = (right / (imageWidth * zoom * 2)) * 100;
   const wl = (left / (imageWidth * zoom * 2)) * 100;
   const hb = (bottom / (imageHeight * zoom * 2)) * 100;

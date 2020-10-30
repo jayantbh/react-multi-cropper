@@ -36,8 +36,8 @@ export const getCroppedImageFromBox = (
 
   const zoom = canvas.getZoom();
   const data = canvas.toDataURL({
-    left: box.lineCoords.tl.x,
-    top: box.lineCoords.tl.y,
+    top: box.top,
+    left: box.left,
     width: (box.width || 1) * zoom,
     height: (box.height || 1) * zoom,
   });
