@@ -80,6 +80,7 @@ export const fabricRectToCropperBox = (
   meta: rect.meta,
   noImage: rect.noImage,
   showCross: rect.showCross,
+  layer: rect.layer,
 });
 
 export const getAbsoluteDetectedBoxes = (
