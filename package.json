@@ -1,6 +1,6 @@
 {
   "name": "react-multi-cropper",
-  "version": "0.1.5-fabric",
+  "version": "0.1.6-fabric",
   "main": "dist/index.js",
   "license": "MIT",
   "author": {
