@@ -117,18 +117,22 @@ const MultiCrops: FC<CropperProps> = ({
     if (!fab) return;
 
     fab.remove(...fab.getObjects());
-    let activeBox: typeof Box | undefined;
-    fab.add(
-      ...boxes.map((box) => {
-        const b = new Box(box, zoom);
-        if (b.id === lastSelectedBox.current?.id) activeBox = b;
-        return b;
-      })
-    );
 
-    activeBox && canvasFab.current?.setActiveObject(activeBox);
+    boxes.forEach((box) => {
+      const b = new Box(box, zoom);
+      fab.add(b);
+      switch (b.layer) {
+        case -1:
+          b.sendToBack();
+          break;
+        case 1:
+          b.bringToFront();
+          break;
+      }
+      if (b.id === lastSelectedBox.current?.id) fab.setActiveObject(b);
+    });
 
-    canvasFab.current?.requestRenderAll();
+    fab.requestRenderAll();
   };
 
   const getSelections = (box: typeof Box) =>
@@ -137,7 +141,10 @@ const MultiCrops: FC<CropperProps> = ({
   const lastSelectedBox = useRef<fabric.Rect | null>(null);
 
   const attachListeners = () => {
-    canvasFab.current?.on('mouse:down', (e: any) => {
+    const fab = canvasFab.current;
+    if (!fab) return;
+
+    fab.on('mouse:down', (e: any) => {
       if (e.target?.type === 'rect') {
         props.onBoxClick?.(
           { type: 'click', event: e },
@@ -149,13 +156,13 @@ const MultiCrops: FC<CropperProps> = ({
         handleMouseDown(e);
       }
     });
-    canvasFab.current?.on('mouse:move', (e: any) => {
+    fab.on('mouse:move', (e: any) => {
       handleMouseMove(e);
     });
-    canvasFab.current?.on('mouse:up', (e: any) => {
+    fab.on('mouse:up', (e: any) => {
       handleMouseUp(e);
     });
-    canvasFab.current?.on('mouse:over', function (e) {
+    fab.on('mouse:over', function (e) {
       if (!e.target) return;
 
       e.target?.set({
@@ -167,10 +174,10 @@ const MultiCrops: FC<CropperProps> = ({
         { event: e, type: 'mouse-enter' },
         fabricRectToCropperBox(e.target as typeof Box)
       );
-      canvasFab.current?.requestRenderAll();
+      fab.requestRenderAll();
     });
 
-    canvasFab.current?.on('mouse:out', function (e) {
+    fab.on('mouse:out', function (e) {
       if (!e.target) return;
 
       const styleWithoutHover = {
@@ -188,9 +195,9 @@ const MultiCrops: FC<CropperProps> = ({
         { event: e, type: 'mouse-leave' },
         fabricRectToCropperBox(e.target)
       );
-      canvasFab.current?.requestRenderAll();
+      fab.requestRenderAll();
     });
-    canvasFab.current?.on('object:removed', (e: IEvent) => {
+    fab.on('object:removed', (e: IEvent) => {
       if (!e.target?.manualDeletion) return;
 
       imageMapRef.current[e.target?.id ?? ''] = undefined;
@@ -199,19 +206,19 @@ const MultiCrops: FC<CropperProps> = ({
         { type: 'delete', event: e.e },
         fabricRectToCropperBox(e.target),
         undefined,
-        canvasFab.current
-          ?.getObjects()
+        fab
+          .getObjects()
           .filter((b) => b.id !== e.target?.id)
           .map(fabricRectToCropperBox)
       );
       isDrawing.current = false;
     });
   };
+
   const detachListeners = () => {
     canvasFab.current?.off('mouse:down');
     canvasFab.current?.off('mouse:move');
     canvasFab.current?.off('mouse:up');
-    canvasFab.current?.off('object:modified');
     canvasFab.current?.off('object:removed');
     canvasFab.current?.off('mouse:wheel');
     canvasFab.current?.off('mouse:over');
@@ -224,6 +231,7 @@ const MultiCrops: FC<CropperProps> = ({
       width: containerRef.current?.offsetWidth || 1000,
       height: containerRef.current?.offsetHeight || 1000,
     });
+    canvas.preserveObjectStacking = true;
     canvas.selection = false;
     canvasFab.current = canvas;
     canvas.backgroundColor = '';

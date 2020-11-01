@@ -24,8 +24,8 @@ const randVal = (max: number, min: number = 0) =>
 const initialBoxes: CropperBox[] = Array(8)
   .fill({})
   .map((_, i) => ({
-    left: -178 + i * randVal(10, -10),
-    top: -191 + i * randVal(10, -10),
+    left: 278 + i * randVal(10, -10),
+    top: 41 + i * randVal(10, -10),
     width: 120 + randVal(100, -50),
     height: 178 + randVal(100, -50),
     id: 'box-id--' + i,
@@ -93,10 +93,12 @@ const App = () => {
 
   const updateBoxes: UpdateFunction = useCallback(
     (_e, _bx, i = 0, _boxes) => {
-      if (i >= 0 && !fileBoxesMap[src]?.[i] && _boxes)
-        _boxes[i] = { ..._boxes[i], showCross: false };
+      // new box somehow (check handleCrop)
+      if (i >= 0 && !fileBoxesMap[src]?.[i] && _boxes) {
+        _boxes[i] = { ..._boxes[i], showCross: false, layer: -1 };
+      }
 
-      console.log(_boxes);
+      console.log('ONCROP', _boxes);
       setFileBoxesMap((boxMap) => ({ ...boxMap, [src]: _boxes }));
     },
     [src]
@@ -167,7 +169,7 @@ const App = () => {
         if (box) {
           setFileBoxesMap((map) => ({
             ...map,
-            [src]: [...(map[src] || []), box],
+            [src]: [...(map[src] || []), { ...box, layer: -1 }],
           }));
         }
       } else if (e.type === 'load') setImageMap(map);
