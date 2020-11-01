@@ -260,6 +260,7 @@ declare module 'fabric' {
     }
 
     export interface Object {
+      inert: boolean;
       controls: any;
       id: string;
       manualDeletion?: true;

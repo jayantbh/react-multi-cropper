@@ -22,6 +22,7 @@ export type CropperBox<T = any> = {
   meta?: T;
   showCross?: boolean;
   layer?: -1 | 0 | 1;
+  inert?: boolean;
 };
 
 export type CropperBoxDataMap = {

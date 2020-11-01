@@ -35,6 +35,8 @@ export const Box = fabric.util.createClass(fabric.Rect, {
       _controlsVisibility: controlVisibilities(options.showCross),
       ...options,
       strokeWidth: 2 / zoom,
+      selectable: !options.inert,
+      evented: !options.inert,
       style: options.style, // just stored for persistence purposes
       ...(typeof options.style === 'function'
         ? options.style(defaults)

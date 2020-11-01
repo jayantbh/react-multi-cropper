@@ -39,6 +39,7 @@ const initialBoxes: CropperBox[] = Array(8)
     },
     showCross: true,
     noImage: true,
+    inert: true,
   }));
 // { x: -87, y: -183, width: 69, height: 234, id: 'V-iSOh80u', rotation: -46 },
 // { x: -51, y: -162, width: 67, height: 269, id: '7_sRCTJdI', rotation: -116 },
@@ -92,13 +93,8 @@ const App = () => {
   }, [src]);
 
   const updateBoxes: UpdateFunction = useCallback(
-    (_e, _bx, i = 0, _boxes) => {
-      // new box somehow (check handleCrop)
-      if (i >= 0 && !fileBoxesMap[src]?.[i] && _boxes) {
-        _boxes[i] = { ..._boxes[i], showCross: false, layer: -1 };
-      }
-
-      console.log('ONCROP', _boxes);
+    (_e, _bx, _i = 0, _boxes) => {
+      console.log('UPDATE', _boxes);
       setFileBoxesMap((boxMap) => ({ ...boxMap, [src]: _boxes }));
     },
     [src]
