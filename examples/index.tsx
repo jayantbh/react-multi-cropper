@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { fabric } from 'fabric';
 import ReactDOM from 'react-dom';
 import MultiCrops, {
   getAbsoluteDetectedBoxes,
@@ -198,7 +199,7 @@ const App = () => {
     []
   );
 
-  const cropperRef = useRef<HTMLDivElement | null>(null);
+  const cropperRef = useRef<fabric.Canvas | null>(null);
 
   const [disableMouse, setDisableMouse] = useState({
     all: false,
@@ -393,8 +394,9 @@ const App = () => {
           </div>
         </div>
       </div>
-      <div ref={cropperRef}>
+      <div>
         <MultiCrops
+          cropperRef={cropperRef}
           src={src}
           zoom={fileZoomMap[src] || 1}
           onZoomGesture={setZoom}

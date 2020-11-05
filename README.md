@@ -13,7 +13,7 @@ It's a fork of [this repo](https://github.com/beizhedenglong/react-multi-crops),
 
 ## Installation
 ```bash
-yarn add react-multi-cropper
+yarn add react-multi-cropper fabric
 ```
 
 ## Development

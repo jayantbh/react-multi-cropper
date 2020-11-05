@@ -1,6 +1,7 @@
-import { CSSProperties, FC, MouseEvent } from 'react';
+import { CSSProperties, FC, MouseEvent, MutableRefObject } from 'react';
 import { BoxType } from './components/Box';
 import { IEvent } from 'fabric/fabric-impl';
+import { fabric } from 'fabric';
 
 export type MapOf<T> = { [key in string]?: T };
 
@@ -82,6 +83,7 @@ export type ImgOnLoadWithImageData = (
 export type SelectionHandler = (boxMap: MapOf<BoxType>) => any;
 
 export type CropperProps = {
+  cropperRef: MutableRefObject<fabric.Canvas | null>;
   src: string;
   zoom?: number;
   rotation?: number; // degrees

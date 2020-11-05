@@ -74,6 +74,7 @@ fabric.Object.prototype.controls.tr = new fabric.Control({
 });
 
 const MultiCrops: FC<CropperProps> = ({
+  cropperRef,
   cursorMode = 'draw',
   rotation = 0,
   zoom = 1,
@@ -245,13 +246,15 @@ const MultiCrops: FC<CropperProps> = ({
   // init canvas
   useEffect(() => {
     let canvas = new fabric.Canvas('main-canvas');
+    canvasFab.current = canvas;
+    cropperRef.current = canvas;
+
     canvas.setDimensions({
       width: containerRef.current?.offsetWidth || 1000,
       height: containerRef.current?.offsetHeight || 1000,
     });
     canvas.preserveObjectStacking = true;
     canvas.selection = false;
-    canvasFab.current = canvas;
     canvas.backgroundColor = '';
     canvasFab.current?.requestRenderAll();
   }, []);
