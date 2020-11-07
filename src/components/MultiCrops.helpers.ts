@@ -35,11 +35,13 @@ export const getCroppedImageFromBox = (
   canvas.remove(...objects);
 
   const zoom = canvas.getZoom();
+
   const data = canvas.toDataURL({
-    top: box.top,
-    left: box.left,
+    top: box.lineCoords.tl.y,
+    left: box.lineCoords.tl.x,
     width: (box.width || 1) * zoom,
     height: (box.height || 1) * zoom,
+    enableRetinaScaling: true,
   });
 
   canvas.add(...objects);

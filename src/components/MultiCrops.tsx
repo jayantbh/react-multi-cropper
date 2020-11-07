@@ -416,11 +416,15 @@ const MultiCrops: FC<CropperProps> = ({
   // zoom changed
   useZoom(imageRef.current, canvasFab.current, zoom, setScrollPositions);
 
-  const handleCrop = (type: CropperEvent['type'], box: typeof Box) => {
+  const handleCrop = (type: CropperEvent['type']) => {
+    const box = lastUpdatedBox.current;
+    if (!box) return;
+
     const selections = getSelections(box);
     imageMapRef.current = { ...imageMapRef.current, ...selections };
     lastUpdatedBox.current = null;
     const boxId = box.id;
+
     const currentImgParam: CurrentImgParam = boxId
       ? {
           boxId,
@@ -508,6 +512,8 @@ const MultiCrops: FC<CropperProps> = ({
         width: Math.abs(pointA.current.x - pointB.x),
         height: Math.abs(pointA.current.y - pointB.y),
       });
+      rect.setCoords();
+
       canvasFab.current?.requestRenderAll();
       lastUpdatedBox.current = rect;
     }
@@ -529,7 +535,7 @@ const MultiCrops: FC<CropperProps> = ({
       } else {
         fab.setActiveObject(box);
         lastSelectedBox.current = box;
-        handleCrop('draw-end', box);
+        handleCrop('draw-end');
       }
 
       fab.requestRenderAll();
