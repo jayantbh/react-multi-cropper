@@ -9,6 +9,9 @@ A component for allowing multiple cropping regions on a single image.
 _WIP: Certain aspects are in development, and may be incomplete or buggy._  
 _It should be fine for most purposes._
 
+A newer implementation is available on the `fab-2` branch.  
+The implementation on this branch (`master`) works fine too, but isn't very performant for a large number of boxes.  
+
 It's a fork of [this repo](https://github.com/beizhedenglong/react-multi-crops), but with several improvements.
 - Typescript
 - Smaller bundle size
