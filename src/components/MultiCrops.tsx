@@ -463,6 +463,7 @@ const MultiCrops: FC<CropperProps> = ({
           angle: rotationRef.current,
           top: pointA.current.y,
           left: pointA.current.x,
+          inert: true,
         },
         zoomRef.current
       );
@@ -533,6 +534,7 @@ const MultiCrops: FC<CropperProps> = ({
       if (box?.height < 10 && box?.width < 10) {
         fab.remove(box);
       } else {
+        box.set({ inert: false });
         fab.setActiveObject(box);
         lastSelectedBox.current = box;
         handleCrop('draw-end');
