@@ -145,6 +145,7 @@ const MultiCrops: FC<CropperProps> = ({
     });
     fab.on('mouse:over', function (e) {
       if (!e.target || disableMouse?.all || e.target?.inert) return;
+      if (isDrawing.current) return;
 
       e.target?.set({
         hasControls: e.target.showCross ?? true,
@@ -160,6 +161,7 @@ const MultiCrops: FC<CropperProps> = ({
 
     fab.on('mouse:out', function (e) {
       if (!e.target || disableMouse?.all || e.target?.inert) return;
+      if (isDrawing.current) return;
 
       const styleWithoutHover = {
         ...(e.target?.style || {}),
