@@ -481,9 +481,9 @@ const MultiCrops: FC<CropperProps> = ({
       if (!(pointA.current.x && pointA.current.y && pointB.x && pointB.y))
         return;
 
-      let intialPoint: any = pointA.current;
-      const xDiff = -1 * (intialPoint.x - pointB.x);
-      const yDiff = -1 * (intialPoint.y - pointB.y);
+      let initialPoint: any = pointA.current;
+      const xDiff = -1 * (initialPoint.x - pointB.x);
+      const yDiff = -1 * (initialPoint.y - pointB.y);
       cancelAnimationFrame(panFrame.current);
       panFrame.current = requestAnimationFrame(() =>
         [imageRef.current, ...(canvasFab.current?.getObjects() || [])].map(
