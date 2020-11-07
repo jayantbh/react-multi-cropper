@@ -191,14 +191,6 @@ const App = () => {
     [updateBoxes]
   );
 
-  const CustomLabel = useCallback(
-    ({ index, box }) =>
-      index > 1 && !box.meta?.word ? (
-        <div style={{ marginRight: 2 }}>Im: {index + 1}</div>
-      ) : null,
-    []
-  );
-
   const cropperRef = useRef<fabric.Canvas | null>(null);
 
   const [disableMouse, setDisableMouse] = useState({
@@ -401,7 +393,6 @@ const App = () => {
           zoom={fileZoomMap[src] || 1}
           onZoomGesture={setZoom}
           containerStyles={containerStyles}
-          CustomLabel={CustomLabel}
           boxes={fileBoxesMap[src] || []}
           onChange={updateBoxes}
           onCrop={handleCrop}

@@ -1,4 +1,4 @@
-import { CSSProperties, FC, MouseEvent, MutableRefObject } from 'react';
+import { CSSProperties, MouseEvent, MutableRefObject } from 'react';
 import { BoxType } from './components/Box';
 import { IEvent } from 'fabric/fabric-impl';
 import { fabric } from 'fabric';
@@ -108,10 +108,7 @@ export type CropperProps = {
     pan?: boolean;
     draw?: boolean;
   };
-  CustomLabel?: FC<{ box: CropperBox; index: number }>;
   boxInView?: { id?: string; rotate?: boolean; panInView?: boolean };
-  onSetRotation?: Function;
-  boxViewZoomBuffer?: number;
 };
 
 export type RefSize = {
