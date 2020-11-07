@@ -83,7 +83,7 @@ export type ImgOnLoadWithImageData = (
 export type SelectionHandler = (boxMap: MapOf<BoxType>) => any;
 
 export type CropperProps = {
-  cropperRef: MutableRefObject<fabric.Canvas | null>;
+  cropperRef?: MutableRefObject<fabric.Canvas | null>;
   src: string;
   zoom?: number;
   rotation?: number; // degrees

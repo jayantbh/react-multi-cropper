@@ -247,7 +247,7 @@ const MultiCrops: FC<CropperProps> = ({
   useEffect(() => {
     let canvas = new fabric.Canvas('main-canvas');
     canvasFab.current = canvas;
-    cropperRef.current = canvas;
+    if (cropperRef?.current) cropperRef.current = canvas;
 
     canvas.setDimensions({
       width: containerRef.current?.offsetWidth || 1000,
