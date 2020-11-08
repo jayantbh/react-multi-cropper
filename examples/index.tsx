@@ -404,8 +404,6 @@ const App = () => {
           onBoxMouseEnter={handleMouseEnter}
           onBoxMouseLeave={handleMouseLeave}
           boxInView={boxInView}
-          boxViewZoomBuffer={0.1}
-          onSetRotation={setRotation}
           imageStyles={imageStyles}
           disableMouse={disableMouse}
           onSelect={(map) => {
