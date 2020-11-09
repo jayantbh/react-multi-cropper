@@ -462,7 +462,7 @@ const MultiCrops: FC<CropperProps> = ({
       let rect = new Box(
         {
           id: id.current,
-          angle: rotationRef.current,
+          angle: 0,
           top: pointA.current.y,
           left: pointA.current.x,
           inert: true,
