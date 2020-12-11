@@ -28,9 +28,13 @@ export const boxSaveTimeout = (cb: Function) => {
 // This implementation makes the snipped image quality be dependent on the canvas, and not the image.
 export const getCroppedImageFromBox = (
   canvas: fabric.Canvas | null,
-  box: fabric.Rect
+  box: fabric.Rect,
+  cropScale: number = 1
 ) => {
-  if (!canvas) return;
+  console.log({ cropScale });
+  const image = canvas?.backgroundImage;
+  if (!canvas || !image || !(image instanceof fabric.Image)) return;
+
   const objects = canvas.getObjects();
   canvas.remove(...objects);
 
@@ -42,6 +46,7 @@ export const getCroppedImageFromBox = (
     width: (box.width || 1) * zoom,
     height: (box.height || 1) * zoom,
     enableRetinaScaling: true,
+    multiplier: cropScale / (zoom * (image.scaleX || 1)),
   });
 
   canvas.add(...objects);

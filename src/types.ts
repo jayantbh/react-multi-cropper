@@ -87,6 +87,7 @@ export type CropperProps = {
   src: string;
   zoom?: number;
   rotation?: number; // degrees
+  cropScale?: number;
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;

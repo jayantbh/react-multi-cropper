@@ -64,6 +64,7 @@ const App = () => {
   const src = images[0];
 
   const [cursorMode, setCursorMode] = useState<CropperCursorMode>('pan');
+  const [cropScale, setCropScale] = useState<number>(1);
 
   const [fileBoxesMap, setFileBoxesMap] = useState<
     { [key in string]?: CropperBox[] }
@@ -289,6 +290,21 @@ const App = () => {
               />
             </div>
             <div className={'ml-4'}>
+              <label htmlFor='crop-scale' className={'is-block'}>
+                Cropped Image Scale: ({cropScale}x)
+              </label>
+              <input
+                id='crop-scale'
+                type='range'
+                className={'slider mt-2'}
+                min={0.25}
+                max={3}
+                step={0.01}
+                value={cropScale}
+                onChange={(e) => setCropScale(Number(e.currentTarget.value))}
+              />
+            </div>
+            <div className={'ml-4'}>
               <label className='checkbox control'>
                 <input
                   type='checkbox'
@@ -391,6 +407,7 @@ const App = () => {
           cropperRef={cropperRef}
           src={src}
           zoom={fileZoomMap[src] || 1}
+          cropScale={cropScale}
           onZoomGesture={setZoom}
           containerStyles={containerStyles}
           boxes={fileBoxesMap[src] || []}

@@ -81,6 +81,7 @@ const MultiCrops: FC<CropperProps> = ({
   disableKeyboard = false,
   disableMouse,
   boxInView,
+  cropScale,
   ...props
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -240,8 +241,11 @@ const MultiCrops: FC<CropperProps> = ({
     fab.requestRenderAll();
   };
 
+  const cropScaleRef = useRef(cropScale);
+  cropScaleRef.current = cropScale;
+
   const getSelections = (box: typeof Box) =>
-    getCroppedImageFromBox(canvasFab.current, box);
+    getCroppedImageFromBox(canvasFab.current, box, cropScaleRef.current);
 
   const lastSelectedBox = useRef<fabric.Rect | null>(null);
 
