@@ -108,6 +108,7 @@ type CropperProps = {
   src: string;
   zoom?: number;
   rotation?: number; // degrees
+  cropScale?: number; // the scale of the resultant cropped images
   boxes: CropperBox[];
   onChange?: UpdateFunction;
   onDelete?: UpdateFunction;
