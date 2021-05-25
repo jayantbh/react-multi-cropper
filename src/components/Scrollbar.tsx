@@ -1,6 +1,6 @@
 import React, { FC, HTMLAttributes, useRef, useState } from 'react';
 
-import css from './ScrollBar.module.scss';
+import css from './Scrollbar.module.scss';
 
 type ScrollType = 'horizontal' | 'vertical';
 type ScrollbarProps = {
