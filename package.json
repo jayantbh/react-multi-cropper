@@ -51,7 +51,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-runtime": "^6.26.0",
     "jest": "^25.2.4",
-    "node-sass": "^4.13.1",
+    "node-sass": "^7.0.0",
     "parcel": "^1.12.4",
     "pre-commit": "^1.2.2",
     "prettier": "^2.0.2",
